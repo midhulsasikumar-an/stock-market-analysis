@@ -1,38 +1,340 @@
-.App {
-  text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Core Colors */
+  --bg-dark: #020617;
+  --bg-card: rgba(30, 41, 59, 0.4);
+  --bg-card-hover: rgba(30, 41, 59, 0.7);
+  --primary: #3b82f6;
+  --primary-glow: rgba(59, 130, 246, 0.5);
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.3);
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-light: rgba(255, 255, 255, 0.05);
+
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+
+  /* Effects */
+  --glass-blur: blur(12px);
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
 }
 
-.App-logo {
-  height: 40vmin;
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* Background Gradients/Glow */
+body::before {
+  content: '';
+  position: fixed;
+  top: -10%;
+  left: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.08), transparent 70%);
   pointer-events: none;
+  z-index: -1;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Hero Section */
+.hero {
+  background-image: url("../public/bg.jpg");
+  background-size: cover;
+  background-position: center;
+  position: relative;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(2, 6, 23, 0.7);
+  z-index: 1;
+}
+
+.hero>* {
+  position: relative;
+  z-index: 2;
+}
+
+/* Atomic Utilities - The core of the new design system */
+
+/* Glass Effect */
+.bg-glass {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Glass Input Override */
+.form-control.bg-glass {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border-light);
+}
+
+.form-control.bg-glass:focus {
+  background-color: var(--bg-card-hover) !important;
+  color: var(--text-main) !important;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+}
+
+.form-control.bg-glass::placeholder {
+  color: var(--text-muted);
+}
+
+/* Hover Effects */
+.hover-glow {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-glow:hover {
+  transform: translateY(-4px);
+  background: var(--bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Typography Utilities */
+.text-main {
+  color: var(--text-main);
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.text-success-glow {
+  color: var(--success);
+  text-shadow: 0 0 10px var(--success-glow);
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+}
+
+.text-3xl {
+  font-size: 2rem;
+}
+
+/* Layout Utilities */
+.flex {
+  display: flex;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-col {
   display: flex;
   flex-direction: column;
+}
+
+.items-center {
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+}
+
+.grid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.grid-2-1 {
+  grid-template-columns: 2fr 1fr;
+  /* 2:1 Ratio for Chart vs Info */
+}
+
+/* Border Radius */
+.rounded-md {
+  border-radius: var(--radius-md);
+}
+
+.rounded-lg {
+  border-radius: var(--radius-lg);
+}
+
+.rounded-full {
+  border-radius: 9999px;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+/* Spacing & Layout Utilities */
+.gap-sm {
+  gap: var(--spacing-sm);
+}
+
+.gap-md {
+  gap: var(--spacing-md);
+}
+
+.gap-lg {
+  gap: var(--spacing-lg);
+}
+
+.mb-sm {
+  margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+  margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+  margin-bottom: var(--spacing-lg);
+}
+
+.mb-xl {
+  margin-bottom: var(--spacing-xl);
+}
+
+.p-md {
+  padding: var(--spacing-md);
+}
+
+.p-lg {
+  padding: var(--spacing-lg);
+}
+
+/* Buttons */
+.btn-pill {
+  border-radius: 99px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, var(--primary), #2563eb);
   color: white;
+  box-shadow: 0 4px 12px var(--primary-glow);
 }
 
-.App-link {
-  color: #61dafb;
+.btn-accent:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 16px var(--primary-glow);
+  transform: translateY(-1px);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.btn-glass {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+}
+
+.btn-glass:hover,
+.btn-glass.active {
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+}
+
+/* Custom Component Helpers (Reduced to minimum) */
+
+/* Table Overrides */
+.table-glass {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.table-glass th {
+  padding: 0.75rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.table-glass td {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.table-glass tr td:first-child {
+  border-left: 1px solid var(--border-light);
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.table-glass tr td:last-child {
+  border-right: 1px solid var(--border-light);
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Indicators */
+.trend-box {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: rgba(16, 185, 129, 0.05);
+  /* Subtle success tint */
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: var(--radius-md);
+}
+
+.section-border-left {
+  border-left: 3px solid var(--primary);
+  padding-left: var(--spacing-xs);
 }
