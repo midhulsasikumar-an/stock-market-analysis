@@ -1,66 +1,133 @@
-import React from 'react'
+import React, { useEffect, useState, memo } from 'react';
+import { getMarketSnapshotData, getVixClassification } from '../services/marketDataService';
+import './MarketSnapshot.css';
+
+const MetricBlock = memo(({ label, value, change, isPct = true, subValue = null, subValueClass = '' }) => {
+  const isPositive = typeof change === 'number' && change >= 0;
+  const hasChange = typeof change === 'number';
+  const changeFormatted = hasChange ? `${isPositive ? '+' : ''}${change.toFixed(2)}${isPct ? '%' : ''}` : '---';
+
+  return (
+    <div className="metric-block">
+      <span className="metric-label">{label}</span>
+      <div className="metric-value-container">
+        <span className="metric-value">{value || '---'}</span>
+        {change !== null && (
+          <span className={`metric-change ${isPositive ? 'change-up' : 'change-down'}`}>
+            {changeFormatted}
+          </span>
+        )}
+      </div>
+      {subValue && <span className={`metric-subvalue ${subValueClass}`} style={{ fontSize: '11px', marginTop: '2px' }}>{subValue}</span>}
+    </div>
+  );
+});
 
 export default function Market_Overview_Dash() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      // Fetch watchlist from localStorage to calculate alpha
+      const savedWatchlist = localStorage.getItem('watchlist');
+      const symbols = savedWatchlist ? JSON.parse(savedWatchlist).map(s => s.symbol) : [];
+
+      const snapshot = await getMarketSnapshotData(symbols);
+      setData(snapshot);
+      setLoading(false);
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 60000); // Pulse every 60s
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="market-snapshot-bar justify-content-center">
+        <span className="text-muted small">Synchronizing Market Data...</span>
+      </div>
+    );
+  }
+
+  if (!data || data.error) return null;
+
+  const vixClass = data.vix ? getVixClassification(data.vix.c) : { label: '---', class: '' };
+
   return (
-    <div>
-      <section className="container my-5 text-white">
-        <h2 className="fw-bold mb-4">Market Overview 📊</h2>
+    <div className="market-snapshot-wrapper">
+      {data.rateLimited && (
+        <div className="api-warning">
+          Limited by API tier — showing partial data. Real-time updates may be throttled.
+        </div>
+      )}
 
-        {/* Index Cards */}
-        <div className="row g-4 mb-4">
-          <div className="col-md-6">
-            <div className="card bg-glass rounded-4 p-3 hover-glow h-100">
-              <h6 className="text-uppercase text-light opacity-75 mb-1">
-                NIFTY 50
-              </h6>
-              <h3 className="text-light opacity-75 mb-1">22,145</h3>
-              <span className="text-success fw-semibold">
-                +0.85% ↑
-              </span>
-            </div>
+      <div className="market-snapshot-bar">
+        {/* Indices */}
+        <MetricBlock
+          label="NIFTY 50"
+          value={data.nifty?.c?.toLocaleString()}
+          change={data.nifty?.dp}
+        />
+
+        <MetricBlock
+          label="SENSEX"
+          value={data.sensex?.c?.toLocaleString()}
+          change={data.sensex?.dp}
+        />
+
+        {/* Volatility */}
+        <MetricBlock
+          label="India VIX"
+          value={data.vix?.c != null ? data.vix.c.toFixed(2) : '---'}
+          change={data.vix?.dp}
+          subValue={vixClass.label}
+          subValueClass={vixClass.class}
+        />
+
+        {/* Market Breadth */}
+        <div className="metric-block">
+          <span className="metric-label">Market Breadth</span>
+          <div className="metric-value-container">
+            <span className="metric-value" style={{ fontSize: '12px' }}>
+              <span className="change-up">{data.breadth.advancers}</span>
+              <span className="text-muted mx-1">/</span>
+              <span className="change-down">{data.breadth.decliners}</span>
+            </span>
+            <span className="metric-change text-muted" style={{ fontSize: '10px' }}>
+              {data.breadth.total} Active
+            </span>
           </div>
-
-          <div className="col-md-6">
-            <div className="card bg-glass rounded-4 p-3 hover-glow h-100">
-              <h6 className="text-uppercase text-light opacity-75 mb-1">
-                SENSEX
-              </h6>
-              <h3 className="text-light opacity-75 mb-1">73,520</h3>
-              <span className="text-danger fw-semibold">
-                -0.20% ↓
-              </span>
-            </div>
+          <div className="progress mt-1" style={{ height: '2px', background: 'rgba(255,255,255,0.05)' }}>
+            <div
+              className="progress-bar bg-success"
+              style={{ width: `${(data.breadth.advancers / data.breadth.total) * 100}%` }}
+            ></div>
+            <div
+              className="progress-bar bg-danger"
+              style={{ width: `${(data.breadth.decliners / data.breadth.total) * 100}%` }}
+            ></div>
           </div>
         </div>
 
-        {/* Market Sentiment */}
-        <div className="card bg-glass rounded-4 p-3 hover-glow mb-4">
-          <h6 className="text-uppercase text-light opacity-75 mb-2">
-            Market Sentiment
-          </h6>
-          <h4 className="fw-bold text-success">
-            Bullish 🟢
-          </h4>
-          <p className="small text-light opacity-75 mb-0">
-            Broad market shows positive momentum today
+        {/* Momentum & Alpha */}
+        <MetricBlock
+          label="Watchlist Alpha"
+          value={data.watchlistAlpha?.alpha != null ? `${data.watchlistAlpha.alpha.toFixed(2)}%` : '---'}
+          change={data.watchlistAlpha?.avgChange}
+          subValue={data.watchlistAlpha?.label || 'No symbols tracked'}
+          subValueClass={data.watchlistAlpha?.alpha >= 0 ? 'text-success' : 'text-danger'}
+        />
+
+        {/* Session Overview (Full Width) */}
+        <div className="metric-block session-overview">
+          <span className="metric-label">Session Activity</span>
+          <p className="overview-text mb-0">
+            {data.overview}
           </p>
         </div>
-
-        {/* Sector Performance */}
-        <div className="card bg-glass rounded-4 p-3 hover-glow">
-          <h6 className="text-uppercase text-light opacity-75 mb-3">
-            Sector Performance
-          </h6>
-
-          <div className="d-flex flex-wrap gap-3">
-            <span className="badge bg-success px-3 py-2">IT ↑</span>
-            <span className="badge bg-danger px-3 py-2">Banking ↓</span>
-            <span className="badge bg-success px-3 py-2">Pharma ↑</span>
-            <span className="badge bg-danger px-3 py-2">Energy ↓</span>
-            <span className="badge bg-success px-3 py-2">FMCG ↑</span>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
-  )
+  );
 }

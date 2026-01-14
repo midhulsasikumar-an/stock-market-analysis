@@ -1,0 +1,32 @@
+{
+  "symbol": "AAPL",
+  "timestamp": "2026-01-08T18:23:20.841Z",
+  "profile": {
+    "country": "US",
+    "currency": "USD",
+    "estimateCurrency": "USD",
+    "exchange": "NASDAQ NMS - GLOBAL MARKET",
+    "finnhubIndustry": "Technology",
+    "ipo": "1980-12-12",
+    "logo": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/AAPL.png",
+    "marketCapitalization": 3793976.082237459,
+    "name": "Apple Inc",
+    "phone": "14089961010",
+    "shareOutstanding": 14776.35,
+    "ticker": "AAPL",
+    "weburl": "https://www.apple.com/"
+  },
+  "quote": {
+    "c": 257.08,
+    "d": -3.25,
+    "dp": -1.2484,
+    "h": 259.5,
+    "l": 255.7,
+    "o": 259.5,
+    "pc": 260.33,
+    "t": 1767896544
+  },
+  "candles": {
+    "error": "Request failed with status code 403"
+  }
+}

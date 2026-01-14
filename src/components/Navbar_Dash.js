@@ -1,54 +1,77 @@
-import React, { use } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import ProfileAvatar from './Navbar/ProfileAvatar';
 
 export default function Navbar_Dash() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchTerm, setSearchTerm] = React.useState("");
+
   const stockDetail = (e) => {
     e.preventDefault();
-    navigate("/stock_search");
-  }
+    if (searchTerm.trim()) {
+      navigate(`/stock/${searchTerm.trim().toUpperCase()}`);
+      setSearchTerm("");
+    }
+  };
+
+  // Check active route
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark fixed-top" style={{ background: "rgba(2, 6, 23, 0.8)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-      <div className="container-fluid">
-        <a className="navbar-brand fw-bold" href="#">TradeTrack</a>
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-          <span className="navbar-toggler-icon"></span>
-        </button>
+    <nav className="navbar-slim">
+      {/* Logo */}
+      <Link to="/dashboard" className="navbar-slim-brand">
+        <span className="brand-icon">📈</span>
+        <span className="brand-text">TradeTrack</span>
+      </Link>
 
-        <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          {/* Left-aligned nav links */}
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            <li className="nav-item">
-              <a className="nav-link" href="#">Dashboard</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="#">Stocks</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="#">About Us</a>
-            </li>
-          </ul>
+      {/* Divider */}
+      <div className="navbar-slim-divider"></div>
 
-          {/* Search bar */}
-          <form className="d-flex me-3" role="search" onSubmit={stockDetail}>
-            <input
-              className="form-control me-2 bg-glass text-white border-glass rounded-pill"
-              type="search"
-              placeholder="Search Stocks..."
-            />
-            <button className="btn btn-glass rounded-pill px-3" type="submit">
-              Search
-            </button>
-          </form>
+      {/* Navigation Links */}
+      <div className="navbar-slim-links">
+        <Link
+          to="/dashboard"
+          className={`nav-slim-link ${isActive('/dashboard') ? 'active' : ''}`}
+          title="Dashboard"
+        >
+          <span className="nav-icon">🏠</span>
+          <span className="nav-text">Dashboard</span>
+        </Link>
+        <Link
+          to="/dashboard/stocks"
+          className={`nav-slim-link ${isActive('/dashboard/stocks') ? 'active' : ''}`}
+          title="Stocks"
+        >
+          <span className="nav-icon">📊</span>
+          <span className="nav-text">Stocks</span>
+        </Link>
+        <Link
+          to="/dashboard/news"
+          className={`nav-slim-link ${isActive('/dashboard/news') ? 'active' : ''}`}
+          title="News"
+        >
+          <span className="nav-icon">📰</span>
+          <span className="nav-text">News</span>
+        </Link>
+      </div>
 
+      {/* Search */}
+      <form className="navbar-slim-search" onSubmit={stockDetail}>
+        <input
+          type="text"
+          placeholder="Search symbol..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+        <button type="submit" className="search-btn">🔍</button>
+      </form>
 
-          {/* Logout button */}
-          <Link to="/">
-            <button type="button" className="btn btn-outline-danger rounded-pill px-3">
-              Logout
-            </button>
-          </Link>
-        </div>
+      {/* User Actions */}
+      <div className="navbar-slim-actions">
+        <ProfileAvatar />
       </div>
     </nav>
   );

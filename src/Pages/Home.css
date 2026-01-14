@@ -1,0 +1,219 @@
+/* Scoped Styles for Home Page Sections */
+
+.home-section {
+    padding: 100px 0;
+    background-color: #020617;
+    /* --bg-dark */
+    color: #f8fafc;
+    /* --text-main */
+}
+
+.home-section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.home-section-subtitle {
+    color: #94a3b8;
+    /* --text-muted */
+    font-size: 1.1rem;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 4rem auto;
+}
+
+/* Feature Grid (Why TradeTrack) */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.feature-card {
+    background: rgba(30, 41, 59, 0.4);
+    /* --bg-card */
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* --border-light */
+    padding: 2rem;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    background: rgba(30, 41, 59, 0.7);
+    /* --bg-card-hover */
+    border-color: rgba(59, 130, 246, 0.3);
+    /* --primary-glow variant */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.feature-icon {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.feature-card h4 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.feature-card p {
+    color: #94a3b8;
+    /* --text-muted */
+    font-size: 0.95rem;
+    margin-bottom: 0;
+}
+
+/* Row Layout (What TradeTrack Does) */
+.func-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.func-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border-left: 4px solid #3b82f6;
+    /* --primary */
+    transition: background 0.2s;
+}
+
+.func-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.func-item span {
+    font-size: 1.5rem;
+}
+
+.func-item h5 {
+    margin: 0;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+/* Market Snapshot */
+.snapshot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.snapshot-card {
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.snapshot-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.snapshot-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: block;
+}
+
+.snapshot-trend-up {
+    color: #10b981;
+}
+
+/* --success */
+.snapshot-trend-down {
+    color: #ef4444;
+}
+
+/* --danger */
+
+.vix-risk-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border-radius: 99px;
+    margin-top: 0.5rem;
+    display: inline-block;
+}
+
+/* How It Works */
+.steps-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .steps-container {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+.step-item {
+    flex: 1;
+    text-align: center;
+    position: relative;
+}
+
+.step-number {
+    width: 60px;
+    height: 60px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 auto 1.5rem auto;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+.step-item h5 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* CTA Section */
+.cta-section {
+    padding: 120px 0;
+    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1), transparent 70%), #020617;
+    text-align: center;
+}
+
+.cta-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+}
+
+.cta-subtitle {
+    color: #94a3b8;
+    font-size: 1.25rem;
+    margin-bottom: 3rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
