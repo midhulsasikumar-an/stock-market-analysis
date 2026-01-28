@@ -4,8 +4,7 @@ import Stock_Header from "../components/Stock_Header";
 import Price_Section from "../components/Price_Section";
 import Price_Chart from "../components/Price_Chart";
 import Technical_Analysis from "../components/Technical_Analysis";
-import Company_Info from "../components/Company_Info";
-import Stock_Insights from "../components/Stock_Insights";
+import Investment_Panel from "../components/Investment_Panel";
 import Footer from "../components/Footer";
 import { fetchCompanyProfile, fetchQuote, fetchCandles } from "../services/finnhub";
 
@@ -65,13 +64,10 @@ export default function StockPage() {
 
                 <aside>
                     <div className="bg-glass rounded-lg p-md h-full">
-                        <Company_Info profile={profile} />
+                        <Investment_Panel symbol={symbol} profile={profile} quote={quote} />
                     </div>
                 </aside>
             </div>
-
-            {/* Market & User Insights Section */}
-            <Stock_Insights symbol={symbol} />
 
             <Footer />
         </div>
