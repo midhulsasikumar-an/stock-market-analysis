@@ -40,18 +40,14 @@ export default function StockPage() {
         loadData();
     }, [symbol]);
 
-    if (loading) {
-        return <div className="page p-lg text-white">Loading...</div>; // Minimal loading state
-    }
-
     return (
-        <div className="page p-md h-100 overflow-hidden">
+        <div className="page p-md min-vh-100">
             <Link to="/dashboard" className="btn btn-glass btn-sm mb-3 text-decoration-none text-white d-inline-flex align-items-center gap-2">
                 <span>←</span> Back to Dashboard
             </Link>
 
             {/* Main Layout Grid: Left (Charts) - Right (Details Panel) */}
-            <div className="row g-4 h-100">
+            <div className="row g-4">
 
                 {/* LEFT COLUMN: Charts & Technicals (Scrollable independently if needed, or page scroll) */}
                 <div className="col-lg-8 d-flex flex-column gap-3 pb-5">
@@ -87,7 +83,7 @@ export default function StockPage() {
                 </div>
 
                 {/* RIGHT COLUMN: New Consolidated Details Panel */}
-                <div className="col-lg-4" style={{ height: 'calc(100vh - 100px)' }}> // Fixed height to allow scrolling inside panel
+                <div className="col-lg-4 d-flex flex-column">
                     <StockDetailsPanel
                         symbol={symbol}
                         profile={profile}
