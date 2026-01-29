@@ -293,17 +293,40 @@ export default function TechnicalAnalysis({ symbol, quote, candles }) {
                 </div>
             )}
 
-            {status === "insufficient_data" && (
-                <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center text-secondary p-5 bg-white-5 rounded border border-warning border-opacity-25 opacity-75 fadeIn">
-                    <p className="mb-1 text-sm">Historical data unavailable for analysis</p>
-                    <p className="text-xs">Indicators require at least 30 days of market history</p>
-                </div>
-            )}
+            {(status === "insufficient_data" || status === "restricted") && (
+                <div className="flex-grow-1 position-relative d-flex flex-column p-4 border border-light-5 rounded overflow-hidden">
+                    {/* Blurred Mock Content Background */}
+                    <div style={{ filter: 'blur(5px)', opacity: 0.3, pointerEvents: 'none', userSelect: 'none' }}>
+                        <div className="row g-3">
+                            <div className="col-12"><SectionHeader title="Momentum & Trend" /></div>
+                            <div className="d-flex gap-3">
+                                <MetricCard label="RSI (14)" value="45.2" signal="Neutral" />
+                                <MetricCard label="7D Change" value="+1.2%" signal="Bullish" />
+                            </div>
+                            <div className="col-12"><SectionHeader title="Moving Averages" /></div>
+                            <div className="d-flex gap-3">
+                                <MetricCard label="SMA (20)" value="142.5" signal="Bullish" />
+                                <MetricCard label="SMA (50)" value="138.2" signal="Bearish" />
+                            </div>
+                        </div>
+                    </div>
 
-            {status === "restricted" && (
-                <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center p-5 bg-white-5 rounded border border-warning border-opacity-20 fadeIn">
-                    <p className="mb-1 text-sm text-warning">Analysis restricted by API tier</p>
-                    <small className="text-xs opacity-75">Premium market data required for indicators</small>
+                    {/* Premium Lock Overlay */}
+                    <div className="position-absolute top-50 start-50 translate-middle text-center" style={{ width: '80%' }}>
+                        <div className="bg-glass-dark p-4 rounded-4 border border-warning border-opacity-25 shadow-lg backdrop-blur">
+                            <div className="mb-2 text-warning display-6">
+                                {status === "restricted" ? "🔒" : "⚠️"}
+                            </div>
+                            <h5 className="text-white fw-bold mb-1">
+                                {status === "restricted" ? "Premium Analysis Locked" : "Insufficient Data"}
+                            </h5>
+                            <p className="text-muted text-xs mb-0">
+                                {status === "restricted"
+                                    ? "Upgrade to Pro to view real-time technical signals and advanced indicators."
+                                    : "Not enough historical market data to generate reliable technical signals."}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             )}
 

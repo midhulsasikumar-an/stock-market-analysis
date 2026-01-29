@@ -255,7 +255,7 @@ export default function Investment_Panel({ symbol, profile, quote }) {
             </div>
 
             {/* Your Holdings */}
-            <div className="mt-auto">
+            <div className="mb-3">
                 <h6 className="text-muted text-uppercase mb-2" style={{ fontSize: '0.65rem', letterSpacing: '0.1em', fontWeight: 700 }}>
                     Your Holdings
                 </h6>
@@ -267,19 +267,53 @@ export default function Investment_Panel({ symbol, profile, quote }) {
                             <span className="text-white fw-bold" style={{ fontSize: '0.8rem' }}>{investment.shares}</span>
                         </div>
                         <div className="d-flex justify-content-between mb-2">
-                            <span className="text-muted" style={{ fontSize: '0.7rem' }}>Avg Price</span>
+                            <span className="text-muted" style={{ fontSize: '0.7rem' }}>Avg Buy Price</span>
                             <span className="text-white fw-bold" style={{ fontSize: '0.8rem' }}>${investment.buyPrice}</span>
                         </div>
-                        <div className="d-flex justify-content-between pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                            <span className="text-muted" style={{ fontSize: '0.7rem' }}>Total Value</span>
-                            <span className="text-success fw-bold" style={{ fontSize: '0.9rem' }}>${totalInvestment}</span>
+                        <div className="d-flex justify-content-between mb-2">
+                            <span className="text-muted" style={{ fontSize: '0.7rem' }}>Total Investment</span>
+                            <span className="text-white fw-bold" style={{ fontSize: '0.8rem' }}>${totalInvestment}</span>
                         </div>
+                        {/* Unrealized P/L */}
+                        {(() => {
+                            const currentValue = Number(investment.shares) * currentPrice;
+                            const investedValue = Number(totalInvestment);
+                            const unrealizedPL = currentValue - investedValue;
+                            const plPercent = investedValue > 0 ? ((unrealizedPL / investedValue) * 100).toFixed(2) : 0;
+                            const isProfit = unrealizedPL >= 0;
+
+                            return (
+                                <div className="d-flex justify-content-between pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <span className="text-muted" style={{ fontSize: '0.7rem' }}>Unrealized P/L</span>
+                                    <span className={isProfit ? 'text-success' : 'text-danger'} style={{ fontSize: '0.85rem', fontWeight: 700 }}>
+                                        {isProfit ? '+' : ''}${unrealizedPL.toFixed(2)} ({isProfit ? '+' : ''}{plPercent}%)
+                                    </span>
+                                </div>
+                            );
+                        })()}
                     </div>
                 ) : (
                     <div className="p-3 rounded-3 text-center" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
                         <span className="text-muted" style={{ fontSize: '0.75rem' }}>You haven't invested in this stock yet</span>
                     </div>
                 )}
+            </div>
+
+            {/* Community Sentiment (Compact) */}
+            <div className="mt-auto">
+                <h6 className="text-muted text-uppercase mb-2" style={{ fontSize: '0.65rem', letterSpacing: '0.1em', fontWeight: 700 }}>
+                    Community Sentiment
+                </h6>
+                <div className="d-flex gap-1 mb-2" style={{ height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ width: '55%', background: '#10b981' }} title="Buying"></div>
+                    <div style={{ width: '30%', background: '#3b82f6' }} title="Holding"></div>
+                    <div style={{ width: '15%', background: '#ef4444' }} title="Selling"></div>
+                </div>
+                <div className="d-flex justify-content-between" style={{ fontSize: '0.6rem' }}>
+                    <span className="text-success">55% Buying</span>
+                    <span className="text-primary">30% Holding</span>
+                    <span className="text-danger">15% Selling</span>
+                </div>
             </div>
         </div>
     );
