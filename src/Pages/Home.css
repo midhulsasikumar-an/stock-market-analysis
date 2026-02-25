@@ -217,3 +217,91 @@
     margin-left: auto;
     margin-right: auto;
 }
+
+.cta-btn-wrap {
+    display: flex;
+    justify-content: center;
+}
+
+.cta-section .cta-main-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Front page button fixes (isolated to home hero + navbar only) */
+.public-navbar {
+    padding: 0.85rem 1.2rem;
+}
+
+.public-navbar .home-login-btn {
+    min-width: 118px;
+    height: 52px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 0;
+    background: linear-gradient(135deg, #2196ff 0%, #20b2f0 100%) !important;
+    box-shadow: 0 10px 22px rgba(32, 178, 240, 0.3);
+}
+
+.public-navbar .home-login-btn:hover {
+    filter: brightness(1.05);
+}
+
+.hero .hero-cta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.25rem;
+}
+
+.hero .hero-get-started-btn {
+    min-width: 184px;
+    height: 58px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 14px !important;
+    font-size: 1.1rem;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #2286f6 0%, #1fc5ee 100%) !important;
+    box-shadow: 0 14px 28px rgba(34, 134, 246, 0.32);
+    margin: 0 !important;
+}
+
+.hero .hero-get-started-btn:hover {
+    filter: brightness(1.07);
+}
+
+.hero .hero-learn-more-btn {
+    min-width: 150px;
+    height: 58px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+    .hero .hero-cta {
+        flex-direction: column;
+    }
+
+    .hero .hero-get-started-btn,
+    .hero .hero-learn-more-btn {
+        width: 100%;
+        max-width: 260px;
+    }
+}

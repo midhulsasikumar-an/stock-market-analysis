@@ -1,0 +1,361 @@
+.stocks-shell {
+  min-height: 100vh;
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 50%),
+    linear-gradient(180deg, #020617 0%, #0b1328 100%);
+  color: #f8fafc;
+}
+
+.stocks-main {
+  padding: 72px 1.2rem 2rem;
+}
+
+.stocks-page-header {
+  margin-bottom: 1.2rem;
+}
+
+.stocks-page-header h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-weight: 700;
+}
+
+.stocks-page-header p {
+  margin: 0.45rem 0 0;
+  color: #94a3b8;
+}
+
+.sector-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.sector-card {
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.sector-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.sector-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.sector-card-top h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.sector-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.metric-label {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.sector-metrics strong {
+  font-size: 0.95rem;
+}
+
+.pill-positive,
+.pill-negative {
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.pill-positive {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.pill-negative {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.14);
+}
+
+.view-sector-btn,
+.watchlist-btn {
+  border: 0;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  text-decoration: none;
+  text-align: center;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border-radius: 9px;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+}
+
+.view-sector-btn:hover,
+.watchlist-btn:hover {
+  filter: brightness(1.1);
+}
+
+.page-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.back-link {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.back-link:hover {
+  color: #ffffff;
+}
+
+.sector-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.summary-card {
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+}
+
+.summary-card span {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.74rem;
+  margin-bottom: 0.3rem;
+}
+
+.summary-card strong {
+  font-size: 1rem;
+}
+
+.stocks-table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.82);
+}
+
+.stocks-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 820px;
+}
+
+.stocks-table th,
+.stocks-table td {
+  padding: 0.8rem 0.85rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.stocks-table th {
+  color: #cbd5e1;
+  font-size: 0.74rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.stock-link {
+  color: #93c5fd;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.stock-link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.stock-link:hover {
+  color: #bfdbfe;
+}
+
+.sort-button {
+  background: none;
+  border: 0;
+  color: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  padding: 0;
+}
+
+.text-up {
+  color: #22c55e;
+}
+
+.text-down {
+  color: #ef4444;
+}
+
+.watchlist-message {
+  margin: 0 0 1rem;
+  color: #93c5fd;
+  font-size: 0.9rem;
+}
+
+.stock-detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chart-card,
+.metrics-card,
+.news-card {
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.chart-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.chart-card h2,
+.metrics-card h2,
+.news-card h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.range-switch {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.range-btn {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #cbd5e1;
+  border-radius: 8px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.range-btn.active {
+  background: rgba(37, 99, 235, 0.3);
+  border-color: rgba(37, 99, 235, 0.6);
+  color: #ffffff;
+}
+
+.chart-area {
+  height: 260px;
+}
+
+.chart-area svg {
+  width: 100%;
+  height: 100%;
+}
+
+.metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.metrics-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.9rem;
+  font-size: 0.88rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  padding-bottom: 0.5rem;
+}
+
+.metrics-list span {
+  color: #94a3b8;
+}
+
+.news-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.9rem;
+}
+
+.news-item-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-decoration: none;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  padding: 0.7rem;
+  color: #e2e8f0;
+}
+
+.news-item-link strong {
+  font-size: 0.9rem;
+}
+
+.news-item-link span {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.news-item-link:hover {
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+.stocks-footer {
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  margin-top: 1.5rem;
+  padding: 1.2rem 1rem 1.4rem;
+  text-align: center;
+  background: rgba(2, 6, 23, 0.85);
+}
+
+.stocks-footer-title {
+  margin: 0 0 0.25rem;
+  color: #f1f5f9;
+  font-weight: 700;
+}
+
+.stocks-footer-meta {
+  margin: 0.1rem 0;
+  color: #94a3b8;
+  font-size: 0.86rem;
+}
+
+@media (max-width: 992px) {
+  .sector-summary-grid,
+  .stock-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

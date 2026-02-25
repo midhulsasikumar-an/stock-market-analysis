@@ -1,14 +1,18 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Navbar component for the Home/Public pages.
- * Focuses on marketing content and user onboarding.
+ * Shows "Login" when logged out, "Go to Dashboard" when logged in.
  */
 export default function Navbar() {
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
+
   return (
     <div>
-      <nav className="navbar navbar-expand-lg navbar-dark fixed-top bg-transparent">
+      <nav className="navbar navbar-expand-lg navbar-dark fixed-top bg-transparent public-navbar">
         <div className="container-fluid">
           {/* Logo / Brand */}
           <Link className="navbar-brand ms-3 fw-bold" to="/">TradeTrack</Link>
@@ -27,32 +31,39 @@ export default function Navbar() {
 
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-              {/* Navigation Links */}
               <li className="nav-item">
                 <Link className="nav-link" to="/">Home</Link>
               </li>
-
               <li className="nav-item">
-                {/* Renamed from "About Us" to focus on value prop */}
                 <a className="nav-link" href="#about-us">Why TradeTrack</a>
               </li>
             </ul>
 
-            {/* Call to Action */}
+            {/* Auth-aware CTA button */}
             <div className="d-flex align-items-center">
-              <button
-                type="button"
-                className="btn btn-primary mx-2 px-4"
-                data-bs-toggle="modal"
-                data-bs-target="#loginModal"
-                style={{ borderRadius: '8px', fontWeight: '600' }}
-              >
-                Login
-              </button>
+              {!isLoading && (
+                isAuthenticated ? (
+                  <button
+                    type="button"
+                    className="btn btn-primary mx-2 px-4 home-login-btn"
+                    onClick={() => navigate('/dashboard')}
+                  >
+                    Go to Dashboard
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-primary mx-2 px-4 home-login-btn"
+                    onClick={() => navigate('/login')}
+                  >
+                    Login
+                  </button>
+                )
+              )}
             </div>
           </div>
         </div>
       </nav>
     </div>
-  )
+  );
 }

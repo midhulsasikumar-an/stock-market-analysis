@@ -166,13 +166,15 @@ export default function StockDetailsPanel({ symbol, profile, quote, candles }) {
     if (!profile) return <div className="p-5 text-center text-muted">Select a stock to view details</div>;
 
     return (
-        <div className="bg-glass rounded-lg d-flex flex-column h-100"
-            style={{ minHeight: 'calc(100vh - 140px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div
+            className="bg-glass rounded-lg d-flex flex-column h-100 stock-panel-shell"
+            style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+        >
 
             {/* ----------------------------------------------------------------
                1. COMPANY HEADER (Sticky Top)
                ---------------------------------------------------------------- */}
-            <div className="p-4 border-bottom border-light-10 bg-glass-dark sticky-top" style={{ zIndex: 20 }}>
+            <div className="p-4 border-bottom border-light-10 bg-glass-dark stock-panel-header">
                 <div className="d-flex justify-content-between align-items-start">
                     <div>
                         <h2 className="h4 fw-bold mb-0 text-white letter-spacing-wide">{profile.name}</h2>
@@ -193,7 +195,7 @@ export default function StockDetailsPanel({ symbol, profile, quote, candles }) {
             {/* ----------------------------------------------------------------
                SCROLLABLE CONTENT
                ---------------------------------------------------------------- */}
-            <div className="p-4">
+            <div className="p-4 stock-panel-content">
 
                 {/* 2. COMPANY OVERVIEW */}
                 <div className="mb-5">

@@ -72,7 +72,7 @@ export default function Market_News_Dash() {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchMarketNews("general");
+        const data = await fetchMarketNews(null, "general");
         if (data && data.length > 0) {
           // Limit to 10 items for performance
           setNews(data.slice(0, 10));

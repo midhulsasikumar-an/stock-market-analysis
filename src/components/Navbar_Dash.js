@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import ProfileAvatar from './Navbar/ProfileAvatar';
+import NotificationBell from './Navbar/NotificationBell';
 
 export default function Navbar_Dash() {
   const navigate = useNavigate();
@@ -16,7 +17,12 @@ export default function Navbar_Dash() {
   };
 
   // Check active route
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    if (path === '/stocks') {
+      return location.pathname.startsWith('/stocks');
+    }
+    return location.pathname === path;
+  };
 
   return (
     <nav className="navbar-slim">
@@ -40,8 +46,8 @@ export default function Navbar_Dash() {
           <span className="nav-text">Dashboard</span>
         </Link>
         <Link
-          to="/dashboard/stocks"
-          className={`nav-slim-link ${isActive('/dashboard/stocks') ? 'active' : ''}`}
+          to="/stocks"
+          className={`nav-slim-link ${isActive('/stocks') ? 'active' : ''}`}
           title="Stocks"
         >
           <span className="nav-icon">📊</span>
@@ -69,8 +75,9 @@ export default function Navbar_Dash() {
         <button type="submit" className="search-btn">🔍</button>
       </form>
 
-      {/* User Actions */}
+      {/* User Actions: Bell + Avatar */}
       <div className="navbar-slim-actions">
+        <NotificationBell />
         <ProfileAvatar />
       </div>
     </nav>

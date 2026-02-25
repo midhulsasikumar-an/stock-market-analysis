@@ -1,13 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import Navbar from '../components/Navbar';
-import Login from '../components/Login';
-import Register from '../components/Register';
 import Intro from '../components/Intro';
 import Footer from '../components/Footer';
 import AboutUs from '../components/AboutUs';
+import { useAuth } from '../context/AuthContext';
 
 function Home() {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="home-root">
       {/* 1. Hero Section (Intro) */}
@@ -28,7 +31,7 @@ function Home() {
             </div>
             <div className="feature-card">
               <span className="feature-icon">🔍</span>
-              <h4>Clean analytics & insights</h4>
+              <h4>Clean analytics &amp; insights</h4>
               <p>Turn complex data into actionable insights with our intuitive visualization tools.</p>
             </div>
             <div className="feature-card">
@@ -122,7 +125,7 @@ function Home() {
             </div>
             <div className="step-item">
               <div className="step-number">3</div>
-              <h5>Track & decide</h5>
+              <h5>Track &amp; decide</h5>
               <p className="text-muted small">Add to watchlist and make your move.</p>
             </div>
           </div>
@@ -140,21 +143,33 @@ function Home() {
             Join thousands of traders who use TradeTrack to stay ahead of the curve.
             Start your market analysis journey today.
           </p>
-          <button
-            type="button"
-            className="btn btn-primary btn-lg px-5 py-3 fw-bold"
-            data-bs-toggle="modal"
-            data-bs-target="#registerModal"
-            style={{ borderRadius: '12px', boxShadow: '0 10px 30px rgba(59, 130, 246, 0.3)' }}
-          >
-            Get Started for Free
-          </button>
+          <div className="cta-btn-wrap">
+            {/* FIXED: Use React Router navigate instead of window.location.href
+                Shows "Go to Dashboard" if already logged in, otherwise "Get Started" */}
+            {isAuthenticated ? (
+              <button
+                type="button"
+                className="btn btn-primary btn-lg px-5 py-3 fw-bold cta-main-btn"
+                onClick={() => navigate('/dashboard')}
+                style={{ borderRadius: '12px', boxShadow: '0 10px 30px rgba(59, 130, 246, 0.3)' }}
+              >
+                Go to Dashboard →
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-primary btn-lg px-5 py-3 fw-bold cta-main-btn"
+                onClick={() => navigate('/register')}
+                style={{ borderRadius: '12px', boxShadow: '0 10px 30px rgba(59, 130, 246, 0.3)' }}
+              >
+                Get Started for Free
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Modals & Layout Components */}
-      <Login />
-      <Register />
+      {/* Layout Components */}
       <Navbar />
       <Footer />
     </div>

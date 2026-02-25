@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import Price_Section from "../components/Price_Section";
 import Price_Chart from "../components/Price_Chart";
-import Market_Snapshot from "../components/Market_Snapshot";
 import Market_Summary from "../components/Market_Summary";
 import Indicator_Charts from "../components/Indicator_Charts";
 import Technical_Analysis from "../components/Technical_Analysis";
@@ -25,8 +23,8 @@ export default function StockPage() {
                 const [p, q, c] = await Promise.all([
                     fetchCompanyProfile(symbol),
                     fetchQuote(symbol),
-                    // Fetch 60 days of data at "D" resolution for Technical Analysis
-                    fetchCandles(symbol, 'D', 60)
+                    // Fetch 90 days daily for chart + technical analysis
+                    fetchCandles(symbol, 'D', 90)
                 ]);
                 setProfile(p);
                 setQuote(q);
@@ -42,47 +40,74 @@ export default function StockPage() {
 
     return (
         <div className="page p-md min-vh-100">
-            <Link to="/dashboard" className="btn btn-glass btn-sm mb-3 text-decoration-none text-white d-inline-flex align-items-center gap-2">
+            {/* Back link */}
+            <Link
+                to="/dashboard"
+                className="btn btn-glass btn-sm mb-3 text-decoration-none text-white d-inline-flex align-items-center gap-2"
+            >
                 <span>←</span> Back to Dashboard
             </Link>
 
-            {/* Main Layout Grid: Left (Charts) - Right (Details Panel) */}
+            {/* Two-column layout */}
             <div className="row g-4">
 
-                {/* LEFT COLUMN: Charts & Technicals (Scrollable independently if needed, or page scroll) */}
+                {/* LEFT: TradingView-style Candlestick Chart + Technicals */}
                 <div className="col-lg-8 d-flex flex-column gap-3 pb-5">
                     <div className="bg-glass rounded-lg p-md">
-                        {/* Market Snapshot - Compact info bar */}
-                        <Market_Snapshot quote={quote} profile={profile} />
+                        {/* Compact company header */}
+                        {quote && (
+                            <div className="stock-page-info-bar mb-3">
+                                <div className="spib-left">
+                                    {profile?.logo && (
+                                        <img
+                                            src={profile.logo}
+                                            alt={symbol}
+                                            className="spib-logo"
+                                            onError={e => { e.target.style.display = 'none'; }}
+                                        />
+                                    )}
+                                    <div>
+                                        <span className="spib-symbol">{symbol}</span>
+                                        {profile?.name && (
+                                            <span className="spib-name"> · {profile.name}</span>
+                                        )}
+                                        {profile?.exchange && (
+                                            <span className="spib-exchange"> · {profile.exchange}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="spib-right">
+                                    <span className="spib-price">${(quote.c ?? 0).toFixed(2)}</span>
+                                    <span className={`spib-change ${(quote.dp ?? 0) >= 0 ? 'up' : 'down'}`}>
+                                        {(quote.dp ?? 0) >= 0 ? '+' : ''}{(quote.d ?? 0).toFixed(2)}
+                                        {' '}({(quote.dp ?? 0) >= 0 ? '+' : ''}{(quote.dp ?? 0).toFixed(2)}%)
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
-                        {/* Note: Price_Section might be redundant if the Right Panel has the main price info, 
-                            BUT per instructions: "Main price chart on the left remains unchanged" 
-                            and typically Price_Section is small. I'll keep it for now but it might duplicate header info. 
-                            Actually, the user said "Redesign the stock detail page to include a single... right-side card... 
-                            without changing the existing UI theme, layout...". 
-                            So I will keep the left side mostly as is. 
-                        */}
-                        <Price_Section symbol={symbol} quote={quote} />
+                        {/* ★ TradingView-style Candlestick Chart */}
+                        <Price_Chart
+                            symbol={symbol}
+                            candles={candles}
+                            title="Price Chart"
+                        />
 
-                        {/* Main Price Chart with Indicator Toggles */}
-                        <Price_Chart symbol={symbol} candles={candles} />
-
-                        {/* Secondary Indicator Charts (RSI, MACD) */}
+                        {/* RSI + MACD secondary charts */}
                         <div className="mt-4 pt-4 border-top border-light-5">
                             <Indicator_Charts candles={candles} />
                         </div>
 
-                        {/* Market Summary - Trend/Momentum/Volatility badges */}
+                        {/* Market Summary badges */}
                         <Market_Summary quote={quote} candles={candles} />
                     </div>
 
                     <div className="bg-glass rounded-lg p-md">
-                        {/* Pass shared candles data to Technical Analysis */}
                         <Technical_Analysis symbol={symbol} quote={quote} candles={candles} />
                     </div>
                 </div>
 
-                {/* RIGHT COLUMN: New Consolidated Details Panel */}
+                {/* RIGHT: Details Panel */}
                 <div className="col-lg-4 d-flex flex-column">
                     <StockDetailsPanel
                         symbol={symbol}
@@ -95,8 +120,3 @@ export default function StockPage() {
         </div>
     );
 }
-
-// ----------------------------------------------------------------------
-// TEMPORARY DEBUGGING UTILITY
-// ----------------------------------------------------------------------
-

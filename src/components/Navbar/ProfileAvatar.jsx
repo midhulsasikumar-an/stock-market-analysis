@@ -1,24 +1,45 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
+/**
+ * ProfileAvatar
+ * Shows initials (first 2 letters of email before @) or profile image.
+ * Reads from AuthContext (which validates the JWT against the server).
+ * Logout calls authService via context so all state is cleaned up properly.
+ */
 export default function ProfileAvatar() {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
+    const { user, logout } = useAuth();
 
-    // Get current user from localStorage
-    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const initials = user.username
-        ? user.username.split('@')[0].substring(0, 2).toUpperCase()
-        : 'U';
-
-    const handleLogout = () => {
-        localStorage.removeItem('currentUser');
-        navigate('/');
-        // Force a reload or update to clear local state if necessary
-        window.location.reload();
+    // Derive initials safely — user may be null while session is loading
+    const getInitials = () => {
+        if (!user) return 'U';
+        // Try firstName/lastName first
+        if (user.firstName && user.lastName) {
+            return (user.firstName[0] + user.lastName[0]).toUpperCase();
+        }
+        if (user.firstName) return user.firstName.substring(0, 2).toUpperCase();
+        // Fall back to email prefix
+        const email = user.email || '';
+        return email.split('@')[0].substring(0, 2).toUpperCase() || 'U';
     };
 
+    const initials = getInitials();
+    const displayName = user?.firstName
+        ? `${user.firstName} ${user.lastName || ''}`.trim()
+        : (user?.email?.split('@')[0] || 'User');
+    const email = user?.email || '';
+
+    const handleLogout = async () => {
+        setIsOpen(false);
+        await logout();   // clears authToken + user from localStorage via authService
+        navigate('/');
+    };
+
+    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -36,10 +57,11 @@ export default function ProfileAvatar() {
                 onClick={() => setIsOpen(!isOpen)}
                 aria-haspopup="true"
                 aria-expanded={isOpen}
+                title={displayName}
             >
                 <div className="profile-avatar">
-                    {user.avatar ? (
-                        <img src={user.avatar} alt="Profile" className="avatar-img" />
+                    {user?.profileImage ? (
+                        <img src={user.profileImage} alt="Profile" className="avatar-img" />
                     ) : (
                         <span className="avatar-initials">{initials}</span>
                     )}
@@ -49,8 +71,8 @@ export default function ProfileAvatar() {
             {isOpen && (
                 <div className="profile-dropdown bg-glass">
                     <div className="dropdown-user-info">
-                        <span className="dropdown-username">{user.fullName || user.username.split('@')[0]}</span>
-                        <span className="dropdown-email">{user.username}</span>
+                        <span className="dropdown-username">{displayName}</span>
+                        {email && <span className="dropdown-email">{email}</span>}
                     </div>
                     <div className="dropdown-divider"></div>
 

@@ -1,177 +1,315 @@
-import React, { useState } from "react";
-// Remove local data import, use localStorage instead
-// import { users } from "../data/UserData"; 
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import authService from "../services/authService";
+import { useAuth } from "../context/AuthContext";
+import "./Register.css";
+
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
+const isGoogleConfigured =
+    GOOGLE_CLIENT_ID &&
+    !GOOGLE_CLIENT_ID.includes("your-google-client-id") &&
+    GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID";
 
 export default function Register() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState("");
+    const navigate = useNavigate();
+    const auth = useAuth();
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+        confirmPassword: ""
+    });
 
-    const handleRegister = (e) => {
-        e.preventDefault();
-        setError("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+    const [globalError, setGlobalError] = useState("");
 
-        // Check if passwords match
-        if (password !== confirmPassword) {
-            setError("Passwords do not match");
-            return;
-        }
+    // Initialize Google Sign-In
+    useEffect(() => {
+        if (!isGoogleConfigured) return;
 
-        // 1. Get existing users from localStorage
-        const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+        const script = document.createElement("script");
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
 
-        // 2. Check if user already exists
-        const userExists = storedUsers.find((u) => u.username === email);
-        if (userExists) {
-            setError("User already registered");
-            return;
-        }
-
-        // 3. Save new user to localStorage
-        const newUser = { username: email, password: password };
-        const updatedUsers = [...storedUsers, newUser];
-        localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-        // Clear form
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
-
-        // 4. Robust Modal Cleanup
-        const modalEle = document.getElementById('registerModal');
-        if (window.bootstrap && modalEle) {
-            const modal = window.bootstrap.Modal.getInstance(modalEle);
-            if (modal) {
-                modal.hide();
-                // modal.dispose(); // CRITICAL: Removed to prevent TypeError
-            } else {
-                new window.bootstrap.Modal(modalEle).hide();
+        script.onload = () => {
+            if (window.google && document.getElementById("google-signin-button")) {
+                window.google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleSignUp
+                });
+                window.google.accounts.id.renderButton(
+                    document.getElementById("google-signin-button"),
+                    { theme: "outline", size: "large", width: "100%", text: "continue_with" }
+                );
             }
+        };
+
+        return () => {
+            if (document.head.contains(script)) {
+                document.head.removeChild(script);
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const validateForm = () => {
+        const newErrors = {};
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!formData.email) {
+            newErrors.email = "Email is required";
+        } else if (!emailRegex.test(formData.email)) {
+            newErrors.email = "Please enter a valid email";
         }
 
-        // CRITICAL: Force remove backdrop and reset body styles immediately
-        // This handles cases where Bootstrap animation fails or lags
-        setTimeout(() => {
-            const backdrops = document.querySelectorAll('.modal-backdrop');
-            backdrops.forEach(backdrop => backdrop.remove());
+        if (!formData.password) {
+            newErrors.password = "Password is required";
+        } else if (formData.password.length < 8) {
+            newErrors.password = "Password must be at least 8 characters";
+        } else if (!/[A-Z]/.test(formData.password)) {
+            newErrors.password = "Password must contain at least one uppercase letter";
+        } else if (!/[0-9]/.test(formData.password)) {
+            newErrors.password = "Password must contain at least one number";
+        } else if (!/[!@#$%^&*]/.test(formData.password)) {
+            newErrors.password = "Password must contain at least one special character (!@#$%^&*)";
+        }
 
-            document.body.classList.remove('modal-open');
-            document.body.style.removeProperty('padding-right');
-            document.body.style.removeProperty('overflow');
-            document.body.style.overflow = "auto"; // Force scroll restoration
-        }, 100);
+        if (!formData.confirmPassword) {
+            newErrors.confirmPassword = "Please confirm your password";
+        } else if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = "Passwords do not match";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: "" }));
+        }
+        setGlobalError("");
+    };
+
+    // FIXED: Now uses authService.register() instead of a raw fetch call
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        setGlobalError("");
+        setSuccessMessage("");
+
+        if (!validateForm()) return;
+
+        setIsLoading(true);
+
+        try {
+            await authService.register(formData.email, formData.password);
+
+            setSuccessMessage("Account created successfully! Redirecting to login...");
+            setFormData({ email: "", password: "", confirmPassword: "" });
+
+            setTimeout(() => navigate("/login", { replace: true }), 1500);
+        } catch (error) {
+            setGlobalError(error.message || "Registration failed. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // FIXED: Now uses authService.googleAuth() instead of a raw fetch call
+    const handleGoogleSignUp = async (response) => {
+        setIsLoading(true);
+        setGlobalError("");
+        try {
+            const result = await authService.googleAuth(response.credential);
+            if (result.success) {
+                auth.login(result.user);
+                setSuccessMessage("Successfully signed up with Google! Redirecting...");
+                setTimeout(() => navigate("/dashboard", { replace: true }), 1500);
+            }
+        } catch (error) {
+            setGlobalError(error.message || "Google sign-up failed. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
-        <div
-            className="modal fade"
-            id="registerModal"
-            tabIndex="-1"
-            aria-labelledby="registerModalLabel"
-            aria-hidden="true"
-        >
-            <div className="modal-dialog modal-dialog-centered">
-                <div
-                    className="modal-content text-white"
-                    style={{
-                        background: "rgba(20, 20, 30, 0.95)",
-                        backdropFilter: "blur(15px)",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
-                        boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)"
-                    }}
-                >
-                    <div className="modal-header border-0 pb-0">
-                        <h5 className="modal-title fw-bold" id="registerModalLabel">
-                            Create Account
-                        </h5>
-                        <button
-                            type="button"
-                            className="btn-close btn-close-white"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                        ></button>
+        <div className="register-container">
+            <div className="gradient-bg"></div>
+
+            <div className="register-card">
+                {/* Logo Section */}
+                <div className="logo-section">
+                    <div className="logo-icon">
+                        <i className="fas fa-chart-line"></i>
                     </div>
+                    <h1 className="app-title">TradeTrack</h1>
+                </div>
 
-                    <div className="modal-body p-4">
-                        <p className="text-muted mb-4 small">
-                            Join our professional trading community today.
-                        </p>
+                {/* Header Section */}
+                <div className="header-section">
+                    <h2 className="page-title">Create Your Trading Account</h2>
+                    <p className="page-subtitle">Start your intelligent investing journey</p>
+                </div>
 
-                        {error && (
-                            <div className="alert alert-danger py-2 small" role="alert">
-                                {error}
-                            </div>
+                {/* Alert Messages */}
+                {globalError && (
+                    <div className="alert-box alert-error" role="alert">
+                        <i className="fas fa-exclamation-circle"></i>
+                        <span>{globalError}</span>
+                    </div>
+                )}
+
+                {successMessage && (
+                    <div className="alert-box alert-success" role="status">
+                        <i className="fas fa-check-circle"></i>
+                        <span>{successMessage}</span>
+                    </div>
+                )}
+
+                {/* Form Section */}
+                <form onSubmit={handleRegister} className="register-form" noValidate>
+                    {/* Email Field */}
+                    <div className="form-group">
+                        <label htmlFor="email" className="form-label">
+                            <i className="fas fa-envelope"></i> Email Address
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            className={`form-input ${errors.email ? "error" : ""} ${formData.email ? "filled" : ""}`}
+                            placeholder="your@email.com"
+                            value={formData.email}
+                            onChange={handleChange}
+                            disabled={isLoading}
+                            autoComplete="email"
+                        />
+                        {errors.email && (
+                            <p className="error-message">
+                                <i className="fas fa-times-circle"></i> {errors.email}
+                            </p>
                         )}
-
-                        <form onSubmit={handleRegister}>
-                            <div className="mb-3">
-                                <label className="form-label small text-uppercase text-muted fw-bold">Email address</label>
-                                <div className="input-group">
-                                    <span className="input-group-text bg-transparent border-secondary text-secondary">
-                                        <i className="fas fa-envelope"></i>
-                                    </span>
-                                    <input
-                                        type="email"
-                                        className="form-control bg-dark text-white border-secondary"
-                                        placeholder="name@example.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        style={{ boxShadow: 'none' }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="mb-3">
-                                <label className="form-label small text-uppercase text-muted fw-bold">Password</label>
-                                <div className="input-group">
-                                    <span className="input-group-text bg-transparent border-secondary text-secondary">
-                                        <i className="fas fa-lock"></i>
-                                    </span>
-                                    <input
-                                        type="password"
-                                        className="form-control bg-dark text-white border-secondary"
-                                        placeholder="Min 8 characters"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                        style={{ boxShadow: 'none' }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="form-label small text-uppercase text-muted fw-bold">Confirm Password</label>
-                                <div className="input-group">
-                                    <span className="input-group-text bg-transparent border-secondary text-secondary">
-                                        <i className="fas fa-check-circle"></i>
-                                    </span>
-                                    <input
-                                        type="password"
-                                        className="form-control bg-dark text-white border-secondary"
-                                        placeholder="Re-enter password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        required
-                                        style={{ boxShadow: 'none' }}
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="btn btn-primary w-100 py-2 fw-bold"
-                                style={{
-                                    background: "linear-gradient(45deg, #0d6efd, #0dcaf0)",
-                                    border: "none",
-                                    boxShadow: "0 4px 15px rgba(13, 202, 240, 0.3)"
-                                }}
-                            >
-                                Register
-                            </button>
-                        </form>
                     </div>
+
+                    {/* Password Field */}
+                    <div className="form-group">
+                        <label htmlFor="password" className="form-label">
+                            <i className="fas fa-lock"></i> Password
+                        </label>
+                        <div className="password-wrapper">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                id="password"
+                                name="password"
+                                className={`form-input ${errors.password ? "error" : ""} ${formData.password ? "filled" : ""}`}
+                                placeholder="Min 8 chars with uppercase, number & symbol"
+                                value={formData.password}
+                                onChange={handleChange}
+                                disabled={isLoading}
+                                autoComplete="new-password"
+                            />
+                            <button
+                                type="button"
+                                className="toggle-password"
+                                onClick={() => setShowPassword(prev => !prev)}
+                                disabled={isLoading}
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                                <i className={`fas fa-eye${showPassword ? "" : "-slash"}`}></i>
+                            </button>
+                        </div>
+                        {errors.password && (
+                            <p className="error-message">
+                                <i className="fas fa-times-circle"></i> {errors.password}
+                            </p>
+                        )}
+                        {formData.password && !errors.password && (
+                            <p className="success-message">
+                                <i className="fas fa-check-circle"></i> Password meets requirements
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Confirm Password Field */}
+                    <div className="form-group">
+                        <label htmlFor="confirmPassword" className="form-label">
+                            <i className="fas fa-check-circle"></i> Confirm Password
+                        </label>
+                        <div className="password-wrapper">
+                            <input
+                                type={showConfirmPassword ? "text" : "password"}
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                className={`form-input ${errors.confirmPassword ? "error" : ""} ${formData.confirmPassword ? "filled" : ""}`}
+                                placeholder="Re-enter your password"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                disabled={isLoading}
+                                autoComplete="new-password"
+                            />
+                            <button
+                                type="button"
+                                className="toggle-password"
+                                onClick={() => setShowConfirmPassword(prev => !prev)}
+                                disabled={isLoading}
+                                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                            >
+                                <i className={`fas fa-eye${showConfirmPassword ? "" : "-slash"}`}></i>
+                            </button>
+                        </div>
+                        {errors.confirmPassword && (
+                            <p className="error-message">
+                                <i className="fas fa-times-circle"></i> {errors.confirmPassword}
+                            </p>
+                        )}
+                        {formData.confirmPassword && !errors.confirmPassword && formData.password === formData.confirmPassword && (
+                            <p className="success-message">
+                                <i className="fas fa-check-circle"></i> Passwords match
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Register Button */}
+                    <button
+                        type="submit"
+                        className={`btn btn-primary ${isLoading ? "loading" : ""}`}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <><span className="spinner"></span> Creating Account...</>
+                        ) : (
+                            <><i className="fas fa-user-plus"></i> Create Account</>
+                        )}
+                    </button>
+                </form>
+
+                {/* Divider */}
+                <div className="divider"><span>OR</span></div>
+
+                {/* Google Sign Up Button */}
+                {isGoogleConfigured ? (
+                    <div id="google-signin-button" className="google-button-wrapper"></div>
+                ) : (
+                    <div style={{ textAlign: 'center', padding: '10px', color: '#888', fontSize: '13px', border: '1px dashed #444', borderRadius: '8px' }}>
+                        🔒 Google Sign-Up is not configured yet.
+                    </div>
+                )}
+
+                {/* Footer Section */}
+                <div className="footer-section">
+                    <p className="signin-link">
+                        Already have an account?
+                        {/* FIXED: Use <Link> instead of <a> for SPA navigation */}
+                        <Link to="/login" className="link-primary"> Sign In</Link>
+                    </p>
                 </div>
             </div>
         </div>
