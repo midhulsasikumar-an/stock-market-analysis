@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SecuritySettings() {
+    const { logout } = useAuth();
     const [passwords, setPasswords] = useState({
         current: '',
         new: '',
@@ -43,9 +45,7 @@ export default function SecuritySettings() {
     };
 
     const logoutAllSessions = () => {
-        // In this local-only app, this just logs out the current user
-        localStorage.removeItem('currentUser');
-        window.location.href = '/';
+        logout();
     };
 
     return (

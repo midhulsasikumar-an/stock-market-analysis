@@ -1,3 +1,7 @@
+/* ============================================================
+   Stocks Pages - Sector Explorer & Stock Table
+   ============================================================ */
+
 .stocks-shell {
   min-height: 100vh;
   background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 50%),
@@ -6,11 +10,17 @@
 }
 
 .stocks-main {
-  padding: 72px 1.2rem 2rem;
+  padding: 72px 1.5rem 2rem;
 }
 
+/* ── Page Header ─────────────────────────────────────────── */
 .stocks-page-header {
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .stocks-page-header h1 {
@@ -20,81 +30,169 @@
 }
 
 .stocks-page-header p {
-  margin: 0.45rem 0 0;
+  margin: 0.35rem 0 0;
   color: #94a3b8;
+  font-size: 0.9rem;
 }
 
+.sector-refresh-btn {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.sector-refresh-btn:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.22);
+}
+
+.sector-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── Sector Card Grid ────────────────────────────────────── */
 .sector-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1rem;
 }
 
 .sector-card {
   background: rgba(15, 23, 42, 0.78);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 14px;
-  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  gap: 0.875rem;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s;
 }
 
 .sector-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateY(-3px);
+  border-color: rgba(59, 130, 246, 0.45);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
 }
 
 .sector-card-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 0.8rem;
+  gap: 0.5rem;
 }
 
 .sector-card-top h2 {
   font-size: 1rem;
   margin: 0;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.sector-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sector-description {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
 }
 
 .sector-metrics {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.sector-metrics>div {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 0.4rem 0.5rem;
 }
 
 .metric-label {
   display: block;
   color: #94a3b8;
-  font-size: 0.75rem;
-  margin-bottom: 0.25rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.2rem;
 }
 
 .sector-metrics strong {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 
+/* Symbol chips preview */
+.sector-symbols-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.symbol-chip {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.symbol-chip:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #bfdbfe;
+}
+
+.symbol-chip-more {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* ── Pill badges ──────────────────────────────────────────── */
 .pill-positive,
 .pill-negative {
   border-radius: 999px;
   padding: 0.25rem 0.6rem;
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .pill-positive {
   color: #22c55e;
-  background: rgba(34, 197, 94, 0.15);
+  background: rgba(34, 197, 94, 0.12);
 }
 
 .pill-negative {
   color: #ef4444;
-  background: rgba(239, 68, 68, 0.14);
+  background: rgba(239, 68, 68, 0.12);
 }
 
-.view-sector-btn,
-.watchlist-btn {
+/* ── View Sector / Watchlist buttons ──────────────────────── */
+.view-sector-btn {
   border: 0;
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: #fff;
@@ -103,15 +201,37 @@
   font-size: 0.84rem;
   font-weight: 600;
   border-radius: 9px;
-  padding: 0.55rem 0.8rem;
+  padding: 0.6rem 0.8rem;
   cursor: pointer;
+  transition: filter 0.15s, transform 0.15s;
+  margin-top: auto;
 }
 
-.view-sector-btn:hover,
+.view-sector-btn:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.watchlist-btn {
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.08);
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 7px;
+  padding: 0.4rem 0.65rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
 .watchlist-btn:hover {
-  filter: brightness(1.1);
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
+/* ── Navigation helpers ──────────────────────────────────── */
 .page-row {
   display: flex;
   justify-content: space-between;
@@ -123,43 +243,87 @@
 .back-link {
   color: #cbd5e1;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .back-link:hover {
   color: #ffffff;
 }
 
+/* ── Summary stats cards ─────────────────────────────────── */
 .sector-summary-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
-  margin-bottom: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .sector-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .summary-card {
   background: rgba(15, 23, 42, 0.78);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 12px;
-  padding: 0.9rem 1rem;
+  padding: 0.875rem 1rem;
 }
 
 .summary-card span {
   display: block;
   color: #94a3b8;
-  font-size: 0.74rem;
-  margin-bottom: 0.3rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
 }
 
 .summary-card strong {
-  font-size: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
+/* ── Stocks Table ────────────────────────────────────────── */
 .stocks-table-wrap {
   overflow-x: auto;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 14px;
   background: rgba(15, 23, 42, 0.82);
+  position: relative;
+}
+
+/* Loading bar */
+.quotes-loading-bar {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-radius: 14px 14px 0 0;
+  overflow: hidden;
+}
+
+.quotes-loading-fill {
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+  animation: loadingSlide 1.4s ease-in-out infinite;
+}
+
+@keyframes loadingSlide {
+  0% {
+    transform: translateX(-200%);
+  }
+
+  100% {
+    transform: translateX(400%);
+  }
 }
 
 .stocks-table {
@@ -170,34 +334,80 @@
 
 .stocks-table th,
 .stocks-table td {
-  padding: 0.8rem 0.85rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  padding: 0.8rem 0.875rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
   text-align: left;
-  font-size: 0.88rem;
+  font-size: 0.875rem;
 }
 
 .stocks-table th {
-  color: #cbd5e1;
-  font-size: 0.74rem;
-  letter-spacing: 0.03em;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  background: rgba(2, 6, 23, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
-.stock-link {
+.stocks-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.stock-row-clickable {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.stock-row-clickable:hover {
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.stock-symbol-badge {
+  font-weight: 700;
   color: #93c5fd;
-  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+
+.company-name-cell {
+  color: #e2e8f0;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.price-cell {
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.change-cell {
   font-weight: 600;
 }
 
-.stock-link-button {
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
+.range-cell-small {
+  font-size: 0.8rem;
 }
 
-.stock-link:hover {
-  color: #bfdbfe;
+.loading-dots {
+  color: #475569;
+  letter-spacing: 0.15em;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
 }
 
 .sort-button {
@@ -208,8 +418,17 @@
   letter-spacing: inherit;
   text-transform: inherit;
   padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
+.sort-button:hover {
+  color: #f8fafc;
+}
+
+/* ── Color helpers ───────────────────────────────────────── */
 .text-up {
   color: #22c55e;
 }
@@ -218,123 +437,20 @@
   color: #ef4444;
 }
 
+/* ── Toast ───────────────────────────────────────────────── */
 .watchlist-message {
-  margin: 0 0 1rem;
+  margin: 0 0 0.875rem;
   color: #93c5fd;
-  font-size: 0.9rem;
-}
-
-.stock-detail-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.chart-card,
-.metrics-card,
-.news-card {
-  background: rgba(15, 23, 42, 0.82);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 14px;
-  padding: 1rem;
-}
-
-.chart-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.9rem;
-}
-
-.chart-card h2,
-.metrics-card h2,
-.news-card h2 {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.range-switch {
-  display: flex;
-  gap: 0.45rem;
-}
-
-.range-btn {
-  background: rgba(30, 41, 59, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  color: #cbd5e1;
+  font-size: 0.875rem;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
   border-radius: 8px;
-  padding: 0.3rem 0.5rem;
-  font-size: 0.75rem;
+  padding: 0.6rem 1rem;
 }
 
-.range-btn.active {
-  background: rgba(37, 99, 235, 0.3);
-  border-color: rgba(37, 99, 235, 0.6);
-  color: #ffffff;
-}
-
-.chart-area {
-  height: 260px;
-}
-
-.chart-area svg {
-  width: 100%;
-  height: 100%;
-}
-
-.metrics-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-.metrics-list div {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.9rem;
-  font-size: 0.88rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
-  padding-bottom: 0.5rem;
-}
-
-.metrics-list span {
-  color: #94a3b8;
-}
-
-.news-list {
-  display: grid;
-  gap: 0.65rem;
-  margin-top: 0.9rem;
-}
-
-.news-item-link {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  text-decoration: none;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 10px;
-  padding: 0.7rem;
-  color: #e2e8f0;
-}
-
-.news-item-link strong {
-  font-size: 0.9rem;
-}
-
-.news-item-link span {
-  font-size: 0.75rem;
-  color: #94a3b8;
-}
-
-.news-item-link:hover {
-  border-color: rgba(59, 130, 246, 0.45);
-}
-
+/* ── Footer ──────────────────────────────────────────────── */
 .stocks-footer {
-  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
   margin-top: 1.5rem;
   padding: 1.2rem 1rem 1.4rem;
   text-align: center;
@@ -350,12 +466,16 @@
 .stocks-footer-meta {
   margin: 0.1rem 0;
   color: #94a3b8;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
 }
 
-@media (max-width: 992px) {
-  .sector-summary-grid,
-  .stock-detail-grid {
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .stocks-main {
+    padding: 64px 1rem 2rem;
+  }
+
+  .sector-card-grid {
     grid-template-columns: 1fr;
   }
 }

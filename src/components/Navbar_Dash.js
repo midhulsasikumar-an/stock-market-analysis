@@ -16,7 +16,6 @@ export default function Navbar_Dash() {
     }
   };
 
-  // Check active route
   const isActive = (path) => {
     if (path === '/stocks') {
       return location.pathname.startsWith('/stocks');
@@ -26,16 +25,17 @@ export default function Navbar_Dash() {
 
   return (
     <nav className="navbar-slim">
-      {/* Logo */}
       <Link to="/dashboard" className="navbar-slim-brand">
-        <span className="brand-icon">📈</span>
+        <img
+          src="/tt-logo.png"
+          alt="TradeTrack logo"
+          style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }}
+        />
         <span className="brand-text">TradeTrack</span>
       </Link>
 
-      {/* Divider */}
       <div className="navbar-slim-divider"></div>
 
-      {/* Navigation Links */}
       <div className="navbar-slim-links">
         <Link
           to="/dashboard"
@@ -61,9 +61,16 @@ export default function Navbar_Dash() {
           <span className="nav-icon">📰</span>
           <span className="nav-text">News</span>
         </Link>
+        <Link
+          to="/dashboard/portfolio"
+          className={`nav-slim-link ${isActive('/dashboard/portfolio') ? 'active' : ''}`}
+          title="Portfolio"
+        >
+          <span className="nav-icon">💼</span>
+          <span className="nav-text">Portfolio</span>
+        </Link>
       </div>
 
-      {/* Search */}
       <form className="navbar-slim-search" onSubmit={stockDetail}>
         <input
           type="text"
@@ -75,7 +82,6 @@ export default function Navbar_Dash() {
         <button type="submit" className="search-btn">🔍</button>
       </form>
 
-      {/* User Actions: Bell + Avatar */}
       <div className="navbar-slim-actions">
         <NotificationBell />
         <ProfileAvatar />

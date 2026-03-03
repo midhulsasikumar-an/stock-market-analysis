@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import watchlistService from '../services/watchlistService';
+import authService from '../services/authService';
 
 export default function Investment_Panel({ symbol, profile, quote }) {
     // Investment state
@@ -15,14 +17,8 @@ export default function Investment_Panel({ symbol, profile, quote }) {
     const [showInvestForm, setShowInvestForm] = useState(false);
 
     // Watchlist state
-    const [inWatchlist, setInWatchlist] = useState(() => {
-        const saved = localStorage.getItem('watchlist');
-        if (saved) {
-            const list = JSON.parse(saved);
-            return list.some(item => item.symbol === symbol);
-        }
-        return false;
-    });
+    const [inWatchlist, setInWatchlist] = useState(false);
+    const [watchlistLoading, setWatchlistLoading] = useState(false);
 
     // Persist investment
     useEffect(() => {
@@ -32,19 +28,53 @@ export default function Investment_Panel({ symbol, profile, quote }) {
         }
     }, [isInvested, investment, symbol]);
 
-    // Toggle watchlist
-    const toggleWatchlist = () => {
-        const saved = localStorage.getItem('watchlist');
-        let list = saved ? JSON.parse(saved) : [];
+    useEffect(() => {
+        let mounted = true;
 
-        if (inWatchlist) {
-            list = list.filter(item => item.symbol !== symbol);
-        } else {
-            list.push({ symbol, name: profile?.name || symbol, type: 'stock' });
+        const loadWatchlistState = async () => {
+            if (!authService.isAuthenticated()) {
+                if (mounted) setInWatchlist(false);
+                return;
+            }
+
+            try {
+                const list = await watchlistService.getWatchlist();
+                if (mounted) {
+                    setInWatchlist(list.some((item) => item.symbol === symbol));
+                }
+            } catch {
+                if (mounted) setInWatchlist(false);
+            }
+        };
+
+        loadWatchlistState();
+
+        return () => {
+            mounted = false;
+        };
+    }, [symbol]);
+
+    // Toggle watchlist
+    const toggleWatchlist = async () => {
+        if (!authService.isAuthenticated()) {
+            window.alert("Please login to manage your watchlist.");
+            return;
         }
 
-        localStorage.setItem('watchlist', JSON.stringify(list));
-        setInWatchlist(!inWatchlist);
+        try {
+            setWatchlistLoading(true);
+            if (inWatchlist) {
+                await watchlistService.removeFromWatchlist(symbol);
+                setInWatchlist(false);
+            } else {
+                await watchlistService.addToWatchlist(symbol, profile?.name || symbol, 'stock');
+                setInWatchlist(true);
+            }
+        } catch (error) {
+            window.alert(error.message || "Failed to update watchlist.");
+        } finally {
+            setWatchlistLoading(false);
+        }
     };
 
     // Handle invest
@@ -158,6 +188,7 @@ export default function Investment_Panel({ symbol, profile, quote }) {
                 <button
                     className={`btn flex-grow-1 ${inWatchlist ? 'btn-glass' : 'btn-glass'}`}
                     onClick={toggleWatchlist}
+                    disabled={watchlistLoading}
                     style={{
                         fontSize: '0.75rem',
                         padding: '0.6rem',
@@ -165,7 +196,7 @@ export default function Investment_Panel({ symbol, profile, quote }) {
                         color: inWatchlist ? '#3b82f6' : '#fff'
                     }}
                 >
-                    {inWatchlist ? '✓ Watchlist' : '+ Watchlist'}
+                    {watchlistLoading ? '...' : inWatchlist ? '✓ Watchlist' : '+ Watchlist'}
                 </button>
                 <button
                     className="btn btn-accent flex-grow-1"

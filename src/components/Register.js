@@ -145,6 +145,10 @@ export default function Register() {
             <div className="gradient-bg"></div>
 
             <div className="register-card">
+                <Link to="/" className="auth-close-btn" aria-label="Close registration">
+                    ×
+                </Link>
+
                 {/* Logo Section */}
                 <div className="logo-section">
                     <div className="logo-icon">

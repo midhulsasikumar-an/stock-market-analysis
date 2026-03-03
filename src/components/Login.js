@@ -26,13 +26,9 @@ export default function Login() {
             navigate("/dashboard", { replace: true });
             return;
         }
-
-        // Pre-fill email if remembered
-        const savedEmail = localStorage.getItem("rememberEmail");
-        if (savedEmail) {
-            setFormData(prev => ({ ...prev, email: savedEmail }));
-            setRememberMe(true);
-        }
+        // Always start with blank credentials when landing on login.
+        setFormData({ email: "", password: "" });
+        setRememberMe(false);
 
         // Initialize Google Sign-In
         if (!isGoogleConfigured) return;
@@ -105,11 +101,8 @@ export default function Login() {
             const response = await authService.login(formData.email, formData.password);
 
             if (response.success) {
-                if (rememberMe) {
-                    localStorage.setItem("rememberEmail", formData.email);
-                } else {
-                    localStorage.removeItem("rememberEmail");
-                }
+                // Do not persist login credentials when switching accounts.
+                localStorage.removeItem("rememberEmail");
 
                 // Update global auth context so all components reflect new state
                 auth.login(response.user);
@@ -144,6 +137,10 @@ export default function Login() {
             <div className="gradient-bg"></div>
 
             <div className="login-card">
+                <Link to="/" className="auth-close-btn" aria-label="Close login">
+                    ×
+                </Link>
+
                 {/* Logo Section */}
                 <div className="logo-section">
                     <div className="logo-icon">
@@ -167,7 +164,7 @@ export default function Login() {
                 )}
 
                 {/* Form Section */}
-                <form onSubmit={handleLogin} className="login-form" noValidate>
+                <form onSubmit={handleLogin} className="login-form" noValidate autoComplete="off">
                     {/* Email Field */}
                     <div className="form-group">
                         <label htmlFor="email" className="form-label">
@@ -182,7 +179,7 @@ export default function Login() {
                             value={formData.email}
                             onChange={handleChange}
                             disabled={isLoading}
-                            autoComplete="email"
+                            autoComplete="off"
                         />
                         {errors.email && (
                             <p className="error-message">
@@ -212,7 +209,7 @@ export default function Login() {
                                 value={formData.password}
                                 onChange={handleChange}
                                 disabled={isLoading}
-                                autoComplete="current-password"
+                                autoComplete="new-password"
                             />
                             <button
                                 type="button"

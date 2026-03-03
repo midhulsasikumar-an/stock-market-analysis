@@ -4,6 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
 const marketRoutes = require("./routes/market");
+const watchlistRoutes = require("./routes/watchlist");
 const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
@@ -60,6 +61,7 @@ app.options("*", cors(corsOptions));
 // ========================================
 app.use("/api/auth", authRoutes);
 app.use("/api/market", marketRoutes);  // Finnhub + Alpha Vantage proxy
+app.use("/api/watchlist", watchlistRoutes); // User personal watchlist storage
 
 app.get("/", (req, res) => {
     res.json({ message: "TradeTrack API is running", status: "ok" });

@@ -1,14 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { fetchQuote, fetchMarketNews, fetchCandles } from '../services/finnhub';
+import watchlistService from '../services/watchlistService';
 
-// Default watchlist symbols
+// Default watchlist symbols (fallbacks for new users)
 const DEFAULT_SYMBOLS = [
-  { symbol: 'AAPL', name: 'Apple Inc', type: 'stock' },
-  { symbol: 'MSFT', name: 'Microsoft', type: 'stock' },
-  { symbol: 'GOOGL', name: 'Alphabet', type: 'stock' },
-  { symbol: 'TSLA', name: 'Tesla', type: 'stock' },
-  { symbol: 'NVDA', name: 'NVIDIA', type: 'stock' },
-  { symbol: 'AMZN', name: 'Amazon', type: 'stock' },
+  { symbol: 'RELIANCE', name: 'Reliance Industries', type: 'stock' },
+  { symbol: 'TCS', name: 'TCS', type: 'stock' },
+  { symbol: 'INFY', name: 'Infosys', type: 'stock' },
 ];
 
 // Helper to generate sparkline points
@@ -38,15 +36,12 @@ const WatchlistRow = ({ item, isSelected, onClick, onRemove }) => {
       className={`watchlist-row ${isSelected ? 'selected' : ''}`}
       onClick={() => onClick(item)}
     >
-      {/* Left: Badge */}
       <div className="watchlist-badge">
         <span className="symbol-icon">{item.symbol.slice(0, 2)}</span>
       </div>
 
-      {/* Center: Symbol & Sparkline */}
       <div className="watchlist-info">
         <span className="watchlist-symbol">{item.symbol}</span>
-        {/* Mini Sparkline */}
         <div className="watchlist-sparkline mt-1" style={{ height: '20px', width: '60px' }}>
           {item.history && item.history.length > 2 ? (
             <svg width="60" height="20">
@@ -65,17 +60,15 @@ const WatchlistRow = ({ item, isSelected, onClick, onRemove }) => {
         </div>
       </div>
 
-      {/* Right: Price & Change */}
       <div className="watchlist-data">
         <span className="watchlist-price">
-          {item.price !== null ? `$${item.price.toFixed(2)}` : '---'}
+          {item.price !== null ? `₹${item.price.toFixed(2)}` : '---'}
         </span>
         <span className={`watchlist-change ${changeColor}`}>
           {item.changePercent !== null ? `${sign}${item.changePercent.toFixed(2)}%` : '---'}
         </span>
       </div>
 
-      {/* Remove Button (visible on hover) */}
       <button
         className="watchlist-remove"
         onClick={(e) => { e.stopPropagation(); onRemove(item.symbol); }}
@@ -95,19 +88,18 @@ const DetailPanel = ({ item, news }) => {
   const changeColor = item.change === 0 ? 'text-muted' : isPositive ? 'text-success' : 'text-danger';
   const sign = isPositive && item.change !== 0 ? '+' : '';
 
-  // Simulated market status (in real app, derive from quote data)
   const isMarketOpen = new Date().getHours() >= 9 && new Date().getHours() < 16;
 
   return (
     <div className="detail-panel">
       <div className="detail-header">
         <h3 className="detail-symbol">{item.symbol}</h3>
-        <span className="detail-exchange">{item.name} · NYSE</span>
+        <span className="detail-exchange">{item.name} · NSE</span>
       </div>
 
       <div className="detail-price-section">
         <span className="detail-price">
-          {item.price !== null ? `$${item.price.toFixed(2)}` : '---'}
+          {item.price !== null ? `₹${item.price.toFixed(2)}` : '---'}
         </span>
         <span className={`detail-change ${changeColor}`}>
           {item.change !== null && (
@@ -124,7 +116,6 @@ const DetailPanel = ({ item, news }) => {
         </span>
       </div>
 
-      {/* Related News */}
       {news && news.length > 0 && (
         <div className="detail-news">
           <h6 className="detail-news-title">Latest News</h6>
@@ -137,30 +128,45 @@ const DetailPanel = ({ item, news }) => {
   );
 };
 
-// Main Watchlist Component
 export default function Watchlist() {
-  const [watchlist, setWatchlist] = useState(() => {
-    const saved = localStorage.getItem('watchlist');
-    return saved ? JSON.parse(saved) : DEFAULT_SYMBOLS;
-  });
+  const [watchlist, setWatchlist] = useState([]);
   const [quotes, setQuotes] = useState({});
   const [history, setHistory] = useState({});
   const [selected, setSelected] = useState(null);
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newSymbol, setNewSymbol] = useState('');
+  const [error, setError] = useState(null);
 
-  // Fetch quotes and history for all watchlist items
-  const loadQuotes = useCallback(async () => {
-    setLoading(true);
+  const initialLoadDone = useRef(false);
+
+  // 1. Fetch persistent watchlist from DB
+  const fetchWatchlistFromDB = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await watchlistService.getWatchlist();
+      setWatchlist(data.length > 0 ? data : DEFAULT_SYMBOLS);
+      initialLoadDone.current = true;
+    } catch (err) {
+      console.error("DB Watchlist Error:", err);
+      setError("Failed to sync watchlist with server.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 2. Refresh market data (quotes/sparklines)
+  const refreshMarketData = useCallback(async () => {
+    if (watchlist.length === 0) return;
+
     const results = {};
     const historyResults = {};
 
     try {
       await Promise.all(watchlist.map(async (item) => {
-        const [quote, history] = await Promise.all([
+        const [quote, hist] = await Promise.all([
           fetchQuote(item.symbol),
-          fetchCandles(item.symbol, 'D', 7) // 7 days for sparkline
+          fetchCandles(item.symbol, 'D', 7)
         ]);
 
         if (quote) {
@@ -171,40 +177,35 @@ export default function Watchlist() {
           };
         }
 
-        if (history && history.s === 'ok' && history.c) {
-          historyResults[item.symbol] = history.c;
-        } else {
-          console.log(`[Watchlist:${item.symbol}] No sparkline data: ${history?.s || 'unknown'}`);
+        if (hist && hist.s === 'ok' && hist.c) {
+          historyResults[item.symbol] = hist.c;
         }
       }));
 
       setQuotes(results);
-      // We need to store history too
       setHistory(historyResults);
     } catch (err) {
-      console.error("[Watchlist] Failed to refresh data:", err);
-    } finally {
-      setLoading(false);
+      console.warn("Market data refresh warning:", err.message);
     }
   }, [watchlist]);
 
+  // Handle initialization
   useEffect(() => {
-    loadQuotes();
-    // Auto-refresh every 60 seconds
-    const interval = setInterval(loadQuotes, 60000);
-    return () => clearInterval(interval);
-  }, [loadQuotes]);
+    fetchWatchlistFromDB();
+  }, [fetchWatchlistFromDB]);
 
-  // Save watchlist to localStorage
+  // Handle data refresh
   useEffect(() => {
-    localStorage.setItem('watchlist', JSON.stringify(watchlist));
-  }, [watchlist]);
+    if (initialLoadDone.current) {
+      refreshMarketData();
+      const interval = setInterval(refreshMarketData, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [refreshMarketData]);
 
-  // Fetch news when selection changes
   useEffect(() => {
     if (selected) {
       fetchMarketNews('general').then(data => {
-        // Filter news related to selected symbol (simple filter)
         const relatedNews = data.filter(n =>
           n.related?.includes(selected.symbol) ||
           n.headline?.includes(selected.symbol)
@@ -214,7 +215,41 @@ export default function Watchlist() {
     }
   }, [selected]);
 
-  // Merge watchlist with quotes and history
+  const handleAddSymbol = async (e) => {
+    e.preventDefault();
+    const symbol = newSymbol.trim().toUpperCase();
+    if (!symbol) return;
+
+    if (watchlist.find(w => w.symbol === symbol)) {
+      setNewSymbol('');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const newItem = await watchlistService.addToWatchlist(symbol);
+      setWatchlist(prev => [newItem, ...prev]);
+      setNewSymbol('');
+    } catch (err) {
+      setError(err.message || "Failed to add symbol.");
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemove = async (symbol) => {
+    try {
+      await watchlistService.removeFromWatchlist(symbol);
+      setWatchlist(prev => prev.filter(w => w.symbol !== symbol));
+      if (selected?.symbol === symbol) setSelected(null);
+    } catch (err) {
+      console.error("Remove Error:", err);
+      setError("Failed to remove item.");
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
   const enrichedList = watchlist.map(item => ({
     ...item,
     price: quotes[item.symbol]?.price ?? null,
@@ -223,53 +258,35 @@ export default function Watchlist() {
     history: history[item.symbol] ?? null,
   }));
 
-  // Add symbol handler
-  const handleAddSymbol = (e) => {
-    e.preventDefault();
-    const symbol = newSymbol.trim().toUpperCase();
-    if (symbol && !watchlist.find(w => w.symbol === symbol)) {
-      setWatchlist([...watchlist, { symbol, name: symbol, type: 'stock' }]);
-      setNewSymbol('');
-    }
-  };
-
-  // Remove symbol handler
-  const handleRemove = (symbol) => {
-    setWatchlist(watchlist.filter(w => w.symbol !== symbol));
-    if (selected?.symbol === symbol) setSelected(null);
-  };
-
   return (
     <section className="watchlist-wrapper">
       <div className="watchlist-container">
-        {/* Header */}
         <div className="watchlist-header">
           <h2 className="watchlist-title">
-            <span className="title-icon">👀</span> Watchlist
+            <span className="title-icon">📊</span> Market Watch
           </h2>
-          <span className="watchlist-count">{watchlist.length} symbols</span>
+          <span className="watchlist-count">{watchlist.length} items</span>
         </div>
 
-        {/* Add Symbol Form */}
+        {error && <div className="alert alert-danger py-1 px-2 mx-3 mb-2 small bg-glass border-0">{error}</div>}
+
         <form className="watchlist-add-form" onSubmit={handleAddSymbol}>
           <input
             type="text"
             value={newSymbol}
             onChange={(e) => setNewSymbol(e.target.value)}
-            placeholder="Add symbol (e.g., AAPL)"
+            placeholder="Add NSE Symbol (e.g. INF_Y)"
             className="watchlist-input"
           />
-          <button type="submit" className="watchlist-add-btn">+</button>
+          <button type="submit" className="watchlist-add-btn" disabled={loading}>+</button>
         </form>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="watchlist-loading">
+        {loading && watchlist.length === 0 && (
+          <div className="watchlist-loading py-4">
             <div className="spinner-border spinner-border-sm text-primary"></div>
           </div>
         )}
 
-        {/* List Container */}
         <div className="watchlist-list">
           {enrichedList.map((item) => (
             <WatchlistRow
@@ -288,7 +305,6 @@ export default function Watchlist() {
           )}
         </div>
 
-        {/* Detail Panel */}
         {selected && (
           <DetailPanel item={selected} news={news} />
         )}

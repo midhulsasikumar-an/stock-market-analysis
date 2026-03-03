@@ -7,6 +7,7 @@ import MarketNewsDash from './components/Market_News_Dash';
 import LegacyStockRedirect from './components/LegacyStockRedirect';
 import Profile from './Pages/Profile';
 import Settings from './Pages/Settings';
+import Portfolio from './Pages/Portfolio';
 import StocksPage from './Pages/StocksPage';
 import SectorPage from './Pages/SectorPage';
 import Login from './components/Login';
@@ -32,6 +33,7 @@ function App() {
           {/* Protected Dashboard Routes — require server-verified session */}
           <Route path='/dashboard' element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route index element={<DashboardHome />} />
+            <Route path='portfolio' element={<Portfolio />} />
             <Route path='news' element={<MarketNewsDash />} />
             <Route path='profile' element={<Profile />} />
             <Route path='settings' element={<Settings />} />

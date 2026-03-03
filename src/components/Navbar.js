@@ -15,7 +15,14 @@ export default function Navbar() {
       <nav className="navbar navbar-expand-lg navbar-dark fixed-top bg-transparent public-navbar">
         <div className="container-fluid">
           {/* Logo / Brand */}
-          <Link className="navbar-brand ms-3 fw-bold" to="/">TradeTrack</Link>
+          <Link className="navbar-brand ms-3 fw-bold d-flex align-items-center gap-2" to="/">
+            <img
+              src="/tt-logo.png"
+              alt="TradeTrack logo"
+              style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'cover' }}
+            />
+            <span>TradeTrack</span>
+          </Link>
 
           <button
             className="navbar-toggler"

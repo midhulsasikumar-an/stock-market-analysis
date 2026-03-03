@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Pie } from 'react-chartjs-2';
 import Price_Chart from './Price_Chart'; // Import Price_Chart
+import watchlistService from '../services/watchlistService';
+import authService from '../services/authService';
 import {
     Chart as ChartJS,
     ArcElement,
@@ -38,14 +40,8 @@ export default function StockDetailsPanel({ symbol, profile, quote, candles }) {
         return saved ? JSON.parse(saved) : { shares: '', buyPrice: '' };
     });
 
-    const [inWatchlist, setInWatchlist] = useState(() => {
-        const saved = localStorage.getItem('watchlist');
-        if (saved) {
-            const list = JSON.parse(saved);
-            return list.some(item => item.symbol === symbol);
-        }
-        return false;
-    });
+    const [inWatchlist, setInWatchlist] = useState(false);
+    const [watchlistLoading, setWatchlistLoading] = useState(false);
 
     const [showInvestForm, setShowInvestForm] = useState(false);
 
@@ -65,6 +61,32 @@ export default function StockDetailsPanel({ symbol, profile, quote, candles }) {
         }
     }, [isInvested, investment, symbol]);
 
+    useEffect(() => {
+        let mounted = true;
+
+        const loadWatchlistState = async () => {
+            if (!authService.isAuthenticated()) {
+                if (mounted) setInWatchlist(false);
+                return;
+            }
+
+            try {
+                const list = await watchlistService.getWatchlist();
+                if (mounted) {
+                    setInWatchlist(list.some((item) => item.symbol === symbol));
+                }
+            } catch {
+                if (mounted) setInWatchlist(false);
+            }
+        };
+
+        loadWatchlistState();
+
+        return () => {
+            mounted = false;
+        };
+    }, [symbol]);
+
     // Auto-generate AI insight on mount if data exists
     useEffect(() => {
         if (!insight && candles?.c?.length > 20) {
@@ -75,16 +97,26 @@ export default function StockDetailsPanel({ symbol, profile, quote, candles }) {
     // --------------------------------------------------------------------------
     // HANDLERS
     // --------------------------------------------------------------------------
-    const toggleWatchlist = () => {
-        const saved = localStorage.getItem('watchlist');
-        let list = saved ? JSON.parse(saved) : [];
-        if (inWatchlist) {
-            list = list.filter(item => item.symbol !== symbol);
-        } else {
-            list.push({ symbol, name: profile?.name || symbol, type: 'stock' });
+    const toggleWatchlist = async () => {
+        if (!authService.isAuthenticated()) {
+            window.alert("Please login to manage your watchlist.");
+            return;
         }
-        localStorage.setItem('watchlist', JSON.stringify(list));
-        setInWatchlist(!inWatchlist);
+
+        try {
+            setWatchlistLoading(true);
+            if (inWatchlist) {
+                await watchlistService.removeFromWatchlist(symbol);
+                setInWatchlist(false);
+            } else {
+                await watchlistService.addToWatchlist(symbol, profile?.name || symbol, 'stock');
+                setInWatchlist(true);
+            }
+        } catch (error) {
+            window.alert(error.message || "Failed to update watchlist.");
+        } finally {
+            setWatchlistLoading(false);
+        }
     };
 
     const handleInvest = () => {
@@ -238,8 +270,9 @@ export default function StockDetailsPanel({ symbol, profile, quote, candles }) {
                         <button
                             className={`btn flex - grow - 1 ${inWatchlist ? 'btn-glass text-primary border-primary' : 'btn-glass'} `}
                             onClick={toggleWatchlist}
+                            disabled={watchlistLoading}
                         >
-                            {inWatchlist ? '✓ In Watchlist' : '+ Watchlist'}
+                            {watchlistLoading ? '...' : inWatchlist ? 'In Watchlist' : '+ Watchlist'}
                         </button>
                         <button
                             className="btn btn-accent flex-grow-1"
@@ -388,4 +421,5 @@ export default function StockDetailsPanel({ symbol, profile, quote, candles }) {
         </div>
     );
 }
+
 
