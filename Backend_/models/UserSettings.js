@@ -10,6 +10,8 @@ const userSettingsSchema = new mongoose.Schema({
     theme: { type: String, enum: ["dark", "light"], default: "dark" },
     defaultCurrency: { type: String, default: "INR" },
     defaultExchange: { type: String, default: "NSE" },
+    chartType: { type: String, enum: ["candlestick", "line", "area"], default: "candlestick" },
+    defaultTimeframe: { type: String, enum: ["1D", "1W", "1M", "3M", "1Y", "ALL"], default: "3M" },
     notifications: {
         email: { type: Boolean, default: true },
         app: { type: Boolean, default: true },

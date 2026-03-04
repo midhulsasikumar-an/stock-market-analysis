@@ -14,6 +14,16 @@ const userSchema = new mongoose.Schema(
             type: String,
             trim: true
         },
+        username: {
+            type: String,
+            required: true,
+            unique: true,
+            lowercase: true,
+            trim: true,
+            minlength: 3,
+            maxlength: 20,
+            match: /^[a-zA-Z0-9_]+$/
+        },
         email: {
             type: String,
             required: true,
@@ -39,6 +49,11 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ["active", "suspended", "deleted"],
             default: "active"
+        },
+        role: {
+            type: String,
+            enum: ["user", "admin"],
+            default: "user"
         },
         registrationSource: {
             type: String,
@@ -77,20 +92,9 @@ const userSchema = new mongoose.Schema(
             type: Date,
             default: null
         },
-        preferences: {
-            theme: {
-                type: String,
-                enum: ["dark", "light"],
-                default: "dark"
-            },
-            notifications: {
-                type: Boolean,
-                default: true
-            },
-            twoFactorAuth: {
-                type: Boolean,
-                default: false
-            }
+        refreshTokenHash: {
+            type: String,
+            select: false
         }
     },
     {
@@ -98,14 +102,15 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-// Pre-save middleware to hash password
+// ─── Indexes ────────────────────────────────────────────────────────────────
+userSchema.index({ accountStatus: 1 });
+
+// ─── Pre-save: hash password ────────────────────────────────────────────────
 userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) {
-        return next();
-    }
+    if (!this.isModified("password")) return next();
 
     try {
-        const salt = await bcrypt.genSalt(12); // Increased from 10 to 12
+        const salt = await bcrypt.genSalt(12);
         this.password = await bcrypt.hash(this.password, salt);
         next();
     } catch (error) {
@@ -113,19 +118,18 @@ userSchema.pre("save", async function (next) {
     }
 });
 
-// Method to compare passwords
+// ─── Instance Methods ───────────────────────────────────────────────────────
 userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to check if account is locked
 userSchema.methods.isAccountLocked = function () {
     return this.lockUntil && new Date() < this.lockUntil;
 };
 
 /**
- * FIXED: Previously inverted — account was locking after first failed attempt.
- * Now correctly: increments counter, only locks when threshold is reached.
+ * Increment failed login attempts.
+ * Locks account after MAX_LOGIN_ATTEMPTS threshold is reached.
  */
 userSchema.methods.incLoginAttempts = async function () {
     const newAttempts = this.loginAttempts + 1;
@@ -153,7 +157,6 @@ userSchema.methods.incLoginAttempts = async function () {
     });
 };
 
-// Method to reset login attempts
 userSchema.methods.resetLoginAttempts = async function () {
     return this.updateOne({
         $set: { loginAttempts: 0, lockUntil: null }

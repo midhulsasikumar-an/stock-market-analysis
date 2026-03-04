@@ -69,6 +69,30 @@ const handleValidationErrors = (req, res) => {
     return null;
 };
 
+const sanitizeUsername = (input) => {
+    const cleaned = (input || "")
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, "")
+        .slice(0, 20);
+
+    return cleaned;
+};
+
+const generateUniqueUsername = async (baseCandidate) => {
+    const base = sanitizeUsername(baseCandidate) || "user";
+
+    for (let i = 0; i < 50; i += 1) {
+        const suffix = i === 0 ? "" : Math.floor(1000 + Math.random() * 9000).toString();
+        const username = `${base}${suffix}`.slice(0, 20);
+        const existing = await User.findOne({ username }).select("_id");
+        if (!existing) return username;
+    }
+
+    return `user${Date.now().toString().slice(-8)}`;
+};
+
 // ========================================
 // USER REGISTRATION (EMAIL)
 // ========================================
@@ -76,6 +100,10 @@ router.post(
     "/register",
     registerLimiter,
     [
+        body("username")
+            .trim()
+            .isLength({ min: 3, max: 20 }).withMessage("Username must be between 3 and 20 characters")
+            .matches(/^[a-zA-Z0-9_]+$/).withMessage("Username can only contain letters, numbers, and underscores"),
         body("email").isEmail().normalizeEmail().withMessage("Please provide a valid email address"),
         body("password")
             .isLength({ min: 8 }).withMessage("Password must be at least 8 characters")
@@ -88,7 +116,8 @@ router.post(
         if (validationError) return;
 
         try {
-            const { email, password, registrationSource } = req.body;
+            const { username, email, password, registrationSource } = req.body;
+            const normalizedUsername = username.trim().toLowerCase();
 
             // Check if user already exists
             const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -99,8 +128,17 @@ router.post(
                 });
             }
 
+            const existingUsername = await User.findOne({ username: normalizedUsername });
+            if (existingUsername) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Username already taken. Please choose another username."
+                });
+            }
+
             // Create new user
             const newUser = new User({
+                username: normalizedUsername,
                 email: email.toLowerCase(),
                 password,
                 registrationSource: registrationSource === "google" ? "google" : "email",
@@ -257,7 +295,9 @@ router.post("/google", googleLimiter, async (req, res) => {
         const isNewUser = !user;
 
         if (!user) {
+            const generatedUsername = await generateUniqueUsername(given_name || email.split("@")[0]);
             user = new User({
+                username: generatedUsername,
                 googleId,
                 email: email.toLowerCase(),
                 firstName: given_name,
@@ -272,6 +312,9 @@ router.post("/google", googleLimiter, async (req, res) => {
             // Update existing user
             if (!user.googleId) user.googleId = googleId;
             if (!user.profileImage && picture) user.profileImage = picture;
+            if (!user.username) {
+                user.username = await generateUniqueUsername(user.firstName || user.email.split("@")[0]);
+            }
             user.lastLogin = new Date();
             await user.save();
         }

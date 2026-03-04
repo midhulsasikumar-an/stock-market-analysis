@@ -14,6 +14,7 @@ export default function Register() {
     const navigate = useNavigate();
     const auth = useAuth();
     const [formData, setFormData] = useState({
+        username: "",
         email: "",
         password: "",
         confirmPassword: ""
@@ -60,6 +61,13 @@ export default function Register() {
     const validateForm = () => {
         const newErrors = {};
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+
+        if (!formData.username) {
+            newErrors.username = "Username is required";
+        } else if (!usernameRegex.test(formData.username)) {
+            newErrors.username = "Username must be 3-20 characters and use only letters, numbers, or underscore";
+        }
 
         if (!formData.email) {
             newErrors.email = "Email is required";
@@ -109,10 +117,10 @@ export default function Register() {
         setIsLoading(true);
 
         try {
-            await authService.register(formData.email, formData.password);
+            await authService.register(formData.username, formData.email, formData.password);
 
             setSuccessMessage("Account created successfully! Redirecting to login...");
-            setFormData({ email: "", password: "", confirmPassword: "" });
+            setFormData({ username: "", email: "", password: "", confirmPassword: "" });
 
             setTimeout(() => navigate("/login", { replace: true }), 1500);
         } catch (error) {
@@ -180,6 +188,29 @@ export default function Register() {
 
                 {/* Form Section */}
                 <form onSubmit={handleRegister} className="register-form" noValidate>
+                    {/* Username Field */}
+                    <div className="form-group">
+                        <label htmlFor="username" className="form-label">
+                            <i className="fas fa-user"></i> Username
+                        </label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            className={`form-input ${errors.username ? "error" : ""} ${formData.username ? "filled" : ""}`}
+                            placeholder="trader_123"
+                            value={formData.username}
+                            onChange={handleChange}
+                            disabled={isLoading}
+                            autoComplete="username"
+                        />
+                        {errors.username && (
+                            <p className="error-message">
+                                <i className="fas fa-times-circle"></i> {errors.username}
+                            </p>
+                        )}
+                    </div>
+
                     {/* Email Field */}
                     <div className="form-group">
                         <label htmlFor="email" className="form-label">

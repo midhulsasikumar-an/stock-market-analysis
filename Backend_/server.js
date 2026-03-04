@@ -9,6 +9,7 @@ const portfolioRoutes = require("./routes/portfolio");
 const alertRoutes = require("./routes/alerts");
 const searchHistoryRoutes = require("./routes/searchHistory");
 const settingsRoutes = require("./routes/settings");
+const transactionRoutes = require("./routes/transactions");
 const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
@@ -70,6 +71,7 @@ app.use("/api/portfolio", portfolioRoutes); // Portfolio holdings
 app.use("/api/alerts", alertRoutes);        // Price/change alerts
 app.use("/api/search-history", searchHistoryRoutes); // Search history
 app.use("/api/settings", settingsRoutes);   // User app settings
+app.use("/api/transactions", transactionRoutes); // Buy/Sell transaction ledger
 
 app.get("/", (req, res) => {
     res.json({ message: "TradeTrack API is running", status: "ok" });

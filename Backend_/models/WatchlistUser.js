@@ -19,7 +19,18 @@ const WatchlistSchema = new mongoose.Schema({
     },
     type: {
         type: String,
+        enum: ["stock", "crypto", "etf", "index"],
         default: "stock"
+    },
+    exchange: {
+        type: String,
+        default: "US",
+        trim: true
+    },
+    notes: {
+        type: String,
+        maxlength: 200,
+        default: ""
     },
     addedAt: {
         type: Date,
@@ -31,5 +42,7 @@ const WatchlistSchema = new mongoose.Schema({
 
 // Ensure unique symbol per user
 WatchlistSchema.index({ userId: 1, symbol: 1 }, { unique: true });
+// Query optimization: sorted fetch
+WatchlistSchema.index({ userId: 1, addedAt: -1 });
 
 module.exports = mongoose.model("WatchlistUser", WatchlistSchema);

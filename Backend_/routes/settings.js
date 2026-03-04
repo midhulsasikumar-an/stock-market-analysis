@@ -20,7 +20,7 @@ router.get("/", authMiddleware, async (req, res) => {
 // PUT /api/settings — update settings
 router.put("/", authMiddleware, async (req, res) => {
     try {
-        const allowed = ["theme", "defaultCurrency", "defaultExchange", "notifications", "dashboardLayout", "watchlistLimit"];
+        const allowed = ["theme", "defaultCurrency", "defaultExchange", "notifications", "dashboardLayout", "watchlistLimit", "chartType", "defaultTimeframe"];
         const updates = {};
         allowed.forEach(key => {
             if (req.body[key] !== undefined) updates[key] = req.body[key];

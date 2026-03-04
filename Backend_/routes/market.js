@@ -1,29 +1,14 @@
-/**
- * Market Data Proxy Routes  —  100% Finnhub
- * ==========================================
- * ALL data now comes from Finnhub. Alpha Vantage removed.
- *
- *  GET /api/market/quote          → live price, change, %change
- *  GET /api/market/candle         → OHLCV candlestick data
- *  GET /api/market/status         → market open/closed status
- *  GET /api/market/news           → market or company news
- *  GET /api/market/recommendation → analyst buy/hold/sell
- *  GET /api/market/profile        → company profile (name, logo, sector…)
- *  GET /api/market/metrics        → fundamentals (PE, β, 52w high/low…)
- *  GET /api/market/symbols        → all symbols for an exchange (e.g. US)
- *  GET /api/market/search         → symbol search/autocomplete
- *  GET /api/market/overview       → combined profile + metrics (convenience)
- */
-
 const express = require("express");
 const axios = require("axios");
 const router = express.Router();
+const StockCache = require("../models/StockCache");
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 
-// ─── In-Memory Cache ────────────────────────────────────────────────────────
-// Prevent hammering the Finnhub free tier (60 API calls/minute).
-const cache = new Map();
+// ─── Cache TTL Settings (milliseconds) ─────────────────────────────────────
+// Uses MongoDB StockCache model with TTL auto-expiration.
+// In-memory Map acts as L1 (hot) cache; MongoDB as L2 (persistent) cache.
+const memCache = new Map();
 const TTL = {
     quote: 30 * 1000,            // 30 seconds  – prices change fast
     candle: 5 * 60 * 1000,       // 5 minutes   – candle data
@@ -33,16 +18,33 @@ const TTL = {
     status: 60 * 1000,           // 1 minute    – market status
     news: 5 * 60 * 1000,         // 5 minutes   – news
     recommendation: 60 * 60 * 1000, // 1 hour
+    earnings: 60 * 60 * 1000,    // 1 hour
+    search: 5 * 60 * 1000,       // 5 minutes
 };
 
-function getCached(key) {
-    const entry = cache.get(key);
-    if (!entry) return null;
-    if (Date.now() - entry.ts > entry.ttl) { cache.delete(key); return null; }
-    return entry.data;
+// L1 (in-memory) check, then L2 (MongoDB) check
+async function getCached(key) {
+    // L1: hot memory cache
+    const mem = memCache.get(key);
+    if (mem && Date.now() - mem.ts < mem.ttl) return mem.data;
+
+    // L2: persistent MongoDB cache
+    try {
+        const data = await StockCache.getCached(key);
+        if (data) {
+            memCache.set(key, { data, ts: Date.now(), ttl: 30000 }); // warm L1
+            return data;
+        }
+    } catch (e) { /* MongoDB down — just miss the cache */ }
+    return null;
 }
-function setCached(key, data, ttl) {
-    cache.set(key, { data, ts: Date.now(), ttl });
+
+// Write to both L1 and L2
+async function setCached(key, data, dataType, ttl) {
+    memCache.set(key, { data, ts: Date.now(), ttl });
+    try {
+        await StockCache.setCached(key, data, dataType, ttl);
+    } catch (e) { /* MongoDB write failed — L1 still works */ }
 }
 
 // ─── Finnhub HTTP client ─────────────────────────────────────────────────────
@@ -70,12 +72,12 @@ router.get("/quote", async (req, res) => {
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
 
     const key = `quote:${symbol.toUpperCase()}`;
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) return res.json(cached);
 
     try {
         const { data } = await fh.get("/quote", { params: { symbol, token: FINNHUB_KEY } });
-        setCached(key, data, TTL.quote);
+        await setCached(key, data, "quote", TTL.quote);
         return res.json(data);
     } catch (err) { return proxyError(res, err, `quote:${symbol}`); }
 });
@@ -194,7 +196,7 @@ router.get("/candle", async (req, res) => {
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
 
     const key = `candle:${symbol.toUpperCase()}:${resolution}:${days}`;
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) return res.json(cached);
 
     // ── Tier 1: Finnhub (paid plan only) ─────────────────────────
@@ -205,7 +207,7 @@ router.get("/candle", async (req, res) => {
             params: { symbol, resolution, from, to, token: FINNHUB_KEY }
         });
         if (data.s === "ok" && data.c?.length > 0) {
-            setCached(key, data, TTL.candle);
+            await setCached(key, data, "candle", TTL.candle);
             console.log(`[candle] ✅ Finnhub: ${symbol}`);
             return res.json(data);
         }
@@ -219,7 +221,7 @@ router.get("/candle", async (req, res) => {
     try {
         const result = await candleFromAlphaVantage(symbol, resolution, days);
         if (result?.c?.length > 0) {
-            setCached(key, result, TTL.candle);
+            await setCached(key, result, "candle", TTL.candle);
             console.log(`[candle] ✅ Alpha Vantage: ${symbol}`);
             return res.json(result);
         }
@@ -235,7 +237,7 @@ router.get("/candle", async (req, res) => {
     try {
         const result = await candleFromYahoo(symbol, resolution, days);
         if (result?.c?.length > 0) {
-            setCached(key, result, TTL.candle);
+            await setCached(key, result, "candle", TTL.candle);
             console.log(`[candle] ✅ Yahoo Finance: ${symbol} (${result.c.length} bars)`);
             return res.json(result);
         }
@@ -254,14 +256,14 @@ router.get("/candle", async (req, res) => {
 router.get("/status", async (req, res) => {
     const { exchange = "US" } = req.query;
     const key = `status:${exchange}`;
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) return res.json(cached);
 
     try {
         const { data } = await fh.get("/stock/market-status", {
             params: { exchange, token: FINNHUB_KEY }
         });
-        setCached(key, data, TTL.status);
+        await setCached(key, data, "status", TTL.status);
         return res.json(data);
     } catch (err) { return proxyError(res, err, "market-status"); }
 });
@@ -273,7 +275,7 @@ router.get("/status", async (req, res) => {
 router.get("/news", async (req, res) => {
     const { category = "general", symbol } = req.query;
     const key = symbol ? `news:${symbol.toUpperCase()}` : `news:${category}`;
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) return res.json(cached);
 
     try {
@@ -288,7 +290,7 @@ router.get("/news", async (req, res) => {
             params = { category, token: FINNHUB_KEY };
         }
         const { data } = await fh.get(endpoint, { params });
-        setCached(key, data, TTL.news);
+        await setCached(key, data, "news", TTL.news);
         return res.json(data);
     } catch (err) { return proxyError(res, err, "news"); }
 });
@@ -301,14 +303,14 @@ router.get("/recommendation", async (req, res) => {
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
 
     const key = `rec:${symbol.toUpperCase()}`;
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) return res.json(cached);
 
     try {
         const { data } = await fh.get("/stock/recommendation", {
             params: { symbol, token: FINNHUB_KEY }
         });
-        setCached(key, data, TTL.recommendation);
+        await setCached(key, data, "recommendation", TTL.recommendation);
         return res.json(data);
     } catch (err) { return proxyError(res, err, `recommendation:${symbol}`); }
 });
@@ -321,14 +323,14 @@ router.get("/profile", async (req, res) => {
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
 
     const key = `profile:${symbol.toUpperCase()}`;
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) return res.json(cached);
 
     try {
         const { data } = await fh.get("/stock/profile2", {
             params: { symbol, token: FINNHUB_KEY }
         });
-        setCached(key, data, TTL.profile);
+        await setCached(key, data, "profile", TTL.profile);
         return res.json(data);
     } catch (err) { return proxyError(res, err, `profile:${symbol}`); }
 });
@@ -342,14 +344,14 @@ router.get("/metrics", async (req, res) => {
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
 
     const key = `metrics:${symbol.toUpperCase()}`;
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) return res.json(cached);
 
     try {
         const { data } = await fh.get("/stock/metric", {
             params: { symbol, metric: "all", token: FINNHUB_KEY }
         });
-        setCached(key, data, TTL.metrics);
+        await setCached(key, data, "metrics", TTL.metrics);
         return res.json(data);
     } catch (err) { return proxyError(res, err, `metrics:${symbol}`); }
 });
@@ -363,7 +365,7 @@ router.get("/overview", async (req, res) => {
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
 
     const key = `overview:${symbol.toUpperCase()}`;
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) return res.json(cached);
 
     try {
@@ -375,7 +377,7 @@ router.get("/overview", async (req, res) => {
             ...profileRes.data,
             metrics: metricsRes.data?.metric || {},
         };
-        setCached(key, combined, TTL.profile);
+        await setCached(key, combined, "overview", TTL.profile);
         return res.json(combined);
     } catch (err) { return proxyError(res, err, `overview:${symbol}`); }
 });
@@ -388,7 +390,7 @@ router.get("/overview", async (req, res) => {
 router.get("/symbols", async (req, res) => {
     const { exchange = "US" } = req.query;
     const key = `symbols:${exchange}`;
-    const cached = getCached(key);
+    const cached = await getCached(key);
     if (cached) return res.json(cached);
 
     try {
@@ -399,7 +401,7 @@ router.get("/symbols", async (req, res) => {
         // Filter to common stock only, remove empty symbols
         const filtered = (Array.isArray(data) ? data : [])
             .filter(s => s.type === "Common Stock" && s.symbol && !s.symbol.includes("."));
-        setCached(key, filtered, TTL.symbols);
+        await setCached(key, filtered, "symbols", TTL.symbols);
         return res.json(filtered);
     } catch (err) { return proxyError(res, err, `symbols:${exchange}`); }
 });

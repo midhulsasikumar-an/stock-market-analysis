@@ -122,7 +122,7 @@ function StockStatsBar({ quote, candles, metrics }) {
 // --------------------------------------------------------------------------
 // Order Panel (right sidebar) - mirrors the reference image
 // --------------------------------------------------------------------------
-function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watchlistLoading, toggleWatchlist }) {
+function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watchlistLoading, toggleWatchlist, onInvestClick }) {
     const price = quote?.c ?? 0;
     const latestRec = Array.isArray(recommendation) && recommendation.length > 0 ? recommendation[0] : null;
     const latestEarnings = Array.isArray(earnings) && earnings.length > 0 ? earnings[0] : null;
@@ -233,13 +233,23 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
                 </p>
             </div>
 
-            <button
-                className={`watchlist-action-btn ${inWatchlist ? 'in-watchlist' : ''}`}
-                onClick={toggleWatchlist}
-                disabled={watchlistLoading}
-            >
-                {watchlistLoading ? '...' : inWatchlist ? 'In Watchlist' : 'Add to Watchlist'}
-            </button>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                <button
+                    className={`watchlist-action-btn ${inWatchlist ? 'in-watchlist' : ''}`}
+                    onClick={toggleWatchlist}
+                    disabled={watchlistLoading}
+                    style={{ flex: 1, padding: '12px 0' }}
+                >
+                    {watchlistLoading ? '...' : inWatchlist ? 'In Watchlist' : 'Watch'}
+                </button>
+                <button
+                    className="watchlist-action-btn"
+                    onClick={onInvestClick}
+                    style={{ flex: 1, padding: '12px 0', background: 'var(--primary-color, #3b82f6)', color: 'white', border: 'none' }}
+                >
+                    + Invested
+                </button>
+            </div>
         </div>
     );
 }
@@ -257,6 +267,12 @@ export default function StockPage() {
     const [loading, setLoading] = useState(true);
     const [inWatchlist, setInWatchlist] = useState(false);
     const [watchlistLoading, setWatchlistLoading] = useState(false);
+
+    // Invest modal state
+    const [showInvestModal, setShowInvestModal] = useState(false);
+    const [investForm, setInvestForm] = useState({ quantity: '', avgBuyPrice: '' });
+    const [investLoading, setInvestLoading] = useState(false);
+    const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
     useEffect(() => {
         const loadData = async () => {
@@ -320,6 +336,56 @@ export default function StockPage() {
         }
     };
 
+    const handleInvestSubmit = async (e) => {
+        e.preventDefault();
+        if (!authService.isAuthenticated()) {
+            window.alert("Please login to manage your portfolio.");
+            return;
+        }
+        if (!investForm.quantity || !investForm.avgBuyPrice) return;
+        setInvestLoading(true);
+        try {
+            // Check if portfolio exists, or create default
+            let portfoliosRes = await fetch(`${API_URL}/api/portfolio`, { headers: authService.getAuthHeaders() });
+            let portfoliosData = await portfoliosRes.json();
+            let pid = portfoliosData?.data?.[0]?._id;
+
+            if (!pid) {
+                const createRes = await fetch(`${API_URL}/api/portfolio`, {
+                    method: 'POST',
+                    headers: authService.getAuthHeaders(),
+                    body: JSON.stringify({ name: 'My Portfolio', isDefault: true })
+                });
+                const created = await createRes.json();
+                if (!created.success) throw new Error("Failed to create portfolio");
+                pid = created.data._id;
+            }
+
+            const res = await fetch(`${API_URL}/api/portfolio/${pid}/holding`, {
+                method: 'POST',
+                headers: authService.getAuthHeaders(),
+                body: JSON.stringify({
+                    symbol: symbol.toUpperCase(),
+                    name: profile?.name || symbol.toUpperCase(),
+                    quantity: Number(investForm.quantity),
+                    avgBuyPrice: Number(investForm.avgBuyPrice),
+                    sector: profile?.finnhubIndustry || 'Other'
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                setShowInvestModal(false);
+                setInvestForm({ quantity: '', avgBuyPrice: '' });
+                window.alert("Successfully added to your portfolio!");
+            } else {
+                window.alert(result.message || "Failed to add holding");
+            }
+        } catch (err) {
+            window.alert("Error adding holding: " + err.message);
+        } finally {
+            setInvestLoading(false);
+        }
+    };
     const isPos = (quote?.dp ?? 0) >= 0;
 
     return (
@@ -433,9 +499,48 @@ export default function StockPage() {
                         inWatchlist={inWatchlist}
                         watchlistLoading={watchlistLoading}
                         toggleWatchlist={toggleWatchlist}
+                        onInvestClick={() => setShowInvestModal(true)}
                     />
                 </div>
             </div>
+
+            {/* ── Add Investment Modal ── */}
+            {showInvestModal && (
+                <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.7)', zIndex: 9999 }}>
+                    <div className="bg-glass-card p-4" style={{ width: '400px', maxWidth: '95vw', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-4">
+                            <h5 className="text-white fw-bold mb-0">Record Investment</h5>
+                            <button className="btn btn-sm text-muted" onClick={() => setShowInvestModal(false)} style={{ fontSize: '1.5rem', lineHeight: 1 }}>×</button>
+                        </div>
+                        <div className="d-flex align-items-center gap-3 mb-4 p-3 rounded" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                            <div className="rounded-circle bg-primary-subtle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
+                                <span className="text-primary fw-bold">{symbol ? symbol.charAt(0) : ''}</span>
+                            </div>
+                            <div>
+                                <h6 className="text-white mb-0 fw-bold">{symbol}</h6>
+                                <span className="text-muted small">CMP: ${(quote?.c ?? 0).toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <form onSubmit={handleInvestSubmit}>
+                            <div className="row mb-3">
+                                <div className="col-6">
+                                    <label className="text-muted small mb-1">Quantity *</label>
+                                    <input type="number" className="form-control bg-dark text-white border-secondary" placeholder="e.g. 10" min="0.0001" step="any"
+                                        value={investForm.quantity} onChange={e => setInvestForm(p => ({ ...p, quantity: e.target.value }))} required />
+                                </div>
+                                <div className="col-6">
+                                    <label className="text-muted small mb-1">Buy Price ($) *</label>
+                                    <input type="number" className="form-control bg-dark text-white border-secondary" placeholder="e.g. 150.00" min="0" step="any"
+                                        value={investForm.avgBuyPrice} onChange={e => setInvestForm(p => ({ ...p, avgBuyPrice: e.target.value }))} required />
+                                </div>
+                            </div>
+                            <button type="submit" className="btn btn-primary w-100 mt-2" disabled={investLoading}>
+                                {investLoading ? 'Saving...' : 'Add to Portfolio'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </div>
