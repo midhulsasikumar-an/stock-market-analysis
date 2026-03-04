@@ -4,12 +4,10 @@ import { fetchMarketNews } from '../services/finnhub';
 // Helper: Convert timestamp to relative time
 const getRelativeTime = (timestamp) => {
   const now = Date.now();
-  const diff = now - timestamp * 1000; // Finnhub uses seconds
-
+  const diff = now - timestamp * 1000;
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
-
   if (minutes < 1) return 'Just now';
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
@@ -20,28 +18,20 @@ const getRelativeTime = (timestamp) => {
 
 // Helper: Extract asset tag from headline or related symbols
 const getAssetTag = (headline, related) => {
-  // Try to extract ticker from related field first
   if (related && related.length > 0) {
     return related.split(',')[0].trim();
   }
-  // Try to extract from headline (common patterns like USD/JPY, AAPL, SPX)
   const match = headline.match(/\b([A-Z]{2,5}\/[A-Z]{2,5}|[A-Z]{2,5})\b/);
   return match ? match[1] : null;
 };
 
-// NewsItem Component
+// NewsItem Component — original style
 const NewsItem = ({ headline, source, datetime, related, url }) => {
   const relativeTime = getRelativeTime(datetime);
   const assetTag = getAssetTag(headline, related);
 
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="news-item"
-    >
-      {/* Asset Badge */}
+    <a href={url} target="_blank" rel="noopener noreferrer" className="news-item">
       <div className="news-item-badge">
         {assetTag ? (
           <span className="asset-tag">{assetTag}</span>
@@ -49,19 +39,14 @@ const NewsItem = ({ headline, source, datetime, related, url }) => {
           <span className="asset-tag generic">📰</span>
         )}
       </div>
-
-      {/* Content */}
       <div className="news-item-content">
-        <p className="news-meta">
-          {source} • {relativeTime}
-        </p>
+        <p className="news-meta">{source} • {relativeTime}</p>
         <h4 className="news-headline">{headline}</h4>
       </div>
     </a>
   );
 };
 
-// Main MarketNews Component
 export default function Market_News_Dash() {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -74,13 +59,11 @@ export default function Market_News_Dash() {
       try {
         const data = await fetchMarketNews(null, "general");
         if (data && data.length > 0) {
-          // Limit to 10 items for performance
           setNews(data.slice(0, 10));
         } else {
           setNews([]);
         }
       } catch (err) {
-        console.error("News fetch error:", err);
         setError("Failed to load news.");
       } finally {
         setLoading(false);
@@ -97,7 +80,6 @@ export default function Market_News_Dash() {
         </h2>
       </div>
 
-      {/* Loading State */}
       {loading && (
         <div className="news-loading">
           <div className="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
@@ -105,21 +87,18 @@ export default function Market_News_Dash() {
         </div>
       )}
 
-      {/* Error State */}
       {error && !loading && (
         <div className="news-error">
           <p className="text-danger mb-0">{error}</p>
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && !error && news.length === 0 && (
         <div className="news-empty">
           <p className="text-muted mb-0">No news available at the moment.</p>
         </div>
       )}
 
-      {/* News Grid */}
       {!loading && !error && news.length > 0 && (
         <>
           <div className="news-grid">
@@ -134,8 +113,6 @@ export default function Market_News_Dash() {
               />
             ))}
           </div>
-
-          {/* Keep Reading Link */}
           <div className="news-footer">
             <a
               href="https://finnhub.io/news"

@@ -5,6 +5,10 @@ const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
 const marketRoutes = require("./routes/market");
 const watchlistRoutes = require("./routes/watchlist");
+const portfolioRoutes = require("./routes/portfolio");
+const alertRoutes = require("./routes/alerts");
+const searchHistoryRoutes = require("./routes/searchHistory");
+const settingsRoutes = require("./routes/settings");
 const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
@@ -60,8 +64,12 @@ app.options("*", cors(corsOptions));
 // ROUTES
 // ========================================
 app.use("/api/auth", authRoutes);
-app.use("/api/market", marketRoutes);  // Finnhub + Alpha Vantage proxy
-app.use("/api/watchlist", watchlistRoutes); // User personal watchlist storage
+app.use("/api/market", marketRoutes);       // Finnhub + Alpha Vantage proxy
+app.use("/api/watchlist", watchlistRoutes); // User personal watchlist
+app.use("/api/portfolio", portfolioRoutes); // Portfolio holdings
+app.use("/api/alerts", alertRoutes);        // Price/change alerts
+app.use("/api/search-history", searchHistoryRoutes); // Search history
+app.use("/api/settings", settingsRoutes);   // User app settings
 
 app.get("/", (req, res) => {
     res.json({ message: "TradeTrack API is running", status: "ok" });

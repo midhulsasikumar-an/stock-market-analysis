@@ -1,31 +1,32 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import NavbarDash from '../components/Navbar_Dash';
 import Watchlist from '../components/Watchlist';
 import Footer from '../components/Footer';
-import '../App.css';
+import '../styles/DashboardRedesign.css';
 
-/**
- * DashboardLayout - Wrapper for all dashboard pages
- * Provides fixed navbar and watchlist sidebar with nested content area
- */
 export default function DashboardLayout() {
+    const location = useLocation();
+    const isNewsPage = location.pathname === '/dashboard/news';
+
     return (
-        <div className="dashboard-root">
+        <div className="dashboard-redesign">
             {/* Header / Navbar */}
             <NavbarDash />
 
             {/* Dashboard Container (Wrapper) */}
-            <div className="dashboard-body">
+            <div className={`dash-content-grid ${isNewsPage ? 'no-sidebar' : ''}`}>
                 {/* Main Content Area */}
-                <main className="dashboard-content">
+                <main className="dashboard-main">
                     <Outlet />
                 </main>
 
-                {/* Watchlist Sidebar */}
-                <aside className="dashboard-watchlist">
-                    <Watchlist />
-                </aside>
+                {/* Watchlist Sidebar (Hidden on News Page) */}
+                {!isNewsPage && (
+                    <aside className="sidebar-redesign">
+                        <Watchlist />
+                    </aside>
+                )}
             </div>
 
             {/* Footer OUTSIDE Dashboard Body */}

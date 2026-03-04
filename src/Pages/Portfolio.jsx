@@ -1,4 +1,28 @@
 import React, { useMemo } from 'react';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler
+} from 'chart.js';
+import { Doughnut, Line } from 'react-chartjs-2';
+
+// Register ChartJS components
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler
+);
 
 const holdings = [
   { stock: 'Reliance', ticker: 'RELI', qty: 10, avgPrice: 2400, currentPrice: 2550, sector: 'Energy' },
@@ -12,13 +36,7 @@ const transactions = [
   { date: '05 Apr', type: 'Sell', stock: 'INFY', quantity: 10, price: 1850 },
 ];
 
-const dividends = [
-  { date: '15 Mar', stock: 'HDFC Bank', amount: 500 },
-  { date: '28 Feb', stock: 'Reliance', amount: 300 },
-];
-
-const formatMoney = (value) => `Rs ${Math.round(value).toLocaleString('en-IN')}`;
-const formatSigned = (value) => `${value >= 0 ? '+' : '-'}${formatMoney(Math.abs(value))}`;
+const formatMoney = (value) => `₹ ${Math.round(value).toLocaleString('en-IN')}`;
 
 export default function Portfolio() {
   const computed = useMemo(() => {
@@ -34,8 +52,18 @@ export default function Portfolio() {
     const currentValue = rows.reduce((sum, r) => sum + r.current, 0);
     const totalPL = currentValue - totalInvested;
     const totalReturnPct = totalInvested > 0 ? (totalPL / totalInvested) * 100 : 0;
-    const todaysChange = -420;
-    const todaysChangePct = currentValue > 0 ? (todaysChange / currentValue) * 100 : 0;
+
+    // Group by sector
+    const sectorTotals = rows.reduce((acc, r) => {
+      acc[r.sector] = (acc[r.sector] || 0) + r.current;
+      return acc;
+    }, {});
+
+    const sectorData = Object.keys(sectorTotals).map(sector => ({
+      name: sector,
+      value: sectorTotals[sector],
+      percent: ((sectorTotals[sector] / currentValue) * 100).toFixed(2)
+    }));
 
     return {
       rows,
@@ -43,166 +71,159 @@ export default function Portfolio() {
       currentValue,
       totalPL,
       totalReturnPct,
-      todaysChange,
-      todaysChangePct,
+      sectorData
     };
   }, []);
 
+  const allocationData = {
+    labels: computed.sectorData.map(s => s.name),
+    datasets: [
+      {
+        data: computed.sectorData.map(s => s.value),
+        backgroundColor: ['#3b82f6', '#60a5fa', '#1d4ed8', '#1e293b'],
+        borderWidth: 0,
+        cutout: '75%',
+      },
+    ],
+  };
+
+  const performanceData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+    datasets: [
+      {
+        label: 'My Portfolio',
+        data: [computed.totalInvested * 0.9, computed.totalInvested * 0.95, computed.totalInvested, computed.currentValue * 0.98, computed.currentValue],
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+      },
+      {
+        label: 'Nifty 50',
+        data: [computed.totalInvested * 0.85, computed.totalInvested * 0.9, computed.totalInvested * 0.95, computed.totalInvested * 0.98, computed.totalInvested * 1.05],
+        borderColor: '#f59e0b',
+        borderDash: [5, 5],
+        fill: false,
+        tension: 0.4,
+        pointRadius: 0,
+      }
+    ],
+  };
+
   return (
-    <div className="portfolio-page">
-      <h1 className="portfolio-title">Stock Portfolio</h1>
+    <div className="container-fluid py-4 min-vh-100" style={{ background: 'var(--bg-dark)' }}>
+      <div className="mb-4 ps-2">
+        <h2 className="fw-bold text-white mb-1">Portfolio Overview</h2>
+        <p className="text-muted small">Manage your assets and track performance</p>
+      </div>
 
-      <section className="portfolio-kpi-grid">
-        <article className="portfolio-kpi-card">
-          <p>Total Invested</p>
-          <h2>{formatMoney(computed.totalInvested)}</h2>
-        </article>
-        <article className="portfolio-kpi-card">
-          <p>Current Value</p>
-          <h2>{formatMoney(computed.currentValue)}</h2>
-        </article>
-        <article className="portfolio-kpi-card">
-          <p>Total Gain / Loss</p>
-          <h2 className={computed.totalPL >= 0 ? 'pos' : 'neg'}>
-            {formatSigned(computed.totalPL)} ({computed.totalReturnPct.toFixed(2)}%)
-          </h2>
-        </article>
-        <article className="portfolio-kpi-card">
-          <p>Today's Change</p>
-          <h2 className={computed.todaysChange >= 0 ? 'pos' : 'neg'}>
-            {formatSigned(computed.todaysChange)} ({computed.todaysChangePct.toFixed(2)}%)
-          </h2>
-        </article>
-      </section>
-
-      <section className="portfolio-panel">
-        <h3>Holdings</h3>
-        <div className="portfolio-table-wrap">
-          <table className="portfolio-table">
-            <thead>
-              <tr>
-                <th>Stock</th>
-                <th>Ticker</th>
-                <th>Qty</th>
-                <th>Avg Price</th>
-                <th>Current Price</th>
-                <th>Invested Amt</th>
-                <th>Current Value</th>
-                <th>P/L</th>
-                <th>% Return</th>
-              </tr>
-            </thead>
-            <tbody>
-              {computed.rows.map((row) => (
-                <tr key={row.ticker}>
-                  <td>{row.stock}</td>
-                  <td>{row.ticker}</td>
-                  <td>{row.qty}</td>
-                  <td>{formatMoney(row.avgPrice)}</td>
-                  <td>{formatMoney(row.currentPrice)}</td>
-                  <td>{formatMoney(row.invested)}</td>
-                  <td>{formatMoney(row.current)}</td>
-                  <td className={row.pl >= 0 ? 'pos' : 'neg'}>{formatSigned(row.pl)}</td>
-                  <td className={row.returnPct >= 0 ? 'pos' : 'neg'}>
-                    {row.returnPct >= 0 ? '+' : ''}{row.returnPct.toFixed(2)}%
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="mini-stats-grid mb-4">
+        <div className="bg-glass-card stat-card-glow-blue hover-glow">
+          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Invested</p>
+          <h3 className="fw-bold text-white mb-0">{formatMoney(computed.totalInvested)}</h3>
         </div>
-      </section>
+        <div className="bg-glass-card stat-card-glow-blue hover-glow">
+          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Current Value</p>
+          <h3 className="fw-bold text-white mb-0">{formatMoney(computed.currentValue)}</h3>
+        </div>
+        <div className="bg-glass-card stat-card-glow-green hover-glow">
+          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Gain / Loss</p>
+          <h3 className={`fw-bold mb-0 ${computed.totalPL >= 0 ? 'text-success' : 'text-danger'}`}>
+            {formatMoney(computed.totalPL)}
+          </h3>
+          <p className={`small mb-0 mt-1 ${computed.totalPL >= 0 ? 'text-success' : 'text-danger'}`}>
+            {computed.totalReturnPct.toFixed(2)}%
+          </p>
+        </div>
+        <div className="bg-glass-card stat-card-glow-blue hover-glow">
+          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Holdings</p>
+          <h3 className="fw-bold text-white mb-0">{computed.rows.length} Stocks</h3>
+        </div>
+      </div>
 
-      <section className="portfolio-grid-2">
-        <article className="portfolio-panel">
-          <h3>Portfolio Allocation</h3>
-          <div className="portfolio-allocation">
-            <div className="donut-ring">
-              <div className="donut-hole">100%</div>
+      <div className="portfolio-grid">
+        <div className="d-flex flex-column gap-4">
+          {/* Allocation */}
+          <div className="bg-glass-card">
+            <h6 className="text-white mb-4 fw-bold">Portfolio Allocation</h6>
+            <div className="row align-items-center">
+              <div className="col-md-5 position-relative" style={{ height: '220px' }}>
+                <Doughnut data={allocationData} options={{ plugins: { legend: { display: false } }, maintainAspectRatio: false }} />
+                <div className="position-absolute top-50 start-50 translate-middle text-center">
+                  <span className="text-muted d-block small" style={{ fontSize: '0.6rem' }}>Total</span>
+                  <span className="text-white fw-bold d-block">{formatMoney(computed.currentValue)}</span>
+                </div>
+              </div>
+              <div className="col-md-7">
+                {computed.sectorData.map((sector, i) => (
+                  <div key={i} className="mb-3">
+                    <div className="d-flex justify-content-between mb-1">
+                      <span className="text-white small fw-medium">{sector.name}</span>
+                      <span className="text-white small fw-bold">{sector.percent}%</span>
+                    </div>
+                    <div className="progress" style={{ height: '6px', background: 'rgba(255,255,255,0.05)' }}>
+                      <div className="progress-bar bg-primary" style={{ width: `${sector.percent}%` }}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <ul>
-              <li><span className="swatch it"></span> IT 40%</li>
-              <li><span className="swatch finance"></span> Finance 30%</li>
-              <li><span className="swatch energy"></span> Energy 20%</li>
-              <li><span className="swatch others"></span> Others 10%</li>
-            </ul>
           </div>
-        </article>
 
-        <article className="portfolio-panel">
-          <h3>Portfolio Performance</h3>
-          <svg viewBox="0 0 600 220" className="portfolio-line-chart" role="img" aria-label="Portfolio performance">
-            <polyline
-              fill="none"
-              stroke="#3b82f6"
-              strokeWidth="4"
-              points="20,170 75,150 130,155 185,132 240,120 295,125 350,98 405,75 460,82 515,78 575,70"
-            />
-            <polyline
-              fill="none"
-              stroke="#f59e0b"
-              strokeWidth="4"
-              points="20,182 75,165 130,160 185,170 240,148 295,138 350,142 405,118 460,112 515,104 575,88"
-            />
-          </svg>
-          <div className="portfolio-legend">
-            <span><i className="line-blue"></i> My Portfolio</span>
-            <span><i className="line-orange"></i> Nifty 50</span>
+          <div className="row g-4">
+            <div className="col-md-6">
+              <div className="bg-glass-card h-100">
+                <h6 className="text-white mb-3 fw-bold">Recent Transactions</h6>
+                <div className="d-flex flex-column gap-2">
+                  {transactions.map((tx, i) => (
+                    <div key={i} className="d-flex justify-content-between align-items-center p-2 rounded-3" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                      <div>
+                        <span className="text-white d-block small fw-bold">{tx.stock}</span>
+                        <span className="text-muted" style={{ fontSize: '0.65rem' }}>{tx.date} • {tx.type}</span>
+                      </div>
+                      <div className="text-end">
+                        <span className="text-white d-block small">{formatMoney(tx.price)}</span>
+                        <span className="text-muted small" style={{ fontSize: '0.65rem' }}>Qty: {tx.quantity}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="bg-glass-card h-100">
+                <h6 className="text-white mb-3 fw-bold">Performance History</h6>
+                <div style={{ height: '160px' }}>
+                  <Line data={performanceData} options={{ plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, maintainAspectRatio: false }} />
+                </div>
+              </div>
+            </div>
           </div>
-        </article>
-      </section>
+        </div>
 
-      <section className="portfolio-grid-2">
-        <article className="portfolio-panel">
-          <h3>Recent Transactions</h3>
-          <table className="portfolio-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Stock</th>
-                <th>Quantity</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((tx, idx) => (
-                <tr key={`${tx.stock}-${idx}`}>
-                  <td>{tx.date}</td>
-                  <td>
-                    <span className={`portfolio-pill ${tx.type === 'Buy' ? 'buy' : 'sell'}`}>{tx.type}</span>
-                  </td>
-                  <td>{tx.stock}</td>
-                  <td>{tx.quantity}</td>
-                  <td>{formatMoney(tx.price)}</td>
-                </tr>
+        <div className="d-flex flex-column gap-4">
+          <div className="bg-glass-card h-100 overflow-hidden d-flex flex-column">
+            <h6 className="text-white mb-3 fw-bold">Current Holdings</h6>
+            <div className="d-flex flex-column gap-1 overflow-auto">
+              {computed.rows.map((row, i) => (
+                <div key={i} className="p-3 rounded-3 hover-glow border-bottom border-secondary border-opacity-10">
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <span className="text-white fw-bold small">{row.stock}</span>
+                    <span className="text-white small fw-bold">{formatMoney(row.current)}</span>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <span className="text-muted" style={{ fontSize: '0.65rem' }}>{row.qty} Shares @ {formatMoney(row.avgPrice)}</span>
+                    <span className={`small ${row.pl >= 0 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.7rem' }}>
+                      {row.returnPct >= 0 ? '+' : ''}{row.returnPct.toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </article>
-
-        <article className="portfolio-panel">
-          <h3>Dividends</h3>
-          <table className="portfolio-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Stock</th>
-                <th>Dividend</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dividends.map((dv, idx) => (
-                <tr key={`${dv.stock}-${idx}`}>
-                  <td>{dv.date}</td>
-                  <td>{dv.stock}</td>
-                  <td>{formatMoney(dv.amount)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </article>
-      </section>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

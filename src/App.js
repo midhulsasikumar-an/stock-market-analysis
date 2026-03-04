@@ -3,7 +3,7 @@ import Home from './Pages/Home';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardHome from './Pages/DashboardHome';
 import StockSearch from './Pages/Stock_Search';
-import MarketNewsDash from './components/Market_News_Dash';
+import NewsPage from './Pages/NewsPage';
 import LegacyStockRedirect from './components/LegacyStockRedirect';
 import Profile from './Pages/Profile';
 import Settings from './Pages/Settings';
@@ -34,7 +34,7 @@ function App() {
           <Route path='/dashboard' element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route index element={<DashboardHome />} />
             <Route path='portfolio' element={<Portfolio />} />
-            <Route path='news' element={<MarketNewsDash />} />
+            <Route path='news' element={<NewsPage />} />
             <Route path='profile' element={<Profile />} />
             <Route path='settings' element={<Settings />} />
           </Route>

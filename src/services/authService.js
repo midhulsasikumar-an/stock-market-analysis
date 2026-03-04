@@ -10,11 +10,11 @@ const authService = {
     /**
      * Register a new user with email and password
      */
-    register: async (email, password) => {
+    register: async (username, email, password) => {
         const response = await fetch(`${API_URL}/api/auth/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password, registrationSource: "email" })
+            body: JSON.stringify({ username, email, password, registrationSource: "email" })
         });
 
         const data = await response.json();

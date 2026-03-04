@@ -27,102 +27,93 @@ const getSparklinePoints = (prices) => {
 
 // WatchlistRow Component
 const WatchlistRow = ({ item, isSelected, onClick, onRemove }) => {
-  const isPositive = item.change >= 0;
-  const changeColor = item.change === 0 ? 'text-muted' : isPositive ? 'text-success' : 'text-danger';
-  const sign = isPositive && item.change !== 0 ? '+' : '';
-
+  const isPositive = (item.changePercent || 0) >= 0;
   return (
     <div
-      className={`watchlist-row ${isSelected ? 'selected' : ''}`}
+      className={`watchlist-item-redesign ${isSelected ? 'active' : ''}`}
       onClick={() => onClick(item)}
     >
-      <div className="watchlist-badge">
-        <span className="symbol-icon">{item.symbol.slice(0, 2)}</span>
-      </div>
-
-      <div className="watchlist-info">
-        <span className="watchlist-symbol">{item.symbol}</span>
-        <div className="watchlist-sparkline mt-1" style={{ height: '20px', width: '60px' }}>
-          {item.history && item.history.length > 2 ? (
-            <svg width="60" height="20">
-              <polyline
-                points={getSparklinePoints(item.history)}
-                fill="none"
-                stroke={isPositive ? '#10b981' : '#ef4444'}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          ) : (
-            <div className="w-100 border-top border-secondary opacity-10" style={{ marginTop: '10px' }}></div>
-          )}
+      <div className="d-flex align-items-center gap-3">
+        <div className="symbol-badge-redesign" title={item.symbol}>
+          {item.symbol.length > 4 ? item.symbol.slice(0, 4) : item.symbol}
         </div>
+        <div className="flex-grow-1">
+          <div className="symbol-name-redesign">{item.symbol}</div>
+          <div className="sparkline-mini-redesign">
+            {item.history && item.history.length > 2 ? (
+              <svg width="60" height="15">
+                <polyline
+                  points={getSparklinePoints(item.history)}
+                  fill="none"
+                  stroke={isPositive ? 'var(--dash-accent-green)' : 'var(--dash-accent-red)'}
+                  strokeWidth="1.5"
+                />
+              </svg>
+            ) : <span className="opacity-25">---</span>}
+          </div>
+        </div>
+        <div className="text-end me-2">
+          <div className="price-label-redesign">₹{item.price ? item.price.toFixed(2) : '---'}</div>
+          <div className={`change-label-redesign ${isPositive ? 'up' : 'down'}`}>
+            {isPositive ? '+' : ''}{item.changePercent ? item.changePercent.toFixed(2) : '0.00'}%
+          </div>
+        </div>
+        <button
+          className="remove-btn-redesign"
+          onClick={(e) => { e.stopPropagation(); onRemove(item.symbol); }}
+        >×</button>
       </div>
-
-      <div className="watchlist-data">
-        <span className="watchlist-price">
-          {item.price !== null ? `₹${item.price.toFixed(2)}` : '---'}
-        </span>
-        <span className={`watchlist-change ${changeColor}`}>
-          {item.changePercent !== null ? `${sign}${item.changePercent.toFixed(2)}%` : '---'}
-        </span>
-      </div>
-
-      <button
-        className="watchlist-remove"
-        onClick={(e) => { e.stopPropagation(); onRemove(item.symbol); }}
-        title="Remove from watchlist"
-      >
-        ×
-      </button>
     </div>
   );
 };
 
-// DetailPanel Component
-const DetailPanel = ({ item, news }) => {
+const DetailPanel = ({ item, news, onClose }) => {
   if (!item) return null;
-
-  const isPositive = item.change >= 0;
-  const changeColor = item.change === 0 ? 'text-muted' : isPositive ? 'text-success' : 'text-danger';
-  const sign = isPositive && item.change !== 0 ? '+' : '';
-
+  const isPositive = (item.changePercent || 0) >= 0;
   const isMarketOpen = new Date().getHours() >= 9 && new Date().getHours() < 16;
 
   return (
-    <div className="detail-panel">
-      <div className="detail-header">
-        <h3 className="detail-symbol">{item.symbol}</h3>
-        <span className="detail-exchange">{item.name} · NSE</span>
+    <div className="watch-detail-redesign mt-3 pt-3 border-top border-secondary border-opacity-10">
+      <div className="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <h4 className="mb-0 fw-bold" style={{ fontSize: '1.2rem' }}>{item.symbol}</h4>
+          <span className="text-muted" style={{ fontSize: '0.7rem' }}>NSE · EQUITY</span>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <div className={`status-dot ${isMarketOpen ? 'open' : 'closed'}`}>
+            {isMarketOpen ? '● LIVE' : '○ CLOSED'}
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '6px', color: '#94a3b8', width: '24px', height: '24px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', fontSize: '0.9rem', lineHeight: 1
+            }}
+          >×</button>
+        </div>
       </div>
 
-      <div className="detail-price-section">
-        <span className="detail-price">
-          {item.price !== null ? `₹${item.price.toFixed(2)}` : '---'}
-        </span>
-        <span className={`detail-change ${changeColor}`}>
-          {item.change !== null && (
-            <>
-              {sign}{item.change.toFixed(2)} ({sign}{item.changePercent?.toFixed(2)}%)
-            </>
-          )}
+      <div className="d-flex align-items-baseline gap-2 mb-3">
+        <span className="fs-4 fw-bold">₹{item.price ? item.price.toFixed(2) : '---'}</span>
+        <span className={isPositive ? 'text-success' : 'text-danger'} style={{ fontSize: '0.85rem' }}>
+          {isPositive ? '▲' : '▼'} {item.changePercent ? item.changePercent.toFixed(2) : '0.00'}%
         </span>
       </div>
 
-      <div className="detail-status">
-        <span className={`status-badge ${isMarketOpen ? 'open' : 'closed'}`}>
-          {isMarketOpen ? '● Market Open' : '○ Market Closed'}
-        </span>
-      </div>
-
-      {news && news.length > 0 && (
-        <div className="detail-news">
-          <h6 className="detail-news-title">Latest News</h6>
-          <a href={news[0].url} target="_blank" rel="noopener noreferrer" className="detail-news-link">
-            {news[0].headline}
+      {news && news.length > 0 ? (
+        <div className="detail-news-mini">
+          <div className="text-muted mb-2" style={{ fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase' }}>Recent Signal</div>
+          <a href={news[0].url} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+            <div className="news-mini-card">
+              <p className="mb-1 text-white" style={{ fontSize: '0.8rem', lineHeight: '1.3' }}>{news[0].headline.slice(0, 60)}...</p>
+              <span style={{ fontSize: '0.65rem', color: 'var(--dash-primary)' }}>{news[0].source}</span>
+            </div>
           </a>
         </div>
+      ) : (
+        <div className="text-muted small italic">No recent signals found.</div>
       )}
     </div>
   );
@@ -140,7 +131,6 @@ export default function Watchlist() {
 
   const initialLoadDone = useRef(false);
 
-  // 1. Fetch persistent watchlist from DB
   const fetchWatchlistFromDB = useCallback(async () => {
     try {
       setLoading(true);
@@ -148,53 +138,32 @@ export default function Watchlist() {
       setWatchlist(data.length > 0 ? data : DEFAULT_SYMBOLS);
       initialLoadDone.current = true;
     } catch (err) {
-      console.error("DB Watchlist Error:", err);
-      setError("Failed to sync watchlist with server.");
+      setError("Sync failed.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // 2. Refresh market data (quotes/sparklines)
   const refreshMarketData = useCallback(async () => {
     if (watchlist.length === 0) return;
-
     const results = {};
     const historyResults = {};
-
     try {
       await Promise.all(watchlist.map(async (item) => {
         const [quote, hist] = await Promise.all([
           fetchQuote(item.symbol),
           fetchCandles(item.symbol, 'D', 7)
         ]);
-
-        if (quote) {
-          results[item.symbol] = {
-            price: quote.c,
-            change: quote.d,
-            changePercent: quote.dp,
-          };
-        }
-
-        if (hist && hist.s === 'ok' && hist.c) {
-          historyResults[item.symbol] = hist.c;
-        }
+        if (quote) results[item.symbol] = { price: quote.c, changePercent: quote.dp };
+        if (hist && hist.s === 'ok' && hist.c) historyResults[item.symbol] = hist.c;
       }));
-
       setQuotes(results);
       setHistory(historyResults);
-    } catch (err) {
-      console.warn("Market data refresh warning:", err.message);
-    }
+    } catch (err) { }
   }, [watchlist]);
 
-  // Handle initialization
-  useEffect(() => {
-    fetchWatchlistFromDB();
-  }, [fetchWatchlistFromDB]);
+  useEffect(() => { fetchWatchlistFromDB(); }, [fetchWatchlistFromDB]);
 
-  // Handle data refresh
   useEffect(() => {
     if (initialLoadDone.current) {
       refreshMarketData();
@@ -206,11 +175,11 @@ export default function Watchlist() {
   useEffect(() => {
     if (selected) {
       fetchMarketNews('general').then(data => {
-        const relatedNews = data.filter(n =>
-          n.related?.includes(selected.symbol) ||
-          n.headline?.includes(selected.symbol)
-        ).slice(0, 3);
-        setNews(relatedNews.length > 0 ? relatedNews : data.slice(0, 1));
+        const related = data.filter(n =>
+          n.headline?.toLowerCase().includes(selected.symbol.toLowerCase()) ||
+          n.related?.includes(selected.symbol)
+        ).slice(0, 1);
+        setNews(related.length > 0 ? related : data.slice(0, 1));
       });
     }
   }, [selected]);
@@ -218,23 +187,14 @@ export default function Watchlist() {
   const handleAddSymbol = async (e) => {
     e.preventDefault();
     const symbol = newSymbol.trim().toUpperCase();
-    if (!symbol) return;
-
-    if (watchlist.find(w => w.symbol === symbol)) {
-      setNewSymbol('');
-      return;
-    }
-
+    if (!symbol || watchlist.find(w => w.symbol === symbol)) { setNewSymbol(''); return; }
     try {
-      setLoading(true);
       const newItem = await watchlistService.addToWatchlist(symbol);
       setWatchlist(prev => [newItem, ...prev]);
       setNewSymbol('');
     } catch (err) {
-      setError(err.message || "Failed to add symbol.");
+      setError("Add failed");
       setTimeout(() => setError(null), 3000);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -243,52 +203,43 @@ export default function Watchlist() {
       await watchlistService.removeFromWatchlist(symbol);
       setWatchlist(prev => prev.filter(w => w.symbol !== symbol));
       if (selected?.symbol === symbol) setSelected(null);
-    } catch (err) {
-      console.error("Remove Error:", err);
-      setError("Failed to remove item.");
-      setTimeout(() => setError(null), 3000);
-    }
+    } catch (err) { }
   };
 
   const enrichedList = watchlist.map(item => ({
     ...item,
     price: quotes[item.symbol]?.price ?? null,
-    change: quotes[item.symbol]?.change ?? null,
     changePercent: quotes[item.symbol]?.changePercent ?? null,
     history: history[item.symbol] ?? null,
   }));
 
+  const selectedEnriched = selected ? enrichedList.find(s => s.symbol === selected.symbol) : null;
+
   return (
-    <section className="watchlist-wrapper">
-      <div className="watchlist-container">
-        <div className="watchlist-header">
-          <h2 className="watchlist-title">
-            <span className="title-icon">📊</span> Market Watch
-          </h2>
-          <span className="watchlist-count">{watchlist.length} items</span>
-        </div>
+    <div className="watch-card-redesign d-flex flex-column">
+      <div className="watch-header-redesign">
+        <h6 className="watch-title-redesign">
+          <span style={{ color: 'var(--dash-primary)' }}>📊</span> Market Watch
+        </h6>
+        <span className="badge-count-redesign">{watchlist.length}</span>
+      </div>
 
-        {error && <div className="alert alert-danger py-1 px-2 mx-3 mb-2 small bg-glass border-0">{error}</div>}
+      <form onSubmit={handleAddSymbol} className="mb-3 position-relative">
+        <input
+          type="text"
+          className="watch-search-input"
+          placeholder="Add asset symbol..."
+          value={newSymbol}
+          onChange={(e) => setNewSymbol(e.target.value)}
+        />
+        <i className="bi bi-plus-circle-dotted position-absolute" style={{ right: '15px', top: '10px', color: 'var(--dash-primary)' }}></i>
+      </form>
 
-        <form className="watchlist-add-form" onSubmit={handleAddSymbol}>
-          <input
-            type="text"
-            value={newSymbol}
-            onChange={(e) => setNewSymbol(e.target.value)}
-            placeholder="Add NSE Symbol (e.g. INF_Y)"
-            className="watchlist-input"
-          />
-          <button type="submit" className="watchlist-add-btn" disabled={loading}>+</button>
-        </form>
-
-        {loading && watchlist.length === 0 && (
-          <div className="watchlist-loading py-4">
-            <div className="spinner-border spinner-border-sm text-primary"></div>
-          </div>
-        )}
-
-        <div className="watchlist-list">
-          {enrichedList.map((item) => (
+      <div className="flex-grow-1 overflow-auto pe-1 custom-scrollbar">
+        {loading && watchlist.length === 0 ? (
+          <div className="text-center p-3 opacity-50 small">Syncing...</div>
+        ) : (
+          enrichedList.map((item) => (
             <WatchlistRow
               key={item.symbol}
               item={item}
@@ -296,19 +247,13 @@ export default function Watchlist() {
               onClick={setSelected}
               onRemove={handleRemove}
             />
-          ))}
-
-          {watchlist.length === 0 && !loading && (
-            <div className="watchlist-empty">
-              <p className="text-muted">No symbols in watchlist.</p>
-            </div>
-          )}
-        </div>
-
-        {selected && (
-          <DetailPanel item={selected} news={news} />
+          ))
         )}
       </div>
-    </section>
+
+      {selectedEnriched && (
+        <DetailPanel item={selectedEnriched} news={news} onClose={() => setSelected(null)} />
+      )}
+    </div>
   );
 }
