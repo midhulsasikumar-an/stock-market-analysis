@@ -12,7 +12,8 @@ import StocksPage from './Pages/StocksPage';
 import SectorPage from './Pages/SectorPage';
 import Login from './components/Login';
 import Register from './components/Register';
-import ProtectedRoute, { PublicRoute } from './components/ProtectedRoute';
+import ProtectedRoute, { PublicRoute, AdminRoute } from './components/ProtectedRoute';
+import AdminDashboard from './Pages/AdminDashboard';
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
@@ -37,6 +38,11 @@ function App() {
             <Route path='news' element={<NewsPage />} />
             <Route path='profile' element={<Profile />} />
             <Route path='settings' element={<Settings />} />
+          </Route>
+
+          {/* Admin Routes — require admin role */}
+          <Route path='/admin' element={<AdminRoute><DashboardLayout /></AdminRoute>}>
+            <Route index element={<AdminDashboard />} />
           </Route>
 
           {/* Stocks Explorer — public */}

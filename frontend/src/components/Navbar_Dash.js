@@ -2,10 +2,13 @@ import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import ProfileAvatar from './Navbar/ProfileAvatar';
 import NotificationBell from './Navbar/NotificationBell';
+import { useAuth } from '../context/AuthContext';
+
 
 export default function Navbar_Dash() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = React.useState('');
 
   const stockDetail = (e) => {
@@ -23,7 +26,7 @@ export default function Navbar_Dash() {
   return (
     <nav className="dashboard-navbar">
       {/* Brand */}
-      <Link to="/dashboard" className="navbar-brand-dash">
+      <Link to={user?.role === "admin" ? "/admin" : "/dashboard"} className="navbar-brand-dash">
         <img
           src="/tt-logo.png"
           alt="TradeTrack"
@@ -35,18 +38,28 @@ export default function Navbar_Dash() {
 
       {/* Navigation Links */}
       <div className="navbar-links-dash">
-        <Link to="/dashboard" className={`nav-pill-dash ${isActive('/dashboard') ? 'active' : ''}`}>
-          📊 Dashboard
-        </Link>
-        <Link to="/stocks" className={`nav-pill-dash ${isActive('/stocks') ? 'active' : ''}`}>
-          📈 Markets
-        </Link>
-        <Link to="/dashboard/news" className={`nav-pill-dash ${isActive('/dashboard/news') ? 'active' : ''}`}>
-          📰 News
-        </Link>
-        <Link to="/dashboard/portfolio" className={`nav-pill-dash ${isActive('/dashboard/portfolio') ? 'active' : ''}`}>
-          💼 Portfolio
-        </Link>
+        {user?.role === "admin" ? (
+          <>
+            <Link to="/admin" className={`nav-pill-dash ${isActive('/admin') ? 'active' : ''}`}>
+              🛡️ Admin Dashboard
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link to="/dashboard" className={`nav-pill-dash ${isActive('/dashboard') ? 'active' : ''}`}>
+              📊 Dashboard
+            </Link>
+            <Link to="/stocks" className={`nav-pill-dash ${isActive('/stocks') ? 'active' : ''}`}>
+              📈 Markets
+            </Link>
+            <Link to="/dashboard/news" className={`nav-pill-dash ${isActive('/dashboard/news') ? 'active' : ''}`}>
+              📰 News
+            </Link>
+            <Link to="/dashboard/portfolio" className={`nav-pill-dash ${isActive('/dashboard/portfolio') ? 'active' : ''}`}>
+              💼 Portfolio
+            </Link>
+          </>
+        )}
       </div>
 
       {/* Search + Actions */}

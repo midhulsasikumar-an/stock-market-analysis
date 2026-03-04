@@ -8,6 +8,8 @@ import '../styles/DashboardRedesign.css';
 export default function DashboardLayout() {
     const location = useLocation();
     const isNewsPage = location.pathname === '/dashboard/news';
+    const isAdmin = location.pathname.startsWith('/admin');
+    const hideSidebar = isNewsPage || isAdmin;
 
     return (
         <div className="dashboard-redesign">
@@ -15,14 +17,14 @@ export default function DashboardLayout() {
             <NavbarDash />
 
             {/* Dashboard Container (Wrapper) */}
-            <div className={`dash-content-grid ${isNewsPage ? 'no-sidebar' : ''}`}>
+            <div className={`dash-content-grid ${hideSidebar ? 'no-sidebar' : ''}`}>
                 {/* Main Content Area */}
                 <main className="dashboard-main">
                     <Outlet />
                 </main>
 
-                {/* Watchlist Sidebar (Hidden on News Page) */}
-                {!isNewsPage && (
+                {/* Watchlist Sidebar (Hidden on News Page and Admin) */}
+                {!hideSidebar && (
                     <aside className="sidebar-redesign">
                         <Watchlist />
                     </aside>

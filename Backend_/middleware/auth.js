@@ -4,6 +4,7 @@
  */
 
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 /**
  * Middleware to verify JWT token.
@@ -79,7 +80,30 @@ const optionalAuthMiddleware = (req, res, next) => {
     }
 };
 
+/**
+ * Middleware to check if user has admin role
+ * Must be used AFTER authMiddleware
+ */
+const adminMiddleware = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user || user.role !== "admin") {
+            return res.status(403).json({
+                success: false,
+                message: "Access denied. Admin privileges required."
+            });
+        }
+        next();
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Error verifying admin privileges"
+        });
+    }
+};
+
 module.exports = {
     authMiddleware,
-    optionalAuthMiddleware
+    optionalAuthMiddleware,
+    adminMiddleware
 };

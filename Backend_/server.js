@@ -10,6 +10,7 @@ const alertRoutes = require("./routes/alerts");
 const searchHistoryRoutes = require("./routes/searchHistory");
 const settingsRoutes = require("./routes/settings");
 const transactionRoutes = require("./routes/transactions");
+const adminRoutes = require("./routes/admin");
 const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
@@ -72,6 +73,7 @@ app.use("/api/alerts", alertRoutes);        // Price/change alerts
 app.use("/api/search-history", searchHistoryRoutes); // Search history
 app.use("/api/settings", settingsRoutes);   // User app settings
 app.use("/api/transactions", transactionRoutes); // Buy/Sell transaction ledger
+app.use("/api/admin", adminRoutes);         // Admin functionality
 
 app.get("/", (req, res) => {
     res.json({ message: "TradeTrack API is running", status: "ok" });
@@ -101,8 +103,41 @@ app.use((err, req, res, next) => {
 // DATABASE CONNECTION
 // ========================================
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/stock-market-analysis")
-    .then(() => {
+    .then(async () => {
         console.log("✅ Database connected to stock-market-analysis");
+
+        // Seed master admin account if it doesn't exist
+        try {
+            const User = require("./models/User");
+            const adminEmail = "tradetrackadmin@gmail.com";
+            const existingAdmin = await User.findOne({ email: adminEmail });
+
+            if (!existingAdmin) {
+                console.log("⚠️ Master admin not found. Creating default admin account...");
+                const newAdmin = new User({
+                    username: "masteradmin",
+                    email: adminEmail,
+                    password: "Tradetrack@2026",
+                    firstName: "System",
+                    lastName: "Admin",
+                    role: "admin",
+                    accountStatus: "active",
+                    registrationSource: "email",
+                    emailVerified: true
+                });
+                await newAdmin.save();
+                console.log("✅ Master admin account successfully created!");
+            } else {
+                // Ensure role is admin
+                if (existingAdmin.role !== "admin") {
+                    existingAdmin.role = "admin";
+                    await existingAdmin.save();
+                    console.log("✅ Existing master account role restored to 'admin'.");
+                }
+            }
+        } catch (error) {
+            console.error("❌ Failed to seed master admin account:", error.message);
+        }
     })
     .catch((err) => {
         console.log("❌ Database connection error:", err.message);
