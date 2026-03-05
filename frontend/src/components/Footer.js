@@ -2,78 +2,103 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 /**
- * Footer - 4-Column Professional Fintech Design
+ * Footer – 4-column premium fintech layout
  */
 export default function Footer() {
   return (
-    <footer className="footer-fintech mt-auto">
+    <footer className="tt-footer" id="footer">
       <div className="container">
-        <div className="row g-4 justify-content-between">
+        <div className="row g-5">
 
-          {/* COLUMN 1: BRAND */}
-          <div className="col-lg-3 col-md-6">
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <span className="brand-icon fs-4">📈</span>
-              <span className="fw-bold text-white letter-spacing-wide">TRADETRACK</span>
+          {/* ── COLUMN 1: Brand ── */}
+          <div className="col-lg-4 col-md-6">
+            <div className="tt-footer-logo">
+              <i className="bi bi-bar-chart-fill" style={{ color: '#3b82f6' }} />
+              TradeTrack
             </div>
-            <p className="footer-brand-desc">
-              Real-time stock tracking and market insights.
-              Empowering investors with professional-grade analytics and precise data.
+            <p className="tt-footer-desc">
+              Real-time stock tracking and advanced market intelligence.
+              Empowering investors with professional-grade analytics, built on the MERN stack.
             </p>
+            <div className="tt-footer-socials">
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tt-footer-social-btn"
+                aria-label="LinkedIn"
+              >
+                <i className="bi bi-linkedin" />
+              </a>
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tt-footer-social-btn"
+                aria-label="GitHub"
+              >
+                <i className="bi bi-github" />
+              </a>
+              <a
+                href="#"
+                className="tt-footer-social-btn"
+                aria-label="Twitter"
+              >
+                <i className="bi bi-twitter-x" />
+              </a>
+            </div>
           </div>
 
-          {/* COLUMN 2: NAVIGATION */}
-          <div className="col-lg-2 col-md-6">
-            <h6 className="footer-section-title">Navigation</h6>
-            <ul className="footer-link-list">
-              <li><Link to="/dashboard" className="footer-link">Dashboard</Link></li>
-              <li><Link to="/stocks" className="footer-link">Stocks</Link></li>
-              <li><Link to="/watchlist" className="footer-link">Watchlist</Link></li>
-              <li><Link to="/news" className="footer-link">Market News</Link></li>
-              <li><Link to="/about" className="footer-link">About Us</Link></li>
+          {/* ── COLUMN 2: Navigation ── */}
+          <div className="col-lg-2 col-md-6 col-sm-6">
+            <h6 className="tt-footer-col-title">Navigation</h6>
+            <ul className="tt-footer-links">
+              <li><Link to="/">Home</Link></li>
+              <li><Link to="/dashboard">Dashboard</Link></li>
+              <li><Link to="/stocks">Stocks Explorer</Link></li>
+              <li><Link to="/dashboard/news">Market News</Link></li>
+              <li><Link to="/dashboard/portfolio">Portfolio</Link></li>
             </ul>
           </div>
 
-          {/* COLUMN 3: RESOURCES */}
-          <div className="col-lg-2 col-md-6">
-            <h6 className="footer-section-title">Resources</h6>
-            <ul className="footer-link-list">
-              <li><Link to="/help" className="footer-link">Help Center</Link></li>
-              <li><Link to="/support" className="footer-link">Support</Link></li>
-              <li><Link to="/api" className="footer-link">API Docs</Link></li>
-              <li><Link to="/status" className="footer-link">System Status</Link></li>
+          {/* ── COLUMN 3: Resources ── */}
+          <div className="col-lg-2 col-md-6 col-sm-6">
+            <h6 className="tt-footer-col-title">Resources</h6>
+            <ul className="tt-footer-links">
+              <li><a href="#">Help Center</a></li>
+              <li><a href="#">API Docs</a></li>
+              <li><a href="#">System Status</a></li>
+              <li><a href="#">Changelog</a></li>
+              <li><a href="#">Community</a></li>
             </ul>
           </div>
 
-          {/* COLUMN 4: LEGAL & INFO */}
-          <div className="col-lg-3 col-md-6">
-            <h6 className="footer-section-title">Market Intelligence</h6>
-            <div className="footer-info-text">
-              Data Source: <span className="text-white opacity-100">Finnhub API</span>
-            </div>
-            <div className="footer-info-text mb-3">
-              Market data may be delayed by up to 15 minutes.
-            </div>
-            <ul className="footer-link-list">
-              <li><Link to="/privacy" className="footer-link">Privacy Policy</Link></li>
-              <li><Link to="/disclaimer" className="footer-link">Legal Disclaimer</Link></li>
-              <li><Link to="/terms" className="footer-link">Terms of Service</Link></li>
+          {/* ── COLUMN 4: Legal ── */}
+          <div className="col-lg-2 col-md-6 col-sm-6">
+            <h6 className="tt-footer-col-title">Legal</h6>
+            <ul className="tt-footer-links">
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Terms of Service</a></li>
+              <li><a href="#">Disclaimer</a></li>
+              <li><a href="#">Cookie Policy</a></li>
             </ul>
           </div>
 
         </div>
 
-        <hr className="footer-divider" />
-
-        <div className="footer-bottom-bar">
-          <div>
-            © {new Date().getFullYear()} TradeTrack Dashboard — For educational purposes only
-          </div>
-          <div className="d-flex gap-4">
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="footer-link opacity-50">
-              <i className="bi bi-github fs-5"></i>
-            </a>
-          </div>
+        {/* ── Bottom Bar ── */}
+        <div className="tt-footer-divider" />
+        <div className="tt-footer-bottom">
+          <span className="tt-footer-copy">
+            © {new Date().getFullYear()} TradeTrack — All rights reserved
+          </span>
+          <span className="tt-footer-edu">
+            <i className="bi bi-shield-check" style={{ color: '#3b82f6' }} />
+            For educational & informational purposes only
+          </span>
+          <span className="tt-footer-copy">
+            Data: <span style={{ color: '#475569' }}>Finnhub API</span>
+          </span>
         </div>
       </div>
     </footer>

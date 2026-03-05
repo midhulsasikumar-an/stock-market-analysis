@@ -1,76 +1,104 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 /**
- * Navbar component for the Home/Public pages.
- * Shows "Login" when logged out, "Go to Dashboard" when logged in.
+ * Premium Public Navbar — TradeTrack
+ * Transparent + glassmorphism blur, smooth scroll nav links,
+ * hover underline animations, and auth-aware CTA button.
  */
 export default function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const smoothScrollTo = (e, id) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
-    <div>
-      <nav className="navbar navbar-expand-lg navbar-dark fixed-top bg-transparent public-navbar">
-        <div className="container-fluid">
-          {/* Logo / Brand */}
-          <Link className="navbar-brand ms-3 fw-bold d-flex align-items-center gap-2" to="/">
-            <img
-              src="/tt-logo.png"
-              alt="TradeTrack logo"
-              style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'cover' }}
-            />
-            <span>TradeTrack</span>
-          </Link>
+    <nav className={`tt-navbar navbar navbar-expand-lg${scrolled ? ' scrolled' : ''}`}>
+      <div className="container-fluid">
 
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
+        {/* ── Brand ── */}
+        <Link className="tt-nav-brand" to="/">
+          <img src="/tt-logo.png" alt="TradeTrack logo" />
+          <span>TradeTrack</span>
+        </Link>
 
-          <div className="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-              <li className="nav-item">
-                <Link className="nav-link" to="/">Home</Link>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="#about-us">Why TradeTrack</a>
-              </li>
-            </ul>
+        {/* ── Mobile toggler ── */}
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#ttNavbar"
+          aria-controls="ttNavbar"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon" />
+        </button>
 
-            {/* Auth-aware CTA button */}
-            <div className="d-flex align-items-center">
-              {!isLoading && (
-                isAuthenticated ? (
-                  <button
-                    type="button"
-                    className="btn btn-primary mx-2 px-4 home-login-btn"
-                    onClick={() => navigate('/dashboard')}
-                  >
-                    Go to Dashboard
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn btn-primary mx-2 px-4 home-login-btn"
-                    onClick={() => navigate('/login')}
-                  >
-                    Login
-                  </button>
-                )
-              )}
-            </div>
-          </div>
+        {/* ── Nav Links + CTA ── */}
+        <div className="collapse navbar-collapse" id="ttNavbar">
+          <ul className="tt-nav-links ms-auto me-3">
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <a href="#why-tradetrack" onClick={(e) => smoothScrollTo(e, 'why-tradetrack')}>
+                Features
+              </a>
+            </li>
+            <li>
+              <a href="#market-snapshot" onClick={(e) => smoothScrollTo(e, 'market-snapshot')}>
+                Market Snapshot
+              </a>
+            </li>
+            <li>
+              <a href="#about-section" onClick={(e) => smoothScrollTo(e, 'about-section')}>
+                About
+              </a>
+            </li>
+            <li>
+              <a href="#footer" onClick={(e) => smoothScrollTo(e, 'footer')}>
+                Contact
+              </a>
+            </li>
+          </ul>
+
+          {/* ── Auth-aware CTA ── */}
+          {!isLoading && (
+            isAuthenticated ? (
+              <button
+                id="navbar-dashboard-btn"
+                className="tt-nav-cta"
+                onClick={() => navigate('/dashboard')}
+              >
+                <i className="bi bi-grid-1x2-fill" />
+                View Dashboard
+              </button>
+            ) : (
+              <button
+                id="navbar-login-btn"
+                className="tt-nav-cta"
+                onClick={() => navigate('/dashboard')}
+              >
+                <i className="bi bi-bar-chart-line-fill" />
+                View Dashboard
+              </button>
+            )
+          )}
         </div>
-      </nav>
-    </div>
+      </div>
+    </nav>
   );
 }
