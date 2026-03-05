@@ -11,7 +11,10 @@ const searchHistoryRoutes = require("./routes/searchHistory");
 const settingsRoutes = require("./routes/settings");
 const transactionRoutes = require("./routes/transactions");
 const adminRoutes = require("./routes/admin");
+const avatarRoutes = require("./routes/avatar");
+const profileRoutes = require("./routes/profile");
 const cors = require("cors");
+const path = require("path");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const cookieParser = require("cookie-parser");
@@ -63,6 +66,11 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
 // ========================================
+// SERVE STATIC FILES (Profile Pictures)
+// ========================================
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ========================================
 // ROUTES
 // ========================================
 app.use("/api/auth", authRoutes);
@@ -74,6 +82,8 @@ app.use("/api/search-history", searchHistoryRoutes); // Search history
 app.use("/api/settings", settingsRoutes);   // User app settings
 app.use("/api/transactions", transactionRoutes); // Buy/Sell transaction ledger
 app.use("/api/admin", adminRoutes);         // Admin functionality
+app.use("/api/avatar", avatarRoutes);       // Avatar dropdown API
+app.use("/api/profile", profileRoutes);     // Profile management and uploads
 
 app.get("/", (req, res) => {
     res.json({ message: "TradeTrack API is running", status: "ok" });

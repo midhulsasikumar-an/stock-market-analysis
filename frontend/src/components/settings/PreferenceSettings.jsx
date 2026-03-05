@@ -1,99 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import authService from '../../services/authService';
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 export default function PreferenceSettings() {
-    const [preferences, setPreferences] = useState({
-        theme: 'dark',
-        notifications: true,
-        landingPage: 'dashboard',
-        compactView: false
-    });
-    const [isSaved, setIsSaved] = useState(false);
+    const { user } = useAuth();
+    const [theme, setTheme] = useState('dark');
+    const [notifications, setNotifications] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState('');
 
-    const handleSave = (e) => {
-        e.preventDefault();
-        // In a real app, we'd persist this to localStorage or API
-        setIsSaved(true);
-        setTimeout(() => setIsSaved(false), 3000);
-    };
+    useEffect(() => {
+        if (user && user.preferences) {
+            setTheme(user.preferences.theme || 'dark');
+            setNotifications(user.preferences.notifications !== false);
+        }
+    }, [user]);
 
-    const togglePreference = (key) => {
-        setPreferences(prev => ({ ...prev, [key]: !prev[key] }));
+    const handleSave = async () => {
+        setSaving(true);
+        setMessage('');
+
+        try {
+            const res = await fetch(`${API_URL}/api/profile/preferences`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authService.getAuthHeaders().Authorization
+                },
+                body: JSON.stringify({ theme, notifications })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                setMessage('Preferences saved successfully!');
+
+                // Update local storage user preferences
+                const updatedUser = { ...user, preferences: data.preferences };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+
+                setTimeout(() => setMessage(''), 3000);
+            } else {
+                setMessage(data.message || 'Error updating preferences');
+            }
+        } catch (error) {
+            setMessage('Failed to connect to server');
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
-        <div className="settings-content-inner">
-            <div className="settings-header-box">
-                <h3 className="settings-title">Preferences</h3>
-                <p className="settings-subtitle">Customize your dashboard experience and notifications.</p>
-            </div>
+        <div className="p-4 bg-glass rounded">
+            <h2 className="text-xl fw-bold text-white mb-4">User Preferences</h2>
 
-            <form onSubmit={handleSave} className="settings-form">
-                <div className="preference-list">
-                    <div className="preference-item bg-glass">
-                        <div className="pref-info">
-                            <span className="pref-label">Dark Mode</span>
-                            <p className="pref-desc">Use the dark theme across the entire application.</p>
-                        </div>
-                        <div className="pref-control">
-                            <div
-                                className={`toggle-switch ${preferences.theme === 'dark' ? 'active' : ''}`}
-                                onClick={() => setPreferences(prev => ({ ...prev, theme: prev.theme === 'dark' ? 'light' : 'dark' }))}
-                            >
-                                <div className="toggle-knob"></div>
-                            </div>
-                        </div>
-                    </div>
+            {message && (
+                <div className="alert alert-success p-2 small mb-4 rounded opacity-75">
+                    {message}
+                </div>
+            )}
 
-                    <div className="preference-item bg-glass">
-                        <div className="pref-info">
-                            <span className="pref-label">Email Notifications</span>
-                            <p className="pref-desc">Receive weekly market summaries and price alerts.</p>
-                        </div>
-                        <div className="pref-control">
-                            <div
-                                className={`toggle-switch ${preferences.notifications ? 'active' : ''}`}
-                                onClick={() => togglePreference('notifications')}
-                            >
-                                <div className="toggle-knob"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="preference-item bg-glass">
-                        <div className="pref-info">
-                            <span className="pref-label">Compact Watchlist</span>
-                            <p className="pref-desc">Show more items in the watchlist by reducing spacing.</p>
-                        </div>
-                        <div className="pref-control">
-                            <div
-                                className={`toggle-switch ${preferences.compactView ? 'active' : ''}`}
-                                onClick={() => togglePreference('compactView')}
-                            >
-                                <div className="toggle-knob"></div>
-                            </div>
-                        </div>
+            <div className="d-flex flex-column gap-4">
+                <div className="border border-secondary border-opacity-25 rounded p-3 bg-white bg-opacity-10">
+                    <h5 className="text-white fs-6 mb-3">Theme Settings</h5>
+                    <div className="d-flex flex-column gap-2 mb-2">
+                        <label className="d-flex align-items-center gap-2 text-white">
+                            <input type="radio" name="theme" value="dark" checked={theme === 'dark'} onChange={() => setTheme('dark')} /> <span className="small">Dark Mode (Default)</span>
+                        </label>
+                        <label className="d-flex align-items-center gap-2 text-muted">
+                            <input type="radio" name="theme" value="light" checked={theme === 'light'} onChange={() => setTheme('light')} disabled /> <span className="small">Light Mode (Coming Soon)</span>
+                        </label>
                     </div>
                 </div>
 
-                <div className="settings-form-group mt-lg">
-                    <label className="settings-label">Default Landing Page</label>
-                    <select
-                        className="form-control bg-glass"
-                        value={preferences.landingPage}
-                        onChange={(e) => setPreferences(prev => ({ ...prev, landingPage: e.target.value }))}
-                    >
-                        <option value="dashboard">Dashboard Overview</option>
-                        <option value="stocks">Stock Explorer</option>
-                        <option value="news">Market News</option>
-                    </select>
+                <div className="border border-secondary border-opacity-25 rounded p-3 bg-white bg-opacity-10">
+                    <h5 className="text-white fs-6 mb-3">Notifications</h5>
+                    <div className="form-check form-switch mb-2">
+                        <input className="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked={notifications} onChange={(e) => setNotifications(e.target.checked)} />
+                        <label className="form-check-label text-white small ms-2" htmlFor="flexSwitchCheckChecked">Enable System Notifications</label>
+                        <p className="text-muted m-0 mt-1" style={{ fontSize: '0.7rem' }}>Receive alerts on stock prices and major market moves.</p>
+                    </div>
                 </div>
 
-                <div className="settings-actions-bar mt-xl">
-                    <button type="submit" className={`btn-accent ${isSaved ? 'btn-success' : ''}`}>
-                        {isSaved ? '✓ Preferences Saved' : 'Save Preferences'}
+                <div className="d-flex justify-content-end mt-2">
+                    <button type="button" onClick={handleSave} disabled={saving} className="btn btn-primary px-4 py-2 fw-bold text-white rounded">
+                        {saving ? 'Saving...' : 'Save Preferences'}
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
     );
 }

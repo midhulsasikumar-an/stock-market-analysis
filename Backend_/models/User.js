@@ -95,6 +95,13 @@ const userSchema = new mongoose.Schema(
         refreshTokenHash: {
             type: String,
             select: false
+        },
+        preferences: {
+            theme: { type: String, enum: ["dark", "light", "system"], default: "dark" },
+            notifications: { type: Boolean, default: true }
+        },
+        securitySettings: {
+            twoFactorEnabled: { type: Boolean, default: false }
         }
     },
     {

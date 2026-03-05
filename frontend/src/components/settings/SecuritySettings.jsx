@@ -1,119 +1,108 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import authService from '../../services/authService';
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 export default function SecuritySettings() {
-    const { logout } = useAuth();
-    const [passwords, setPasswords] = useState({
-        current: '',
-        new: '',
-        confirm: ''
-    });
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '' });
 
-    const handlePasswordChange = (e) => {
+    // Placeholder 2FA feature
+    const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
+        setMessage({ type: '', text: '' });
 
-        if (passwords.new !== passwords.confirm) {
-            setError('New passwords do not match');
+        if (newPassword !== confirmPassword) {
+            setMessage({ type: 'error', text: 'New passwords do not match' });
             return;
         }
 
-        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-
-        // Find user in full list to check current password
-        const userIndex = users.findIndex(u => u.username === user.username);
-
-        if (userIndex === -1 || users[userIndex].password !== passwords.current) {
-            setError('Current password is incorrect');
+        if (newPassword.length < 6) {
+            setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
             return;
         }
 
-        // Update password
-        users[userIndex].password = passwords.new;
-        localStorage.setItem('users', JSON.stringify(users));
+        setSaving(true);
 
-        // Also update currentUser
-        const updatedUser = { ...user, password: passwords.new };
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        try {
+            const res = await fetch(`${API_URL}/api/profile/security`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authService.getAuthHeaders().Authorization
+                },
+                body: JSON.stringify({ currentPassword, newPassword })
+            });
 
-        setSuccess('Password changed successfully!');
-        setPasswords({ current: '', new: '', confirm: '' });
-    };
+            const data = await res.json();
 
-    const logoutAllSessions = () => {
-        logout();
+            if (data.success) {
+                setMessage({ type: 'success', text: 'Password updated securely!' });
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setTimeout(() => setMessage({ type: '', text: '' }), 5000);
+            } else {
+                setMessage({ type: 'error', text: data.message || 'Error updating password' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Connection failed' });
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
-        <div className="settings-content-inner">
-            <div className="settings-header-box">
-                <h3 className="settings-title">Security Settings</h3>
-                <p className="settings-subtitle">Protect your account and manage active sessions.</p>
-            </div>
+        <div className="p-4 bg-glass rounded">
+            <h2 className="text-xl fw-bold text-white mb-4">Security Settings</h2>
 
-            <form onSubmit={handlePasswordChange} className="settings-form">
-                <h4 className="mb-md text-sm font-semibold text-uppercase text-muted">Change Password</h4>
-
-                {error && <div className="alert alert-danger py-2 mb-md small">{error}</div>}
-                {success && <div className="alert alert-success py-2 mb-md small">{success}</div>}
-
-                <div className="settings-form-grid">
-                    <div className="settings-form-group">
-                        <label className="settings-label">Current Password</label>
-                        <input
-                            type="password"
-                            className="form-control bg-glass"
-                            value={passwords.current}
-                            onChange={(e) => setPasswords(prev => ({ ...prev, current: e.target.value }))}
-                            required
-                        />
-                    </div>
-                    <div className="settings-form-group">
-                        <label className="settings-label">New Password</label>
-                        <input
-                            type="password"
-                            className="form-control bg-glass"
-                            value={passwords.new}
-                            onChange={(e) => setPasswords(prev => ({ ...prev, new: e.target.value }))}
-                            required
-                        />
-                    </div>
-                    <div className="settings-form-group">
-                        <label className="settings-label">Confirm New Password</label>
-                        <input
-                            type="password"
-                            className="form-control bg-glass"
-                            value={passwords.confirm}
-                            onChange={(e) => setPasswords(prev => ({ ...prev, confirm: e.target.value }))}
-                            required
-                        />
-                    </div>
+            {message.text && (
+                <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-danger'} p-2 small mb-4 rounded opacity-75`}>
+                    {message.text}
                 </div>
+            )}
 
-                <div className="settings-actions-bar mt-lg">
-                    <button type="submit" className="btn-accent">Update Password</button>
+            <form onSubmit={handleSubmit} className="mb-5">
+                <div className="bg-dark p-3 rounded mb-4" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h5 className="text-white fs-6 mb-3">Change Password</h5>
+                    <div className="mb-3">
+                        <label className="form-label text-muted small mb-1">Current Password *</label>
+                        <input type="password" required className="form-control bg-transparent text-white border-secondary" placeholder="Enter current password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+                    </div>
+                    <div className="mb-3">
+                        <label className="form-label text-muted small mb-1">New Password *</label>
+                        <input type="password" required className="form-control bg-transparent text-white border-secondary" placeholder="Enter new password" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                    </div>
+                    <div className="mb-3">
+                        <label className="form-label text-muted small mb-1">Confirm New Password *</label>
+                        <input type="password" required className="form-control bg-transparent text-white border-secondary" placeholder="Confirm new password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                    </div>
+
+                    <button type="submit" disabled={saving} className="btn btn-primary px-4 py-2 mt-2 fw-bold text-white rounded">
+                        {saving ? 'Validating...' : 'Update Password'}
+                    </button>
                 </div>
             </form>
 
-            <div className="divider-lg my-xl"></div>
-
-            <div className="sessions-section">
-                <h4 className="mb-md text-sm font-semibold text-uppercase text-muted">Global Access</h4>
-                <div className="bg-glass p-md rounded-md flex-between">
+            <div className="bg-dark p-3 rounded mb-4" style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h5 className="text-white fs-6 mb-3">Two-Factor Authentication</h5>
+                <div className="d-flex justify-content-between align-items-center">
                     <div>
-                        <span className="font-semibold d-block">Logout from all devices</span>
-                        <p className="text-xs text-muted mb-0">This will sign you out from all other browsers and devices.</p>
+                        <p className="text-muted small m-0">Add an extra layer of security to your account.</p>
+                        <span className={`badge ${twoFactorEnabled ? 'bg-success' : 'bg-warning'} mt-2 rounded`}>
+                            {twoFactorEnabled ? 'Enabled' : 'Not Configured'}
+                        </span>
                     </div>
                     <button
-                        type="button"
-                        className="btn-glass text-danger border-danger-subtle"
-                        onClick={logoutAllSessions}
+                        className="btn btn-outline-light btn-sm px-3 shadow-sm"
+                        onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
                     >
-                        Logout Everywhere
+                        {twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
                     </button>
                 </div>
             </div>

@@ -5,6 +5,7 @@ import Technical_Analysis from "../components/Technical_Analysis";
 import Footer from "../components/Footer";
 import watchlistService from "../services/watchlistService";
 import authService from "../services/authService";
+import transactionService from "../services/transactionService";
 import {
     fetchCompanyProfile,
     fetchQuote,
@@ -27,21 +28,17 @@ function StockStatsBar({ quote, candles, metrics }) {
     const dayHigh = quote.h ?? 0;
     const price = quote.c ?? 0;
 
-    // Day volatility %
     const dayVolatility = price > 0 ? (((dayHigh - dayLow) / price) * 100).toFixed(2) : '0.00';
     const dayRangePos = dayHigh > dayLow ? (price - dayLow) / (dayHigh - dayLow) : 0.5;
 
-    // 52-week — prefer Finnhub metrics (exact), fallback to candle estimation
     const w52High = m['52WeekHigh'] || (candles?.h?.length ? Math.max(...candles.h) : dayHigh);
     const w52Low = m['52WeekLow'] || (candles?.l?.length ? Math.min(...candles.l) : dayLow);
     const w52Volatility = w52High > 0 ? (((w52High - w52Low) / w52High) * 100).toFixed(2) : '0.00';
     const w52RangePos = w52High > w52Low ? (price - w52Low) / (w52High - w52Low) : 0.5;
 
-    // Fundamentals from Finnhub metrics
     const peRatio = m.peBasicExclExtraTTM ? m.peBasicExclExtraTTM.toFixed(2) : null;
     const beta = m.beta ? m.beta.toFixed(2) : null;
     const volume = quote.v ?? null;
-
 
     const fmtVol = (n) => {
         if (!n) return '—';
@@ -53,7 +50,6 @@ function StockStatsBar({ quote, candles, metrics }) {
 
     return (
         <div className="stock-stats-bar">
-            {/* Row 1: price stats */}
             <div className="stats-row">
                 <div className="stat-cell">
                     <span className="stat-label">PREVIOUS CLOSE</span>
@@ -80,7 +76,6 @@ function StockStatsBar({ quote, candles, metrics }) {
                     </div>
                 </div>
             </div>
-            {/* Row 2: fundamentals + 52w range */}
             <div className="stats-row">
                 {peRatio && (
                     <div className="stat-cell">
@@ -120,9 +115,9 @@ function StockStatsBar({ quote, candles, metrics }) {
 }
 
 // --------------------------------------------------------------------------
-// Order Panel (right sidebar) - mirrors the reference image
+// Order Panel (right sidebar)
 // --------------------------------------------------------------------------
-function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watchlistLoading, toggleWatchlist, onInvestClick }) {
+function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watchlistLoading, toggleWatchlist, onInvestClick, onSellClick, holding }) {
     const price = quote?.c ?? 0;
     const latestRec = Array.isArray(recommendation) && recommendation.length > 0 ? recommendation[0] : null;
     const latestEarnings = Array.isArray(earnings) && earnings.length > 0 ? earnings[0] : null;
@@ -165,6 +160,27 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
                     </div>
                 </div>
             </div>
+
+            {/* ── Portfolio Status Badge ── */}
+            {holding?.inPortfolio && (
+                <div style={{
+                    background: 'rgba(16,185,129,0.08)',
+                    border: '1px solid rgba(16,185,129,0.2)',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 600 }}>
+                        📦 In Portfolio
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                        {holding.quantity} shares @ ${holding.avgBuyPrice?.toFixed(2)}
+                    </span>
+                </div>
+            )}
 
             <div className="analysis-grid-2">
                 <div className="analysis-chip">
@@ -233,6 +249,7 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
                 </p>
             </div>
 
+            {/* ── Action Buttons ── */}
             <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                 <button
                     className={`watchlist-action-btn ${inWatchlist ? 'in-watchlist' : ''}`}
@@ -247,12 +264,282 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
                     onClick={onInvestClick}
                     style={{ flex: 1, padding: '12px 0', background: 'var(--primary-color, #3b82f6)', color: 'white', border: 'none' }}
                 >
-                    + Invested
+                    + Buy
                 </button>
+                {holding?.inPortfolio && (
+                    <button
+                        className="watchlist-action-btn"
+                        onClick={onSellClick}
+                        style={{ flex: 1, padding: '12px 0', background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
+                    >
+                        − Sell
+                    </button>
+                )}
             </div>
         </div>
     );
 }
+
+// --------------------------------------------------------------------------
+// BUY Modal
+// --------------------------------------------------------------------------
+function BuyModal({ symbol, quote, profile, onClose, onSuccess }) {
+    const [form, setForm] = useState({ quantity: '', buyPrice: (quote?.c ?? '').toString(), date: '' });
+    const [loading, setLoading] = useState(false);
+    const [err, setErr] = useState('');
+
+    const total = (Number(form.quantity) || 0) * (Number(form.buyPrice) || 0);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!form.quantity || !form.buyPrice) return;
+        setLoading(true);
+        setErr('');
+        try {
+            await transactionService.buy(
+                symbol,
+                profile?.name || symbol,
+                form.quantity,
+                form.buyPrice,
+                profile?.finnhubIndustry || 'Other'
+            );
+            onSuccess('buy');
+        } catch (er) {
+            setErr(er.message || 'Failed to buy stock');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.75)', zIndex: 9999 }}>
+            <div className="bg-glass-card p-4" style={{ width: '400px', maxWidth: '95vw', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h5 className="text-white fw-bold mb-0">Buy {symbol}</h5>
+                    <button className="btn btn-sm text-muted" onClick={onClose} style={{ fontSize: '1.5rem', lineHeight: 1 }}>×</button>
+                </div>
+
+                {/* Stock info strip */}
+                <div className="d-flex align-items-center gap-3 mb-4 p-3 rounded" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                    <div className="rounded-circle bg-primary-subtle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
+                        <span className="text-primary fw-bold">{symbol ? symbol.charAt(0) : ''}</span>
+                    </div>
+                    <div>
+                        <h6 className="text-white mb-0 fw-bold">{symbol}</h6>
+                        <span className="text-muted small">CMP: ${(quote?.c ?? 0).toFixed(2)}</span>
+                    </div>
+                    <div className="ms-auto text-end">
+                        <span className={`small fw-bold ${(quote?.dp ?? 0) >= 0 ? 'text-success' : 'text-danger'}`}>
+                            {(quote?.dp ?? 0) >= 0 ? '▲' : '▼'} {Math.abs(quote?.dp ?? 0).toFixed(2)}%
+                        </span>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    <div className="row mb-3">
+                        <div className="col-6">
+                            <label className="text-muted small mb-1">Buy Price ($) *</label>
+                            <input
+                                type="number"
+                                className="form-control bg-dark text-white border-secondary"
+                                placeholder="e.g. 150.00"
+                                min="0" step="any"
+                                value={form.buyPrice}
+                                onChange={e => setForm(p => ({ ...p, buyPrice: e.target.value }))}
+                                required
+                            />
+                        </div>
+                        <div className="col-6">
+                            <label className="text-muted small mb-1">Quantity *</label>
+                            <input
+                                type="number"
+                                className="form-control bg-dark text-white border-secondary"
+                                placeholder="e.g. 10"
+                                min="0.0001" step="any"
+                                value={form.quantity}
+                                onChange={e => setForm(p => ({ ...p, quantity: e.target.value }))}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="mb-3">
+                        <label className="text-muted small mb-1">Date (optional)</label>
+                        <input
+                            type="date"
+                            className="form-control bg-dark text-white border-secondary"
+                            value={form.date}
+                            max={new Date().toISOString().split('T')[0]}
+                            onChange={e => setForm(p => ({ ...p, date: e.target.value }))}
+                        />
+                    </div>
+
+                    {/* Total preview */}
+                    {total > 0 && (
+                        <div className="d-flex justify-content-between align-items-center mb-3 px-3 py-2 rounded" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}>
+                            <span className="text-muted small">Total Investment</span>
+                            <span className="text-white fw-bold">${total.toFixed(2)}</span>
+                        </div>
+                    )}
+
+                    {err && <div className="alert alert-danger py-2 small mb-3">{err}</div>}
+
+                    <button type="submit" className="btn btn-primary w-100 mt-1" disabled={loading}>
+                        {loading ? 'Processing...' : `Buy ${form.quantity || '0'} shares`}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// --------------------------------------------------------------------------
+// SELL Modal (Stock Search page)
+// --------------------------------------------------------------------------
+function SellModal({ symbol, quote, holding, onClose, onSuccess }) {
+    const [form, setForm] = useState({ quantity: '', sellPrice: (quote?.c ?? '').toString() });
+    const [loading, setLoading] = useState(false);
+    const [err, setErr] = useState('');
+
+    const maxQty = holding?.quantity ?? 0;
+    const total = (Number(form.quantity) || 0) * (Number(form.sellPrice) || 0);
+    const buyTotal = (Number(form.quantity) || 0) * (holding?.avgBuyPrice ?? 0);
+    const pnl = total - buyTotal;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!form.quantity || !form.sellPrice) return;
+        if (Number(form.quantity) > maxQty) {
+            setErr(`Insufficient quantity. You hold ${maxQty} shares.`);
+            return;
+        }
+        setLoading(true);
+        setErr('');
+        try {
+            await transactionService.sell(symbol, form.quantity, form.sellPrice);
+            onSuccess('sell');
+        } catch (er) {
+            setErr(er.message || 'Failed to sell stock');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.75)', zIndex: 9999 }}>
+            <div className="bg-glass-card p-4" style={{ width: '400px', maxWidth: '95vw', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(239,68,68,0.15)' }}>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h5 className="text-white fw-bold mb-0">Sell {symbol}</h5>
+                    <button className="btn btn-sm text-muted" onClick={onClose} style={{ fontSize: '1.5rem', lineHeight: 1 }}>×</button>
+                </div>
+
+                {/* Current holding info */}
+                <div className="d-flex align-items-center gap-3 mb-4 p-3 rounded" style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.1)' }}>
+                    <div>
+                        <div className="text-white fw-bold small">{symbol}</div>
+                        <div className="text-muted" style={{ fontSize: '0.72rem' }}>
+                            Holdings: <span className="text-white">{maxQty} shares</span> @ avg ${(holding?.avgBuyPrice ?? 0).toFixed(2)}
+                        </div>
+                    </div>
+                    <div className="ms-auto text-end">
+                        <div className="text-muted" style={{ fontSize: '0.7rem' }}>Market Price</div>
+                        <div className="text-white fw-bold">${(quote?.c ?? 0).toFixed(2)}</div>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    <div className="row mb-3">
+                        <div className="col-6">
+                            <label className="text-muted small mb-1">Sell Price ($) *</label>
+                            <input
+                                type="number"
+                                className="form-control bg-dark text-white border-secondary"
+                                min="0" step="any"
+                                value={form.sellPrice}
+                                onChange={e => setForm(p => ({ ...p, sellPrice: e.target.value }))}
+                                required
+                            />
+                            <small className="text-muted" style={{ fontSize: '0.65rem' }}>Auto-filled with CMP</small>
+                        </div>
+                        <div className="col-6">
+                            <label className="text-muted small mb-1">Quantity *</label>
+                            <input
+                                type="number"
+                                className="form-control bg-dark text-white border-secondary"
+                                placeholder={`Max ${maxQty}`}
+                                min="0.0001" step="any"
+                                max={maxQty}
+                                value={form.quantity}
+                                onChange={e => setForm(p => ({ ...p, quantity: e.target.value }))}
+                                required
+                            />
+                            <small className="text-muted" style={{ fontSize: '0.65rem' }}>Available: {maxQty}</small>
+                        </div>
+                    </div>
+
+                    {/* P&L Preview */}
+                    {Number(form.quantity) > 0 && (
+                        <div className="mb-3 p-3 rounded" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div className="d-flex justify-content-between mb-1">
+                                <span className="text-muted small">Sell Value</span>
+                                <span className="text-white small fw-bold">${total.toFixed(2)}</span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-1">
+                                <span className="text-muted small">Buy Cost</span>
+                                <span className="text-white small">${buyTotal.toFixed(2)}</span>
+                            </div>
+                            <div className="d-flex justify-content-between" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px', marginTop: '4px' }}>
+                                <span className="text-muted small">Est. P&L</span>
+                                <span className={`small fw-bold ${pnl >= 0 ? 'text-success' : 'text-danger'}`}>
+                                    {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {err && <div className="alert alert-danger py-2 small mb-3">{err}</div>}
+
+                    <button type="submit" className="btn w-100 mt-1" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }} disabled={loading}>
+                        {loading ? 'Processing...' : `Sell ${form.quantity || '0'} shares of ${symbol}`}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// --------------------------------------------------------------------------
+// SUCCESS Toast Notification
+// --------------------------------------------------------------------------
+function Toast({ message, type, onHide }) {
+    useEffect(() => {
+        const t = setTimeout(onHide, 3500);
+        return () => clearTimeout(t);
+    }, [onHide]);
+
+    return (
+        <div style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            zIndex: 10000,
+            background: type === 'buy' ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)',
+            color: 'white',
+            padding: '14px 22px',
+            borderRadius: '12px',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            backdropFilter: 'blur(10px)'
+        }}>
+            {type === 'buy' ? '✅' : '📤'} {message}
+        </div>
+    );
+}
+
+// --------------------------------------------------------------------------
 // Main Page
 // --------------------------------------------------------------------------
 export default function StockPage() {
@@ -268,11 +555,21 @@ export default function StockPage() {
     const [inWatchlist, setInWatchlist] = useState(false);
     const [watchlistLoading, setWatchlistLoading] = useState(false);
 
-    // Invest modal state
-    const [showInvestModal, setShowInvestModal] = useState(false);
-    const [investForm, setInvestForm] = useState({ quantity: '', avgBuyPrice: '' });
-    const [investLoading, setInvestLoading] = useState(false);
-    const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+    // Portfolio holding state
+    const [holding, setHolding] = useState({ inPortfolio: false, quantity: 0, avgBuyPrice: 0, currentPrice: 0 });
+
+    // Modal state
+    const [showBuyModal, setShowBuyModal] = useState(false);
+    const [showSellModal, setShowSellModal] = useState(false);
+    const [toast, setToast] = useState(null); // { message, type }
+
+    const loadHolding = async () => {
+        if (!authService.isAuthenticated()) return;
+        try {
+            const h = await transactionService.getHolding(symbol);
+            setHolding(h);
+        } catch { /* silent */ }
+    };
 
     useEffect(() => {
         const loadData = async () => {
@@ -315,6 +612,12 @@ export default function StockPage() {
         return () => { mounted = false; };
     }, [symbol]);
 
+    // Load holding status when page loads
+    useEffect(() => {
+        loadHolding();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [symbol]);
+
     const toggleWatchlist = async () => {
         if (!authService.isAuthenticated()) {
             window.alert("Please login to manage your watchlist.");
@@ -336,56 +639,34 @@ export default function StockPage() {
         }
     };
 
-    const handleInvestSubmit = async (e) => {
-        e.preventDefault();
+    // Called after buy/sell modal success
+    const handleTransactionSuccess = (type) => {
+        setShowBuyModal(false);
+        setShowSellModal(false);
+        const msg = type === 'buy'
+            ? `Successfully added ${symbol} to your portfolio!`
+            : `Successfully sold ${symbol}!`;
+        setToast({ message: msg, type });
+        // Refresh holding status
+        setTimeout(loadHolding, 500);
+    };
+
+    const handleInvestClick = () => {
         if (!authService.isAuthenticated()) {
             window.alert("Please login to manage your portfolio.");
             return;
         }
-        if (!investForm.quantity || !investForm.avgBuyPrice) return;
-        setInvestLoading(true);
-        try {
-            // Check if portfolio exists, or create default
-            let portfoliosRes = await fetch(`${API_URL}/api/portfolio`, { headers: authService.getAuthHeaders() });
-            let portfoliosData = await portfoliosRes.json();
-            let pid = portfoliosData?.data?.[0]?._id;
-
-            if (!pid) {
-                const createRes = await fetch(`${API_URL}/api/portfolio`, {
-                    method: 'POST',
-                    headers: authService.getAuthHeaders(),
-                    body: JSON.stringify({ name: 'My Portfolio', isDefault: true })
-                });
-                const created = await createRes.json();
-                if (!created.success) throw new Error("Failed to create portfolio");
-                pid = created.data._id;
-            }
-
-            const res = await fetch(`${API_URL}/api/portfolio/${pid}/holding`, {
-                method: 'POST',
-                headers: authService.getAuthHeaders(),
-                body: JSON.stringify({
-                    symbol: symbol.toUpperCase(),
-                    name: profile?.name || symbol.toUpperCase(),
-                    quantity: Number(investForm.quantity),
-                    avgBuyPrice: Number(investForm.avgBuyPrice),
-                    sector: profile?.finnhubIndustry || 'Other'
-                })
-            });
-            const result = await res.json();
-            if (result.success) {
-                setShowInvestModal(false);
-                setInvestForm({ quantity: '', avgBuyPrice: '' });
-                window.alert("Successfully added to your portfolio!");
-            } else {
-                window.alert(result.message || "Failed to add holding");
-            }
-        } catch (err) {
-            window.alert("Error adding holding: " + err.message);
-        } finally {
-            setInvestLoading(false);
-        }
+        setShowBuyModal(true);
     };
+
+    const handleSellClick = () => {
+        if (!authService.isAuthenticated()) {
+            window.alert("Please login to manage your portfolio.");
+            return;
+        }
+        setShowSellModal(true);
+    };
+
     const isPos = (quote?.dp ?? 0) >= 0;
 
     return (
@@ -394,20 +675,21 @@ export default function StockPage() {
                 <button
                     type="button"
                     className="btn-glass stock-back-btn"
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => {
+                        const u = localStorage.getItem("user");
+                        const r = u ? JSON.parse(u).role : null;
+                        navigate(r === 'admin' ? '/admin' : '/dashboard');
+                    }}
                 >
                     ← Back to Dashboard
                 </button>
             </div>
 
-            {/* ── Main content area ── */}
             <div className="stock-main-layout">
 
                 {/* ── LEFT: Chart + Stats ── */}
                 <div className="stock-chart-col">
                     <div className="stock-chart-card">
-
-                        {/* Company header */}
                         <div className="stock-card-header">
                             <div className="scard-left">
                                 {profile?.logo && (
@@ -441,7 +723,6 @@ export default function StockPage() {
                             </div>
                         </div>
 
-                        {/* Price row */}
                         <div className="scard-price-row">
                             <div>
                                 <div className="scard-price">
@@ -460,7 +741,6 @@ export default function StockPage() {
                             </div>
                         </div>
 
-                        {/* Chart */}
                         <div className="scard-chart-wrap">
                             {loading ? (
                                 <div className="chart-loading">
@@ -477,12 +757,9 @@ export default function StockPage() {
                             )}
                         </div>
 
-                        {/* Stats Bar */}
                         <StockStatsBar quote={quote} candles={candles} metrics={metrics} />
-
                     </div>
 
-                    {/* Technical Analysis */}
                     <div className="stock-chart-card mt-3">
                         {/* eslint-disable-next-line react/jsx-pascal-case */}
                         <Technical_Analysis symbol={symbol} quote={quote} candles={candles} />
@@ -499,51 +776,45 @@ export default function StockPage() {
                         inWatchlist={inWatchlist}
                         watchlistLoading={watchlistLoading}
                         toggleWatchlist={toggleWatchlist}
-                        onInvestClick={() => setShowInvestModal(true)}
+                        onInvestClick={handleInvestClick}
+                        onSellClick={handleSellClick}
+                        holding={holding}
                     />
                 </div>
             </div>
 
-            {/* ── Add Investment Modal ── */}
-            {showInvestModal && (
-                <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.7)', zIndex: 9999 }}>
-                    <div className="bg-glass-card p-4" style={{ width: '400px', maxWidth: '95vw', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <div className="d-flex justify-content-between align-items-center mb-4">
-                            <h5 className="text-white fw-bold mb-0">Record Investment</h5>
-                            <button className="btn btn-sm text-muted" onClick={() => setShowInvestModal(false)} style={{ fontSize: '1.5rem', lineHeight: 1 }}>×</button>
-                        </div>
-                        <div className="d-flex align-items-center gap-3 mb-4 p-3 rounded" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                            <div className="rounded-circle bg-primary-subtle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
-                                <span className="text-primary fw-bold">{symbol ? symbol.charAt(0) : ''}</span>
-                            </div>
-                            <div>
-                                <h6 className="text-white mb-0 fw-bold">{symbol}</h6>
-                                <span className="text-muted small">CMP: ${(quote?.c ?? 0).toFixed(2)}</span>
-                            </div>
-                        </div>
-                        <form onSubmit={handleInvestSubmit}>
-                            <div className="row mb-3">
-                                <div className="col-6">
-                                    <label className="text-muted small mb-1">Quantity *</label>
-                                    <input type="number" className="form-control bg-dark text-white border-secondary" placeholder="e.g. 10" min="0.0001" step="any"
-                                        value={investForm.quantity} onChange={e => setInvestForm(p => ({ ...p, quantity: e.target.value }))} required />
-                                </div>
-                                <div className="col-6">
-                                    <label className="text-muted small mb-1">Buy Price ($) *</label>
-                                    <input type="number" className="form-control bg-dark text-white border-secondary" placeholder="e.g. 150.00" min="0" step="any"
-                                        value={investForm.avgBuyPrice} onChange={e => setInvestForm(p => ({ ...p, avgBuyPrice: e.target.value }))} required />
-                                </div>
-                            </div>
-                            <button type="submit" className="btn btn-primary w-100 mt-2" disabled={investLoading}>
-                                {investLoading ? 'Saving...' : 'Add to Portfolio'}
-                            </button>
-                        </form>
-                    </div>
-                </div>
+            {/* ── Buy Modal ── */}
+            {showBuyModal && (
+                <BuyModal
+                    symbol={symbol}
+                    quote={quote}
+                    profile={profile}
+                    onClose={() => setShowBuyModal(false)}
+                    onSuccess={handleTransactionSuccess}
+                />
+            )}
+
+            {/* ── Sell Modal ── */}
+            {showSellModal && holding?.inPortfolio && (
+                <SellModal
+                    symbol={symbol}
+                    quote={quote}
+                    holding={holding}
+                    onClose={() => setShowSellModal(false)}
+                    onSuccess={handleTransactionSuccess}
+                />
+            )}
+
+            {/* ── Toast ── */}
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onHide={() => setToast(null)}
+                />
             )}
 
             <Footer />
         </div>
     );
 }
-

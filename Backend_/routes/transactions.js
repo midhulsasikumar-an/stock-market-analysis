@@ -39,6 +39,51 @@ router.get("/", authMiddleware, async (req, res) => {
 });
 
 /**
+ * @route   GET /api/transactions/summary/pnl
+ * @desc    Get P&L summary per symbol (MUST be before /:id)
+ * @access  Private
+ */
+router.get("/summary/pnl", authMiddleware, async (req, res) => {
+    try {
+        const summary = await Transaction.aggregate([
+            { $match: { userId: req.userId } },
+            {
+                $group: {
+                    _id: "$symbol",
+                    totalBought: {
+                        $sum: {
+                            $cond: [{ $eq: ["$type", "BUY"] }, "$totalAmount", 0]
+                        }
+                    },
+                    totalSold: {
+                        $sum: {
+                            $cond: [{ $eq: ["$type", "SELL"] }, "$totalAmount", 0]
+                        }
+                    },
+                    totalFees: { $sum: "$fees" },
+                    tradeCount: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    symbol: "$_id",
+                    totalBought: 1,
+                    totalSold: 1,
+                    totalFees: 1,
+                    tradeCount: 1,
+                    realizedPnL: { $subtract: ["$totalSold", { $add: ["$totalBought", "$totalFees"] }] },
+                    _id: 0
+                }
+            },
+            { $sort: { tradeCount: -1 } }
+        ]);
+        res.json({ success: true, data: summary });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Error calculating P&L" });
+    }
+});
+
+/**
  * @route   GET /api/transactions/:id
  * @desc    Get a single transaction
  * @access  Private
@@ -115,50 +160,6 @@ router.delete("/:id", authMiddleware, async (req, res) => {
     }
 });
 
-/**
- * @route   GET /api/transactions/summary/pnl
- * @desc    Get P&L summary per symbol
- * @access  Private
- */
-router.get("/summary/pnl", authMiddleware, async (req, res) => {
-    try {
-        const summary = await Transaction.aggregate([
-            { $match: { userId: req.userId } },
-            {
-                $group: {
-                    _id: "$symbol",
-                    totalBought: {
-                        $sum: {
-                            $cond: [{ $eq: ["$type", "BUY"] }, "$totalAmount", 0]
-                        }
-                    },
-                    totalSold: {
-                        $sum: {
-                            $cond: [{ $eq: ["$type", "SELL"] }, "$totalAmount", 0]
-                        }
-                    },
-                    totalFees: { $sum: "$fees" },
-                    tradeCount: { $sum: 1 }
-                }
-            },
-            {
-                $project: {
-                    symbol: "$_id",
-                    totalBought: 1,
-                    totalSold: 1,
-                    totalFees: 1,
-                    tradeCount: 1,
-                    realizedPnL: { $subtract: ["$totalSold", { $add: ["$totalBought", "$totalFees"] }] },
-                    _id: 0
-                }
-            },
-            { $sort: { tradeCount: -1 } }
-        ]);
-
-        res.json({ success: true, data: summary });
-    } catch (err) {
-        res.status(500).json({ success: false, message: "Error calculating P&L" });
-    }
-});
+// (summary/pnl route moved above /:id — see above)
 
 module.exports = router;

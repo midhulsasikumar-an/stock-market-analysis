@@ -12,8 +12,8 @@ import {
 } from 'chart.js';
 import { Doughnut, Line } from 'react-chartjs-2';
 import authService from '../services/authService';
+import transactionService from '../services/transactionService';
 
-// Register ChartJS components
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -34,16 +34,324 @@ const formatMoney = (value) => {
   return `${sign}$ ${Math.round(abs).toLocaleString('en-US')}`;
 };
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+};
+
+// ─── Sell Modal ───────────────────────────────────────────────────────────────
+function SellModal({ holding, onClose, onSuccess }) {
+  const [form, setForm] = useState({ quantity: '', sellPrice: (holding.currentPrice || holding.avgBuyPrice || '').toString() });
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
+
+  const maxQty = holding.quantity ?? 0;
+  const total = (Number(form.quantity) || 0) * (Number(form.sellPrice) || 0);
+  const buyTotal = (Number(form.quantity) || 0) * (holding.avgBuyPrice ?? 0);
+  const pnl = total - buyTotal;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.quantity || !form.sellPrice) return;
+    if (Number(form.quantity) > maxQty) {
+      setErr(`Insufficient quantity. You hold ${maxQty} shares.`);
+      return;
+    }
+    setLoading(true);
+    setErr('');
+    try {
+      await transactionService.sell(holding.symbol, form.quantity, form.sellPrice);
+      onSuccess();
+    } catch (er) {
+      setErr(er.message || 'Failed to sell stock');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.75)', zIndex: 9999 }}>
+      <div className="bg-glass-card p-4" style={{ width: '420px', maxWidth: '95vw', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(239,68,68,0.15)' }}>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h5 className="text-white fw-bold mb-0">Sell {holding.symbol}</h5>
+          <button className="btn btn-sm text-muted" onClick={onClose} style={{ fontSize: '1.5rem', lineHeight: 1 }}>×</button>
+        </div>
+
+        {/* Holding summary */}
+        <div className="p-3 rounded mb-3" style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.1)' }}>
+          <div className="d-flex justify-content-between">
+            <div>
+              <div className="text-white fw-bold small">{holding.symbol}</div>
+              {holding.name && <div className="text-muted" style={{ fontSize: '0.7rem' }}>{holding.name}</div>}
+            </div>
+            <div className="text-end">
+              <div className="text-muted" style={{ fontSize: '0.65rem' }}>Holdings</div>
+              <div className="text-white small fw-bold">{maxQty} shares</div>
+              <div className="text-muted" style={{ fontSize: '0.65rem' }}>Avg: ${(holding.avgBuyPrice ?? 0).toFixed(2)}</div>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="row mb-3">
+            <div className="col-6">
+              <label className="text-muted small mb-1">Sell Price ($) *</label>
+              <input
+                type="number"
+                className="form-control bg-dark text-white border-secondary"
+                min="0" step="any"
+                value={form.sellPrice}
+                onChange={e => setForm(p => ({ ...p, sellPrice: e.target.value }))}
+                required
+              />
+              <small className="text-muted" style={{ fontSize: '0.65rem' }}>
+                CMP: ${(holding.currentPrice ?? 0).toFixed(2)}
+              </small>
+            </div>
+            <div className="col-6">
+              <label className="text-muted small mb-1">Quantity *</label>
+              <input
+                type="number"
+                className="form-control bg-dark text-white border-secondary"
+                placeholder={`Max ${maxQty}`}
+                min="0.0001" step="any" max={maxQty}
+                value={form.quantity}
+                onChange={e => setForm(p => ({ ...p, quantity: e.target.value }))}
+                required
+              />
+              <small className="text-muted" style={{ fontSize: '0.65rem' }}>Available: {maxQty}</small>
+            </div>
+          </div>
+
+          {/* P&L Preview */}
+          {Number(form.quantity) > 0 && (
+            <div className="mb-3 p-3 rounded" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="d-flex justify-content-between mb-1">
+                <span className="text-muted small">Sell Value</span>
+                <span className="text-white small fw-bold">${total.toFixed(2)}</span>
+              </div>
+              <div className="d-flex justify-content-between mb-1">
+                <span className="text-muted small">Buy Cost</span>
+                <span className="text-white small">${buyTotal.toFixed(2)}</span>
+              </div>
+              <div className="d-flex justify-content-between" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px', marginTop: '4px' }}>
+                <span className="text-muted small">Est. P&L</span>
+                <span className={`small fw-bold ${pnl >= 0 ? 'text-success' : 'text-danger'}`}>
+                  {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {err && <div className="alert alert-danger py-2 small mb-3">{err}</div>}
+
+          <button
+            type="submit"
+            className="btn w-100 mt-1"
+            style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
+            disabled={loading}
+          >
+            {loading ? 'Processing...' : `Sell ${form.quantity || '0'} shares of ${holding.symbol}`}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Transaction History Section ─────────────────────────────────────────────
+function TransactionHistory({ transactions, loading }) {
+  const [filter, setFilter] = useState('ALL');
+  const [page, setPage] = useState(0);
+  const PER_PAGE = 10;
+
+  const filtered = useMemo(() => {
+    if (filter === 'ALL') return transactions;
+    return transactions.filter(t => t.type === filter);
+  }, [transactions, filter]);
+
+  const paginated = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+
+  return (
+    <div className="bg-glass-card mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h6 className="text-white fw-bold mb-0">Transaction History</h6>
+        <div className="d-flex gap-2">
+          {['ALL', 'BUY', 'SELL'].map(f => (
+            <button
+              key={f}
+              className={`btn btn-sm ${filter === f ? 'btn-primary' : 'btn-outline-secondary'}`}
+              style={{ fontSize: '0.7rem', padding: '3px 10px' }}
+              onClick={() => { setFilter(f); setPage(0); }}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-3">
+          <div className="spinner-border spinner-border-sm text-primary" role="status" />
+        </div>
+      ) : paginated.length === 0 ? (
+        <p className="text-muted text-center small py-4">No transactions found</p>
+      ) : (
+        <>
+          {/* Table Header */}
+          <div className="d-flex px-2 py-1 mb-1" style={{ fontSize: '0.6rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <div style={{ flex: '0 0 90px' }}>Date</div>
+            <div style={{ flex: '0 0 70px' }}>Stock</div>
+            <div style={{ flex: '0 0 50px' }}>Type</div>
+            <div style={{ flex: 1 }}>Qty</div>
+            <div style={{ flex: 1 }}>Price</div>
+            <div style={{ flex: 1, textAlign: 'right' }}>Total</div>
+          </div>
+
+          <div className="d-flex flex-column gap-1">
+            {paginated.map((tx, i) => (
+              <div key={tx._id || i} className="d-flex align-items-center px-2 py-2 rounded-3" style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.8rem' }}>
+                <div style={{ flex: '0 0 90px', color: '#64748b', fontSize: '0.7rem' }}>
+                  {formatDate(tx.executedAt || tx.createdAt)}
+                </div>
+                <div style={{ flex: '0 0 70px', fontWeight: 700, color: '#e2e8f0' }}>
+                  {tx.symbol}
+                </div>
+                <div style={{ flex: '0 0 50px' }}>
+                  <span style={{
+                    fontSize: '0.65rem',
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    background: tx.type === 'BUY' ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
+                    color: tx.type === 'BUY' ? '#10b981' : '#ef4444'
+                  }}>
+                    {tx.type}
+                  </span>
+                </div>
+                <div style={{ flex: 1, color: '#94a3b8' }}>{tx.quantity}</div>
+                <div style={{ flex: 1, color: '#94a3b8' }}>${(tx.pricePerUnit || 0).toFixed(2)}</div>
+                <div style={{ flex: 1, textAlign: 'right', color: '#e2e8f0', fontWeight: 600 }}>
+                  ${(tx.totalAmount || 0).toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center mt-3 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+              <button
+                className="btn btn-sm btn-outline-secondary"
+                style={{ fontSize: '0.7rem' }}
+                disabled={page === 0}
+                onClick={() => setPage(p => p - 1)}
+              >
+                ← Prev
+              </button>
+              <span className="text-muted" style={{ fontSize: '0.7rem' }}>
+                Page {page + 1} of {totalPages} · {filtered.length} transactions
+              </span>
+              <button
+                className="btn btn-sm btn-outline-secondary"
+                style={{ fontSize: '0.7rem' }}
+                disabled={page >= totalPages - 1}
+                onClick={() => setPage(p => p + 1)}
+              >
+                Next →
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── P&L Detail Table ─────────────────────────────────────────────────────────
+function PnLTable({ holdings }) {
+  const totalPnL = holdings.reduce((s, h) => s + h.profitLoss, 0);
+  const totalInvested = holdings.reduce((s, h) => s + h.invested, 0);
+
+  if (holdings.length === 0) return null;
+
+  return (
+    <div className="bg-glass-card mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h6 className="text-white fw-bold mb-0">Profit / Loss Breakdown</h6>
+        <div className="text-end">
+          <span className="text-muted" style={{ fontSize: '0.7rem' }}>Total P&L: </span>
+          <span className={`fw-bold small ${totalPnL >= 0 ? 'text-success' : 'text-danger'}`}>
+            {totalPnL >= 0 ? '+' : ''}{formatMoney(totalPnL)}
+          </span>
+        </div>
+      </div>
+
+      {/* Header */}
+      <div className="d-flex px-2 py-1 mb-1" style={{ fontSize: '0.6rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <div style={{ flex: '0 0 70px' }}>Stock</div>
+        <div style={{ flex: 1 }}>Qty</div>
+        <div style={{ flex: 1 }}>Avg Buy</div>
+        <div style={{ flex: 1 }}>CMP</div>
+        <div style={{ flex: 1 }}>Invested</div>
+        <div style={{ flex: 1 }}>Value</div>
+        <div style={{ flex: 1, textAlign: 'right' }}>P&L</div>
+      </div>
+
+      <div className="d-flex flex-column gap-1">
+        {holdings.map((h, i) => (
+          <div key={h._id || i} className="d-flex align-items-center px-2 py-2 rounded-3" style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.78rem' }}>
+            <div style={{ flex: '0 0 70px' }}>
+              <span className="text-white fw-bold" style={{ fontSize: '0.78rem' }}>{h.symbol}</span>
+            </div>
+            <div style={{ flex: 1, color: '#94a3b8' }}>{h.quantity}</div>
+            <div style={{ flex: 1, color: '#94a3b8' }}>${(h.avgBuyPrice || 0).toFixed(2)}</div>
+            <div style={{ flex: 1, color: '#94a3b8' }}>${(h.currentPrice || 0).toFixed(2)}</div>
+            <div style={{ flex: 1, color: '#94a3b8' }}>{formatMoney(h.invested)}</div>
+            <div style={{ flex: 1, color: '#e2e8f0' }}>{formatMoney(h.currentValue)}</div>
+            <div style={{ flex: 1, textAlign: 'right' }}>
+              <span className={`fw-bold ${h.profitLoss >= 0 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.78rem' }}>
+                {h.profitLoss >= 0 ? '+' : ''}{formatMoney(h.profitLoss)}
+              </span>
+              <br />
+              <span className={h.profitLoss >= 0 ? 'text-success' : 'text-danger'} style={{ fontSize: '0.65rem' }}>
+                ({h.profitLossPct >= 0 ? '+' : ''}{(h.profitLossPct ?? 0).toFixed(2)}%)
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer summary */}
+      <div className="d-flex justify-content-between align-items-center mt-3 pt-2 px-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <span className="text-muted small">Total Invested: <strong className="text-white">{formatMoney(totalInvested)}</strong></span>
+        <span className={`small fw-bold ${totalPnL >= 0 ? 'text-success' : 'text-danger'}`}>
+          Unrealized P&L: {totalPnL >= 0 ? '+' : ''}{formatMoney(totalPnL)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Portfolio Component ────────────────────────────────────────────────
 export default function Portfolio() {
   const [portfolioData, setPortfolioData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  // ─── Add Holding Modal State ──────────────────────────────────────────────
+  // Transaction history
+  const [transactions, setTransactions] = useState([]);
+  const [txLoading, setTxLoading] = useState(false);
+
+  // Add Holding Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState({ symbol: '', name: '', quantity: '', avgBuyPrice: '', sector: '' });
   const [addLoading, setAddLoading] = useState(false);
+
+  // Sell Modal
+  const [sellHolding, setSellHolding] = useState(null); // holding object
+  const [toast, setToast] = useState(null);
 
   const fetchPortfolio = useCallback(async () => {
     try {
@@ -65,12 +373,25 @@ export default function Portfolio() {
     }
   }, []);
 
-  // Initial load + 60s polling for live prices
+  const fetchTransactions = useCallback(async () => {
+    if (!authService.isAuthenticated()) return;
+    setTxLoading(true);
+    try {
+      const txs = await transactionService.getTransactions({ limit: 100 });
+      setTransactions(txs);
+    } catch {
+      /* silent */
+    } finally {
+      setTxLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchPortfolio();
+    fetchTransactions();
     const interval = setInterval(fetchPortfolio, 60000);
     return () => clearInterval(interval);
-  }, [fetchPortfolio]);
+  }, [fetchPortfolio, fetchTransactions]);
 
   // ─── Add holding handler ──────────────────────────────────────────────────
   const handleAddHolding = async (e) => {
@@ -78,46 +399,34 @@ export default function Portfolio() {
     if (!addForm.symbol || !addForm.quantity || !addForm.avgBuyPrice) return;
     setAddLoading(true);
     try {
-      const portfolioId = portfolioData?.portfolio?._id;
-      if (!portfolioId) {
-        // Create default portfolio first
-        const createRes = await fetch(`${API_URL}/api/portfolio`, {
-          method: 'POST',
-          headers: authService.getAuthHeaders(),
-          body: JSON.stringify({ name: 'My Portfolio', isDefault: true })
-        });
-        const created = await createRes.json();
-        if (!created.success) throw new Error("Failed to create portfolio");
-      }
-      const pid = portfolioId || (await (await fetch(`${API_URL}/api/portfolio`, { headers: authService.getAuthHeaders() })).json()).data[0]?._id;
-
-      const res = await fetch(`${API_URL}/api/portfolio/${pid}/holding`, {
-        method: 'POST',
-        headers: authService.getAuthHeaders(),
-        body: JSON.stringify({
-          symbol: addForm.symbol.toUpperCase(),
-          name: addForm.name || addForm.symbol.toUpperCase(),
-          quantity: Number(addForm.quantity),
-          avgBuyPrice: Number(addForm.avgBuyPrice),
-          sector: addForm.sector || 'Other'
-        })
-      });
-      const result = await res.json();
-      if (result.success) {
-        setShowAddModal(false);
-        setAddForm({ symbol: '', name: '', quantity: '', avgBuyPrice: '', sector: '' });
-        fetchPortfolio(); // Refresh
-      } else {
-        alert(result.message || "Failed to add holding");
-      }
+      await transactionService.buy(
+        addForm.symbol,
+        addForm.name || addForm.symbol.toUpperCase(),
+        addForm.quantity,
+        addForm.avgBuyPrice,
+        addForm.sector || 'Other'
+      );
+      setShowAddModal(false);
+      setAddForm({ symbol: '', name: '', quantity: '', avgBuyPrice: '', sector: '' });
+      fetchPortfolio();
+      fetchTransactions();
+      setToast({ message: `${addForm.symbol.toUpperCase()} added to portfolio!`, type: 'buy' });
     } catch (err) {
-      alert("Error adding holding: " + err.message);
+      alert(err.message || "Failed to add holding");
     } finally {
       setAddLoading(false);
     }
   };
 
-  // ─── Computed chart data ──────────────────────────────────────────────────
+  // ─── Sell handler ─────────────────────────────────────────────────────────
+  const handleSellSuccess = () => {
+    setSellHolding(null);
+    fetchPortfolio();
+    fetchTransactions();
+    setToast({ message: 'Sell order recorded successfully!', type: 'sell' });
+  };
+
+  // ─── Chart data ───────────────────────────────────────────────────────────
   const computed = useMemo(() => {
     if (!portfolioData) return null;
     const { summary, holdings, sectorAllocation, topGainers, recentTransactions } = portfolioData;
@@ -141,12 +450,10 @@ export default function Portfolio() {
   const performanceData = useMemo(() => {
     if (!computed?.summary) return null;
     const { totalInvested, totalCurrentValue } = computed.summary;
-    // Generate synthetic performance curve from invested → current
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
     const step = (totalCurrentValue - totalInvested * 0.9) / (months.length - 1);
     const portfolioLine = months.map((_, i) => Math.round(totalInvested * 0.9 + step * i));
     const benchmarkLine = months.map((_, i) => Math.round(totalInvested * 0.85 + (totalInvested * 0.2 / (months.length - 1)) * i));
-
     return {
       labels: months,
       datasets: [
@@ -198,11 +505,10 @@ export default function Portfolio() {
   const s = computed?.summary || {};
   const holdings = computed?.holdings || [];
   const sectors = computed?.sectorAllocation || [];
-  const gainers = computed?.topGainers || [];
-  const txns = computed?.recentTransactions || [];
 
   return (
     <div className="container-fluid py-4 min-vh-100" style={{ background: 'var(--bg-dark)' }}>
+      {/* ─── Header ────────────────────────────────────────────────────────── */}
       <div className="mb-4 ps-2 d-flex justify-content-between align-items-center">
         <div>
           <h2 className="fw-bold text-white mb-1">Portfolio Overview</h2>
@@ -212,7 +518,7 @@ export default function Portfolio() {
           </p>
         </div>
         <div className="d-flex gap-2">
-          <button className="btn btn-sm btn-outline-primary" onClick={fetchPortfolio} title="Refresh prices">
+          <button className="btn btn-sm btn-outline-primary" onClick={() => { fetchPortfolio(); fetchTransactions(); }} title="Refresh prices">
             🔄 Refresh
           </button>
           <button className="btn btn-sm btn-primary" onClick={() => setShowAddModal(true)}>
@@ -221,7 +527,7 @@ export default function Portfolio() {
         </div>
       </div>
 
-      {/* ─── Top Stat Cards ──────────────────────────────────────────── */}
+      {/* ─── Top Stat Cards ───────────────────────────────────────────────── */}
       <div className="mini-stats-grid mb-4">
         <div className="bg-glass-card stat-card-glow-blue hover-glow">
           <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Invested</p>
@@ -251,7 +557,7 @@ export default function Portfolio() {
         </div>
       </div>
 
-      {/* ─── Main Grid ───────────────────────────────────────────────── */}
+      {/* ─── Main Grid ────────────────────────────────────────────────────── */}
       <div className="portfolio-grid">
         <div className="d-flex flex-column gap-4">
           {/* Allocation Donut */}
@@ -291,12 +597,12 @@ export default function Portfolio() {
               <div className="bg-glass-card h-100">
                 <h6 className="text-white mb-3 fw-bold">Recent Transactions</h6>
                 <div className="d-flex flex-column gap-2">
-                  {txns.length > 0 ? txns.slice(0, 5).map((tx, i) => (
+                  {transactions.length > 0 ? transactions.slice(0, 5).map((tx, i) => (
                     <div key={i} className="d-flex justify-content-between align-items-center p-2 rounded-3" style={{ background: 'rgba(255,255,255,0.02)' }}>
                       <div>
                         <span className="text-white d-block small fw-bold">{tx.symbol}</span>
                         <span className="text-muted" style={{ fontSize: '0.65rem' }}>
-                          {new Date(tx.executedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} •
+                          {formatDate(tx.executedAt)} •
                           <span className={tx.type === 'BUY' ? ' text-success' : ' text-danger'}> {tx.type}</span>
                         </span>
                       </div>
@@ -342,14 +648,32 @@ export default function Portfolio() {
                         <span className="text-muted ms-2" style={{ fontSize: '0.6rem' }}>{row.name}</span>
                       )}
                     </div>
-                    <span className="text-white small fw-bold">{formatMoney(row.currentValue)}</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="text-white small fw-bold">{formatMoney(row.currentValue)}</span>
+                      {/* ── Sell Button ── */}
+                      <button
+                        className="btn btn-sm"
+                        style={{
+                          fontSize: '0.65rem',
+                          padding: '2px 8px',
+                          background: 'rgba(239,68,68,0.12)',
+                          color: '#ef4444',
+                          border: '1px solid rgba(239,68,68,0.25)',
+                          borderRadius: '6px',
+                          lineHeight: 1.4
+                        }}
+                        onClick={() => setSellHolding(row)}
+                      >
+                        Sell
+                      </button>
+                    </div>
                   </div>
                   <div className="d-flex justify-content-between align-items-center mb-1">
                     <span className="text-muted" style={{ fontSize: '0.65rem' }}>
                       {row.quantity} Shares @ {formatMoney(row.avgBuyPrice)}
                     </span>
                     <span className={`small ${row.profitLoss >= 0 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.7rem' }}>
-                      {row.profitLossPct >= 0 ? '+' : ''}{row.profitLossPct.toFixed(2)}%
+                      {row.profitLossPct >= 0 ? '+' : ''}{(row.profitLossPct ?? 0).toFixed(2)}%
                     </span>
                   </div>
                   <div className="d-flex justify-content-between align-items-center">
@@ -374,7 +698,13 @@ export default function Portfolio() {
         </div>
       </div>
 
-      {/* ─── Add Holding Modal ───────────────────────────────────────── */}
+      {/* ─── P&L Breakdown Table ──────────────────────────────────────────── */}
+      <PnLTable holdings={holdings} />
+
+      {/* ─── Transaction History ──────────────────────────────────────────── */}
+      <TransactionHistory transactions={transactions} loading={txLoading} />
+
+      {/* ─── Add Holding Modal ───────────────────────────────────────────── */}
       {showAddModal && (
         <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.7)', zIndex: 9999 }}>
           <div className="bg-glass-card p-4" style={{ width: '420px', maxWidth: '95vw', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -425,6 +755,40 @@ export default function Portfolio() {
               </button>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* ─── Sell Modal ───────────────────────────────────────────────────── */}
+      {sellHolding && (
+        <SellModal
+          holding={sellHolding}
+          onClose={() => setSellHolding(null)}
+          onSuccess={handleSellSuccess}
+        />
+      )}
+
+      {/* ─── Toast Notification ───────────────────────────────────────────── */}
+      {toast && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            zIndex: 10000,
+            background: toast.type === 'buy' ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)',
+            color: 'white',
+            padding: '14px 22px',
+            borderRadius: '12px',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+          }}
+          onClick={() => setToast(null)}
+        >
+          {toast.type === 'buy' ? '✅' : '📤'} {toast.message}
         </div>
       )}
     </div>
