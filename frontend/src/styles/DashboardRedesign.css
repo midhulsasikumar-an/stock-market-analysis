@@ -1,0 +1,581 @@
+:root {
+    --dash-bg: #050614;
+    --dash-card: #0c0d21;
+    --dash-card-alt: #121430;
+    --dash-border: rgba(255, 255, 255, 0.08);
+    --dash-primary: #6366f1;
+    --dash-secondary: #a855f7;
+    --dash-accent-green: #2ef08a;
+    --dash-accent-red: #ff3e3e;
+    --dash-accent-blue: #2ec8f0;
+    --dash-text: #ffffff;
+    --dash-text-muted: #94a3b8;
+    --glass-effect: blur(10px) saturate(150%);
+}
+
+.dashboard-redesign {
+    background-color: var(--dash-bg);
+    background-image:
+        radial-gradient(circle at 0% 0%, rgba(46, 240, 138, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(46, 200, 240, 0.04) 0%, transparent 50%);
+    color: var(--dash-text);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    padding-bottom: 2rem;
+}
+
+/* ============================================================
+   DASHBOARD NAVBAR — Original premium style
+   ============================================================ */
+.dashboard-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.7rem 2rem;
+    background: rgba(5, 6, 20, 0.85);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+}
+
+.navbar-brand-dash {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+}
+
+.brand-logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.brand-name {
+    font-weight: 800;
+    font-size: 1.15rem;
+    background: linear-gradient(135deg,
+            #c0c0c0 0%,
+            #ffffff 30%,
+            #a8a8a8 55%,
+            #d8d8d8 75%,
+            #888888 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.3px;
+}
+
+.navbar-links-dash {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.35rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.nav-pill-dash {
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--dash-text-muted);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.nav-pill-dash:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-pill-dash.active {
+    background: rgba(46, 240, 138, 0.12);
+    color: var(--dash-accent-green);
+    font-weight: 600;
+}
+
+.navbar-actions-dash {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-search-dash {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nav-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--dash-text-muted);
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+.nav-search-input {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 0.45rem 1rem 0.45rem 2.2rem;
+    color: #fff;
+    font-size: 0.82rem;
+    width: 220px;
+    transition: all 0.25s;
+    outline: none;
+}
+
+.nav-search-input::placeholder {
+    color: var(--dash-text-muted);
+}
+
+.nav-search-input:focus {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--dash-accent-green);
+    width: 260px;
+}
+
+/* Hero Section */
+.hero-redesign {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.hero-title-redesign {
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+}
+
+.hero-subtitle-redesign {
+    color: var(--dash-text-muted);
+    font-size: 1rem;
+}
+
+/* Layout */
+.dash-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem 0;
+    align-items: start;
+}
+
+.dash-content-grid.no-sidebar {
+    grid-template-columns: 1fr;
+}
+
+.dashboard-main {
+    min-width: 0;
+}
+
+/* Watchlist Sidebar — sticky column, fixed height box */
+.sidebar-redesign {
+    position: sticky;
+    top: 90px;
+    /* Leave space for navbar + padding */
+    max-height: calc(100vh - 130px);
+    /* Fit within screen with margins */
+    display: flex;
+    flex-direction: column;
+}
+
+.watch-card-redesign {
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 100%;
+}
+
+.watch-header-redesign {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.watch-title-redesign {
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-count-redesign {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--dash-primary);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.watch-search-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--dash-border);
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    color: #fff;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.watch-search-input:focus {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--dash-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.watchlist-item-redesign {
+    padding: 0.75rem;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.watchlist-item-redesign:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.watchlist-item-redesign.active {
+    background: rgba(99, 102, 241, 0.05);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.symbol-badge-redesign {
+    width: 40px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--dash-primary), var(--dash-secondary));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 2px;
+}
+
+.symbol-name-redesign {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #fff;
+}
+
+.price-label-redesign {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.change-label-redesign {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.change-label-redesign.up {
+    color: var(--dash-accent-green);
+}
+
+.change-label-redesign.down {
+    color: var(--dash-accent-red);
+}
+
+.remove-btn-redesign {
+    background: none;
+    border: none;
+    color: var(--dash-text-muted);
+    font-size: 1.2rem;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+    padding: 0 0.5rem;
+}
+
+.watchlist-item-redesign:hover .remove-btn-redesign {
+    opacity: 1;
+}
+
+.watch-detail-redesign {
+    animation: fadeInSlide 0.3s ease-out;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.status-dot {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    letter-spacing: 1px;
+}
+
+.status-dot.open {
+    background: rgba(46, 240, 138, 0.1);
+    color: var(--dash-accent-green);
+}
+
+.status-dot.closed {
+    background: rgba(255, 62, 62, 0.1);
+    color: var(--dash-accent-red);
+}
+
+.news-mini-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    border: 1px solid var(--dash-border);
+    transition: background 0.2s;
+}
+
+.news-mini-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--dash-border);
+    border-radius: 10px;
+}
+
+/* Market Overview */
+.market-card-redesign {
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.market-tabs-redesign {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.market-tab-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--dash-border);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    color: var(--dash-text-muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.market-tab-btn.active {
+    background: var(--dash-card-alt);
+    border-color: var(--dash-primary);
+    color: #fff;
+}
+
+/* Bottom Grid Cards */
+.bottom-grid-redesign {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    padding: 1.5rem 2rem;
+}
+
+.bottom-card-redesign {
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.bottom-card-redesign:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.bottom-card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.bottom-card-symbol {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.bottom-card-price {
+    font-size: 0.85rem;
+    color: var(--dash-text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.bottom-card-change {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Global Activity strip */
+.global-activity-redesign {
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.activity-item-redesign {
+    display: flex;
+    flex-direction: column;
+}
+
+.activity-label-redesign {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--dash-text-muted);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.5px;
+}
+
+.activity-value-redesign {
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+/* Index Pills Strip at the very bottom */
+.footer-indices-redesign {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+.index-pill-redesign {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--dash-border);
+    border-radius: 20px;
+    padding: 0.4rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--dash-text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.index-pill-redesign:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Market News Redesign */
+.market-news-redesign {
+    padding: 1.5rem 2rem;
+}
+
+.news-grid-redesign {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+}
+
+.news-card-redesign {
+    background: var(--dash-card);
+    border: 1px solid var(--dash-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.news-card-redesign:hover {
+    border-color: var(--dash-primary);
+    transform: translateY(-2px);
+    background: var(--dash-card-alt);
+}
+
+.news-tag-redesign {
+    font-size: 0.7rem;
+    color: var(--dash-primary);
+    background: rgba(99, 102, 241, 0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    align-self: flex-start;
+}
+
+.news-headline-redesign {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #fff;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+}
+
+.news-meta-redesign {
+    font-size: 0.7rem;
+    color: var(--dash-text-muted);
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid var(--dash-border);
+    padding-top: 0.75rem;
+}
