@@ -47,6 +47,8 @@ const adminService = {
     getPortfolioInspector: (userId) => request(`/portfolio-inspector/${userId}`),
     getAnalytics: (params = {}) => request(`/analytics${buildQuery(params)}`),
     getActivityTimeline: (days = 30) => request(`/analytics/activity${buildQuery({ days })}`),
+    getWatchlistVsPortfolio: () => request('/analytics/watchlist-vs-portfolio'),
+    getLatencyHistory: (days = 7) => request(`/health/latency-history${buildQuery({ days })}`),
     getActivityLogs: (params = {}) => request(`/activity-log${buildQuery(params)}`),
     getSystemHealth: () => request('/system-health'),
     getPlatformSettings: () => request('/platform-settings'),

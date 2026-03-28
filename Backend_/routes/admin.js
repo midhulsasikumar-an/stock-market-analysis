@@ -23,6 +23,8 @@ const finnhubClient = axios.create({
     baseURL: "https://finnhub.io/api/v1",
     timeout: 10000
 });
+const FINNHUB_LATENCY_HISTORY_MAX = 500;
+const finnhubLatencyHistory = [];
 
 router.use(authMiddleware);
 router.use(adminMiddleware);
@@ -49,6 +51,20 @@ function getGroupFormat(period) {
         case "1Y": return "%Y-%m";
         case "ALL": return "%Y-%m";
         default: return "%Y-%m";
+    }
+}
+
+function recordFinnhubLatency(latency) {
+    const value = Number(latency);
+    if (!Number.isFinite(value) || value < 0) return;
+
+    finnhubLatencyHistory.push({
+        timestamp: new Date().toISOString(),
+        latency: value
+    });
+
+    if (finnhubLatencyHistory.length > FINNHUB_LATENCY_HISTORY_MAX) {
+        finnhubLatencyHistory.splice(0, finnhubLatencyHistory.length - FINNHUB_LATENCY_HISTORY_MAX);
     }
 }
 
@@ -520,6 +536,7 @@ router.get("/system-health", async (req, res) => {
                 });
                 finnhubLatency = Date.now() - finnhubStart;
                 finnhubStatus = "Connected";
+                recordFinnhubLatency(finnhubLatency);
             } catch (error) {
                 finnhubStatus = "Failed";
             }
@@ -563,6 +580,25 @@ router.get("/system-health", async (req, res) => {
     } catch (error) {
         console.error("Admin system health error:", error.message);
         return res.status(500).json({ success: false, message: "Error fetching system health" });
+    }
+});
+
+router.get("/health/latency-history", async (req, res) => {
+    try {
+        const days = Math.min(Math.max(parseInt(req.query.days, 10) || 7, 1), 30);
+        const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+        const data = finnhubLatencyHistory
+            .filter((entry) => {
+                const ts = new Date(entry.timestamp);
+                return !Number.isNaN(ts.getTime()) && ts >= cutoff;
+            })
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        return res.json({ success: true, data, meta: { days, total: data.length } });
+    } catch (error) {
+        console.error("Admin latency history error:", error.message);
+        return res.status(500).json({ success: false, message: "Error fetching latency history" });
     }
 });
 
@@ -958,6 +994,60 @@ router.get("/analytics/activity", async (req, res) => {
     } catch (error) {
         console.error("Admin activity timeline error:", error.message);
         return res.status(500).json({ success: false, message: "Error fetching activity timeline" });
+    }
+});
+
+router.get("/analytics/watchlist-vs-portfolio", async (req, res) => {
+    try {
+        const [watchlistAgg, portfolioAgg] = await Promise.all([
+            WatchlistUser.aggregate([
+                {
+                    $group: {
+                        _id: "$symbol",
+                        watchingUsersSet: { $addToSet: "$userId" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        watchingUsers: { $size: "$watchingUsersSet" }
+                    }
+                },
+                { $sort: { watchingUsers: -1, _id: 1 } },
+                { $limit: 10 }
+            ]),
+            Portfolio.aggregate([
+                { $unwind: "$holdings" },
+                {
+                    $group: {
+                        _id: "$holdings.symbol",
+                        investedUsersSet: { $addToSet: "$userId" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        investedUsers: { $size: "$investedUsersSet" }
+                    }
+                }
+            ])
+        ]);
+
+        const investedMap = portfolioAgg.reduce((acc, item) => {
+            acc[item._id] = item.investedUsers || 0;
+            return acc;
+        }, {});
+
+        const data = watchlistAgg.map((item) => ({
+            symbol: item._id,
+            watchingUsers: item.watchingUsers || 0,
+            investedUsers: investedMap[item._id] || 0
+        }));
+
+        return res.json({ success: true, data });
+    } catch (error) {
+        console.error("Admin watchlist-vs-portfolio error:", error.message);
+        return res.status(500).json({ success: false, message: "Error fetching watchlist vs portfolio analytics" });
     }
 });
 

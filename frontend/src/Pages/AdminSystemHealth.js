@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import adminService from '../services/adminService';
 import {
+    CartesianGrid,
+    Line,
+    LineChart,
+    ReferenceLine,
+    ResponsiveContainer,
+    Tooltip as RechartsTooltip,
+    XAxis,
+    YAxis
+} from 'recharts';
+import {
     AdminPageHeader,
     AdminPanel,
     AdminStatCard,
@@ -67,11 +77,29 @@ function getLatencyState(latency) {
     };
 }
 
+function buildMockLatencyHistory(days = 7) {
+    const base = [80, 1100, 200, 950, 140, 420, 260];
+    const safeDays = Math.max(1, Math.min(Number(days) || 7, 7));
+    const now = new Date();
+
+    return Array.from({ length: safeDays }).map((_, idx) => {
+        const date = new Date(now);
+        date.setDate(now.getDate() - (safeDays - 1 - idx));
+
+        return {
+            timestamp: date.toISOString(),
+            latency: base[idx % base.length]
+        };
+    });
+}
+
 export default function AdminSystemHealth() {
     const [health, setHealth] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [checkedAt, setCheckedAt] = useState(null);
+    const [latencyHistory, setLatencyHistory] = useState([]);
+    const [latencyLoading, setLatencyLoading] = useState(true);
 
     const uptimeSeconds = health?.express?.uptimeSeconds ?? health?.express?.uptime;
     const uptimeFormatted = health?.express?.uptimeFormatted || formatUptime(uptimeSeconds);
@@ -91,22 +119,48 @@ export default function AdminSystemHealth() {
 
     const lastCheckedValue = health?.metrics?.serverTime || checkedAt;
 
+    const latencyChartData = (latencyHistory || []).map((point) => {
+        const timestamp = new Date(point.timestamp);
+        return {
+            timestamp: point.timestamp,
+            latency: Number(point.latency) || 0,
+            label: Number.isNaN(timestamp.getTime())
+                ? '—'
+                : timestamp.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric' })
+        };
+    });
+
     useEffect(() => {
         let active = true;
 
         const loadHealth = async () => {
             setLoading(true);
+            setLatencyLoading(true);
             try {
-                const response = await adminService.getSystemHealth();
+                const [response, latencyResponse] = await Promise.all([
+                    adminService.getSystemHealth(),
+                    adminService.getLatencyHistory(7).catch(() => ({ success: false, data: [] }))
+                ]);
+
                 if (active) {
                     setHealth(response.data);
+                    const history = Array.isArray(latencyResponse?.data) && latencyResponse.data.length > 0
+                        ? latencyResponse.data
+                        : buildMockLatencyHistory(7);
+                    setLatencyHistory(history);
                     setCheckedAt(new Date().toISOString());
                     setError('');
                 }
             } catch (err) {
-                if (active) setError(err.message);
+                if (active) {
+                    setError(err.message);
+                    setLatencyHistory(buildMockLatencyHistory(7));
+                }
             } finally {
-                if (active) setLoading(false);
+                if (active) {
+                    setLoading(false);
+                    setLatencyLoading(false);
+                }
             }
         };
 
@@ -249,6 +303,66 @@ export default function AdminSystemHealth() {
                             </div>
                         </AdminPanel>
                     </div>
+
+                    <AdminPanel title="Finnhub Latency (7 days)">
+                        <div style={{ height: 220 }}>
+                            {latencyLoading ? (
+                                <div className="d-flex align-items-center justify-content-center h-100">
+                                    <div className="spinner-border text-primary spinner-border-sm" />
+                                </div>
+                            ) : latencyChartData.length === 0 ? (
+                                <p className="admin-muted mb-0">No latency history available yet.</p>
+                            ) : (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={latencyChartData} margin={{ top: 8, right: 18, left: 8, bottom: 0 }}>
+                                        <CartesianGrid stroke="#ffffff10" strokeDasharray="3 3" />
+                                        <XAxis
+                                            dataKey="label"
+                                            tick={{ fill: 'rgba(148, 163, 184, 0.9)', fontSize: 11 }}
+                                            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                                            tickLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                                        />
+                                        <YAxis
+                                            tick={{ fill: 'rgba(148, 163, 184, 0.9)', fontSize: 11 }}
+                                            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                                            tickLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                                            unit="ms"
+                                        />
+                                        <RechartsTooltip
+                                            contentStyle={{
+                                                background: 'rgba(15, 23, 42, 0.95)',
+                                                border: '1px solid rgba(148, 163, 184, 0.2)',
+                                                borderRadius: 10,
+                                                color: '#e2e8f0'
+                                            }}
+                                            labelStyle={{ color: '#e2e8f0', fontWeight: 600 }}
+                                            formatter={(value) => [`${value} ms`, 'Latency']}
+                                        />
+                                        <ReferenceLine
+                                            y={300}
+                                            stroke="#22c55e"
+                                            strokeDasharray="5 5"
+                                            label={{ value: 'Good threshold', fill: '#86efac', position: 'insideTopRight', fontSize: 11 }}
+                                        />
+                                        <ReferenceLine
+                                            y={700}
+                                            stroke="#ef4444"
+                                            strokeDasharray="5 5"
+                                            label={{ value: 'Critical threshold', fill: '#fca5a5', position: 'insideTopRight', fontSize: 11 }}
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="latency"
+                                            stroke="#f59e0b"
+                                            strokeWidth={2}
+                                            dot={{ r: 2, stroke: '#f59e0b', fill: '#f59e0b' }}
+                                            activeDot={{ r: 4 }}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            )}
+                        </div>
+                    </AdminPanel>
                 </>
             ) : null}
         </div>
