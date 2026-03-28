@@ -10,12 +10,30 @@ import {
     formatMoney
 } from '../components/admin/AdminUI';
 
+const DEFAULT_FILTERS = { userId: '', symbol: '', startDate: '', endDate: '', type: '' };
+
+function buildTransactionParams(filters, page) {
+    const activeFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (typeof value !== 'string') return acc;
+        const normalized = value.trim();
+        if (!normalized) return acc;
+        acc[key] = normalized;
+        return acc;
+    }, {});
+
+    return {
+        ...activeFilters,
+        page,
+        limit: 50
+    };
+}
+
 export default function AdminTradesExplorer() {
     const [users, setUsers] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, pages: 1 });
     const [summary, setSummary] = useState({ totalVolume: 0, buyCount: 0, sellCount: 0 });
-    const [filters, setFilters] = useState({ userId: '', symbol: '', startDate: '', endDate: '', type: '' });
+    const [filters, setFilters] = useState(DEFAULT_FILTERS);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -31,11 +49,7 @@ export default function AdminTradesExplorer() {
         const loadTransactions = async () => {
             setLoading(true);
             try {
-                const response = await adminService.getTransactions({
-                    ...filters,
-                    page: pagination.page,
-                    limit: 50
-                });
+                const response = await adminService.getTransactions(buildTransactionParams(filters, pagination.page));
                 if (!cancelled) {
                     setTransactions(response.data || []);
                     setPagination(response.pagination || { page: 1, pages: 1 });
@@ -58,6 +72,11 @@ export default function AdminTradesExplorer() {
     const updateFilter = (key, value) => {
         setPagination((current) => ({ ...current, page: 1 }));
         setFilters((current) => ({ ...current, [key]: value }));
+    };
+
+    const clearFilters = () => {
+        setPagination((current) => ({ ...current, page: 1 }));
+        setFilters(DEFAULT_FILTERS);
     };
 
     return (
@@ -88,6 +107,10 @@ export default function AdminTradesExplorer() {
                         <option value="BUY">BUY</option>
                         <option value="SELL">SELL</option>
                     </select>
+                </div>
+
+                <div className="admin-panel-actions" style={{ justifyContent: 'flex-start', marginTop: 12 }}>
+                    <button type="button" className="admin-outline-button" onClick={clearFilters}>Clear filters</button>
                 </div>
 
                 {error ? <p className="text-danger mb-3">{error}</p> : null}

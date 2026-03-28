@@ -136,15 +136,30 @@ async function getTransactionCountMap() {
 }
 
 function buildDateRangeFilter(startDate, endDate) {
-    if (!startDate && !endDate) return undefined;
+    const normalizedStart = typeof startDate === "string" ? startDate.trim() : startDate;
+    const normalizedEnd = typeof endDate === "string" ? endDate.trim() : endDate;
+
+    const isMissing = (value) => !value || value === "undefined" || value === "null";
+    if (isMissing(normalizedStart) && isMissing(normalizedEnd)) return undefined;
+
     const range = {};
-    if (startDate) range.$gte = new Date(startDate);
-    if (endDate) {
-        const end = new Date(endDate);
+    if (!isMissing(normalizedStart)) {
+        const start = new Date(normalizedStart);
+        if (!Number.isNaN(start.getTime())) {
+            range.$gte = start;
+        }
+    }
+
+    if (!isMissing(normalizedEnd)) {
+        const end = new Date(normalizedEnd);
+        if (Number.isNaN(end.getTime())) {
+            return Object.keys(range).length ? range : undefined;
+        }
         end.setHours(23, 59, 59, 999);
         range.$lte = end;
     }
-    return range;
+
+    return Object.keys(range).length ? range : undefined;
 }
 
 async function fetchFinnhubSymbols(exchange) {
@@ -461,14 +476,35 @@ router.get("/users", async (req, res) => {
         ]);
 
         const enriched = users
-            .map((user) => ({
-                ...user,
-                portfolioValue: portfolioValueMap[user._id.toString()] || 0,
-                transactionCount: transactionCountMap[user._id.toString()] || 0
-            }))
+            .map((user) => {
+                const combinedName = [user.firstName, user.lastName]
+                    .filter(Boolean)
+                    .join(" ")
+                    .trim();
+                const emailPrefix = typeof user.email === "string" ? user.email.split("@")[0] : "";
+                const resolvedName = user.username
+                    || user.name
+                    || user.displayName
+                    || user.fullName
+                    || combinedName
+                    || emailPrefix
+                    || "Unknown User";
+
+                return {
+                    ...user,
+                    username: resolvedName,
+                    name: resolvedName,
+                    displayName: resolvedName,
+                    fullName: combinedName || resolvedName,
+                    portfolioValue: portfolioValueMap[user._id.toString()] || 0,
+                    transactionCount: transactionCountMap[user._id.toString()] || 0
+                };
+            })
             .filter((user) => {
                 if (!search) return true;
                 return user.username?.toLowerCase().includes(search)
+                    || user.displayName?.toLowerCase().includes(search)
+                    || user.fullName?.toLowerCase().includes(search)
                     || user.email?.toLowerCase().includes(search);
             });
 
@@ -486,10 +522,18 @@ router.get("/transactions", async (req, res) => {
         const skip = (page - 1) * limit;
         const query = {};
 
-        if (req.query.userId) query.userId = req.query.userId;
-        if (req.query.symbol) query.symbol = req.query.symbol.toUpperCase();
-        if (req.query.type && ["BUY", "SELL"].includes(req.query.type.toUpperCase())) {
-            query.type = req.query.type.toUpperCase();
+        const userId = typeof req.query.userId === "string" ? req.query.userId.trim() : "";
+        const symbol = typeof req.query.symbol === "string" ? req.query.symbol.trim().toUpperCase() : "";
+        const type = typeof req.query.type === "string" ? req.query.type.trim().toUpperCase() : "";
+
+        if (userId && userId !== "undefined" && userId !== "null" && mongoose.Types.ObjectId.isValid(userId)) {
+            query.userId = userId;
+        }
+        if (symbol && symbol !== "UNDEFINED" && symbol !== "NULL") {
+            query.symbol = symbol;
+        }
+        if (type && ["BUY", "SELL"].includes(type)) {
+            query.type = type;
         }
 
         const dateRange = buildDateRangeFilter(req.query.startDate, req.query.endDate);

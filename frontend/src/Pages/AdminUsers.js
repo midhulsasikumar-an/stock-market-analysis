@@ -10,6 +10,23 @@ import {
     formatMoney
 } from '../components/admin/AdminUI';
 
+function getUserDisplayName(user = {}) {
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+    const emailPrefix = typeof user.email === 'string' ? user.email.split('@')[0] : '';
+    const candidates = [
+        user.username,
+        user.name,
+        user.displayName,
+        user.fullName,
+        fullName,
+        emailPrefix,
+        'Unknown User'
+    ];
+
+    const match = candidates.find((value) => typeof value === 'string' && value.trim().length > 0);
+    return match ? match.trim() : 'Unknown User';
+}
+
 export default function AdminUsers() {
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
@@ -23,6 +40,7 @@ export default function AdminUsers() {
             setLoading(true);
             try {
                 const response = await adminService.getUsers({ search });
+                console.log('[AdminUsers] getUsers full response:', response);
                 setUsers(response.data || []);
                 setError('');
             } catch (err) {
@@ -49,7 +67,8 @@ export default function AdminUsers() {
     };
 
     const handleDelete = async (user) => {
-        if (!window.confirm(`Delete ${user.username} and all related portfolio data?`)) return;
+        const displayName = getUserDisplayName(user);
+        if (!window.confirm(`Delete ${displayName} and all related portfolio data?`)) return;
         setBusyId(user._id);
         try {
             await adminService.deleteUser(user._id);
@@ -92,13 +111,17 @@ export default function AdminUsers() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.map((user) => (
+                                {users.map((user) => {
+                                    const displayName = getUserDisplayName(user);
+                                    const avatarLetter = displayName.charAt(0).toUpperCase();
+
+                                    return (
                                     <tr key={user._id}>
                                         <td>
                                             <div className="admin-user-cell">
-                                                <div className="admin-avatar">{user.username?.slice(0, 1)?.toUpperCase()}</div>
+                                                <div className="admin-avatar">{avatarLetter}</div>
                                                 <div>
-                                                    <strong>{user.username}</strong>
+                                                    <strong>{displayName}</strong>
                                                     <div className="admin-muted">{user.role === 'admin' ? 'Administrator' : 'Investor'}</div>
                                                 </div>
                                             </div>
@@ -136,7 +159,8 @@ export default function AdminUsers() {
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
