@@ -5,6 +5,7 @@ const Portfolio = require("../models/Portfolio");
 const Transaction = require("../models/Transaction");
 const StockCache = require("../models/StockCache");
 const { authMiddleware } = require("../middleware/auth");
+const { canUserAccessSymbol } = require("../utils/stockVisibility");
 
 // ─── Shared: Fetch live price with cache check ─────────────────────────────
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
@@ -204,6 +205,10 @@ router.post("/:id/holding", authMiddleware, async (req, res) => {
         }
         if (quantity <= 0) {
             return res.status(400).json({ success: false, message: "Quantity must be positive" });
+        }
+        const canAccess = await canUserAccessSymbol(req.userId, symbol);
+        if (!canAccess) {
+            return res.status(403).json({ success: false, message: "This stock is currently disabled for user trading" });
         }
 
         const portfolio = await Portfolio.findOne({ _id: req.params.id, userId: req.userId });

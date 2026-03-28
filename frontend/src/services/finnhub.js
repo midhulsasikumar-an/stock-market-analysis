@@ -13,6 +13,7 @@
  *  fetchOverview(symbol)             → profile + metrics combined
  *  fetchSymbols(exchange)            → full list of tradable equities
  *  fetchSearch(query)                → symbol auto-complete
+ *  fetchSymbolVisibility(symbols)    → enabled/disabled status for user-facing symbols
  */
 
 import axios from "axios";
@@ -201,6 +202,19 @@ export const fetchSearch = async (query) => {
     } catch (err) {
         console.warn(`[finnhub] search failed for "${query}":`, err.response?.data?.error ?? err.message);
         return { count: 0, result: [] };
+    }
+};
+
+export const fetchSymbolVisibility = async (symbols = []) => {
+    try {
+        if (!Array.isArray(symbols) || symbols.length === 0) return [];
+        const { data } = await api.get('/visibility', {
+            params: { symbols: symbols.join(',') }
+        });
+        return Array.isArray(data?.data) ? data.data : [];
+    } catch (err) {
+        console.warn('[finnhub] visibility failed:', err.response?.data?.message ?? err.message);
+        return [];
     }
 };
 

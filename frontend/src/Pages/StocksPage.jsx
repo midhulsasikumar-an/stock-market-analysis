@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import NavbarDash from "../components/Navbar_Dash";
 import StocksFooter from "../components/StocksFooter";
 import { STOCK_SECTORS } from "../data/stocksData";
+import { fetchSymbolVisibility } from "../services/finnhub";
 import "./Stocks.css";
 
 const formatPercent = (value) => {
@@ -18,6 +19,28 @@ const formatMarketCap = (value) => {
 };
 
 export default function StocksPage() {
+  const [enabledSymbols, setEnabledSymbols] = useState(null);
+
+  useEffect(() => {
+    const allSymbols = STOCK_SECTORS.flatMap((sector) => sector.stocks.map((stock) => stock.symbol));
+    fetchSymbolVisibility(allSymbols).then((visibility) => {
+      const enabled = new Set(visibility.filter((item) => item.enabled).map((item) => item.symbol));
+      setEnabledSymbols(enabled);
+    });
+  }, []);
+
+  const visibleSectors = useMemo(() => {
+    if (!enabledSymbols) return STOCK_SECTORS;
+    return STOCK_SECTORS
+      .map((sector) => ({
+        ...sector,
+        stocks: sector.stocks.filter((stock) => enabledSymbols.has(stock.symbol))
+      }))
+      .filter((sector) => sector.stocks.length > 0);
+  }, [enabledSymbols]);
+
+  const totalVisibleStocks = visibleSectors.reduce((count, sector) => count + sector.stocks.length, 0);
+
   return (
     <div className="stocks-shell">
       <NavbarDash />
@@ -25,12 +48,12 @@ export default function StocksPage() {
         <header className="stocks-page-header">
           <div>
             <h1>Market Sector Explorer</h1>
-            <p>Browse {STOCK_SECTORS.length} sectors with {STOCK_SECTORS.reduce((n, s) => n + s.stocks.length, 0)}+ stocks. Click any sector for live quotes powered by Finnhub.</p>
+            <p>Browse {visibleSectors.length} sectors with {totalVisibleStocks}+ visible stocks. Click any sector for live quotes powered by Finnhub.</p>
           </div>
         </header>
 
         <section className="sector-card-grid">
-          {STOCK_SECTORS.map((sector) => (
+          {visibleSectors.map((sector) => (
             <article key={sector.id} className="sector-card">
               <div className="sector-card-top">
                 <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>

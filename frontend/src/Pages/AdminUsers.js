@@ -1,160 +1,147 @@
 import React, { useEffect, useState } from 'react';
-import authService from '../services/authService';
+import { useNavigate } from 'react-router-dom';
+import adminService from '../services/adminService';
+import {
+    AdminEmptyState,
+    AdminPageHeader,
+    AdminPanel,
+    AdminStatusPill,
+    formatDate,
+    formatMoney
+} from '../components/admin/AdminUI';
 
 export default function AdminUsers() {
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
+    const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+    const [error, setError] = useState('');
+    const [busyId, setBusyId] = useState('');
 
-    const fetchUsers = async () => {
+    useEffect(() => {
+        const timeout = setTimeout(async () => {
+            setLoading(true);
+            try {
+                const response = await adminService.getUsers({ search });
+                setUsers(response.data || []);
+                setError('');
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        }, 200);
+
+        return () => clearTimeout(timeout);
+    }, [search]);
+
+    const handleStatusToggle = async (user) => {
+        const nextStatus = user.accountStatus === 'active' ? 'suspended' : 'active';
+        setBusyId(user._id);
         try {
-            const response = await fetch(`${API_URL}/api/admin/users`, {
-                headers: authService.getAuthHeaders()
-            });
-            const json = await response.json();
-            if (json.success) setUsers(json.data);
-            else setError(json.message);
+            await adminService.updateUserStatus(user._id, nextStatus);
+            setUsers((current) => current.map((item) => item._id === user._id ? { ...item, accountStatus: nextStatus } : item));
         } catch (err) {
-            setError("Failed to load users");
+            setError(err.message);
         } finally {
-            setLoading(false);
+            setBusyId('');
         }
     };
 
-    useEffect(() => {
-        fetchUsers();
-    }, [API_URL]);
-
-    const toggleStatus = async (userId, currentStatus) => {
-        const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
+    const handleDelete = async (user) => {
+        if (!window.confirm(`Delete ${user.username} and all related portfolio data?`)) return;
+        setBusyId(user._id);
         try {
-            const res = await fetch(`${API_URL}/api/admin/users/${userId}/status`, {
-                method: 'PATCH',
-                headers: authService.getAuthHeaders(),
-                body: JSON.stringify({ accountStatus: newStatus })
-            });
-            const data = await res.json();
-            if (data.success) {
-                setUsers(users.map(u => u._id === userId ? { ...u, accountStatus: newStatus } : u));
-            } else {
-                alert(data.message);
-            }
-        } catch (err) { }
+            await adminService.deleteUser(user._id);
+            setUsers((current) => current.filter((item) => item._id !== user._id));
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setBusyId('');
+        }
     };
-
-    const deleteUser = async (userId) => {
-        if (!window.confirm("Are you sure you want to completely delete this user?")) return;
-        try {
-            const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
-                method: 'DELETE',
-                headers: authService.getAuthHeaders()
-            });
-            const data = await res.json();
-            if (data.success) {
-                setUsers(users.filter(u => u._id !== userId));
-            } else {
-                alert(data.message);
-            }
-        } catch (err) { }
-    };
-
-    const changeRole = async (userId, newRole) => {
-        if (!window.confirm(`Are you sure you want to make this user an ${newRole}?`)) return;
-        try {
-            const res = await fetch(`${API_URL}/api/admin/users/${userId}/role`, {
-                method: 'PATCH',
-                headers: authService.getAuthHeaders(),
-                body: JSON.stringify({ role: newRole })
-            });
-            const data = await res.json();
-            if (data.success) {
-                setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
-            } else {
-                alert(data.message);
-            }
-        } catch (err) { }
-    };
-
-    if (loading) return <div className="text-center mt-5"><div className="spinner-border text-primary" /></div>;
-    if (error) return <div className="text-danger mt-5">{error}</div>;
 
     return (
-        <div className="container-fluid py-4 min-vh-100" style={{ background: 'var(--bg-dark)' }}>
-            <div className="mb-4 ps-2">
-                <h2 className="fw-bold text-white mb-1">👥 User Management</h2>
-                <p className="text-muted small">Manage all registered accounts</p>
-            </div>
+        <div>
+            <AdminPageHeader
+                eyebrow="User operations"
+                title="User Management"
+                description="Search, review, suspend, reactivate, delete, or inspect investor accounts without leaving the admin tier."
+                actions={<input className="admin-form-control" placeholder="Search by user or email" value={search} onChange={(event) => setSearch(event.target.value)} />}
+            />
 
-            <div className="bg-glass-card p-4 overflow-auto">
-                <table className="table table-dark table-hover align-middle mb-0" style={{ background: 'transparent' }}>
-                    <thead>
-                        <tr style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                            <th className="text-muted small fw-bold py-3">User</th>
-                            <th className="text-muted small fw-bold py-3">Email</th>
-                            <th className="text-muted small fw-bold py-3">Role</th>
-                            <th className="text-muted small fw-bold py-3">Status</th>
-                            <th className="text-muted small fw-bold py-3">Joined</th>
-                            <th className="text-muted small fw-bold py-3 text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map(user => (
-                            <tr key={user._id} style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-                                <td className="py-3">
-                                    <div className="d-flex align-items-center gap-3">
-                                        <div className="rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
-                                            <span className="text-primary fw-bold small">{user.username?.charAt(0).toUpperCase()}</span>
-                                        </div>
-                                        <span className="text-white fw-medium">{user.username}</span>
-                                    </div>
-                                </td>
-                                <td className="text-muted py-3">{user.email}</td>
-                                <td className="py-3">
-                                    <select
-                                        className="form-select form-select-sm bg-dark text-white border-secondary"
-                                        value={user.role}
-                                        onChange={(e) => changeRole(user._id, e.target.value)}
-                                        style={{ width: '100px' }}
-                                        disabled={user.email === 'tradetrackadmin@gmail.com'}
-                                    >
-                                        <option value="user">User</option>
-                                        <option value="admin">Admin</option>
-                                    </select>
-                                </td>
-                                <td className="py-3">
-                                    <span className={`badge ${user.accountStatus === 'active' ? 'bg-success text-success' : 'bg-danger text-danger'} bg-opacity-10 border-0`}>
-                                        {user.accountStatus.toUpperCase()}
-                                    </span>
-                                </td>
-                                <td className="text-muted py-3 small">{new Date(user.createdAt).toLocaleDateString()}</td>
-                                <td className="py-3 text-end">
-                                    {user.role !== 'admin' && (
-                                        <div className="d-flex gap-2 justify-content-end">
-                                            <button
-                                                className={`btn btn-sm ${user.accountStatus === 'active' ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                                                onClick={() => toggleStatus(user._id, user.accountStatus)}
-                                            >
-                                                {user.accountStatus === 'active' ? 'Suspend' : 'Unsuspend'}
-                                            </button>
-                                            <button
-                                                className="btn btn-sm btn-outline-danger"
-                                                onClick={() => deleteUser(user._id)}
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
-                                    )}
-                                    {user.email === 'tradetrackadmin@gmail.com' && (
-                                        <span className="text-muted small fst-italic">Master Admin</span>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {users.length === 0 && <div className="text-center py-5 text-muted">No users found</div>}
-            </div>
+            <AdminPanel title="Registered users" subtitle={`${users.length} accounts loaded`}>
+                {error ? <p className="text-danger mb-3">{error}</p> : null}
+
+                {loading ? (
+                    <p className="admin-muted mb-0">Loading users...</p>
+                ) : users.length === 0 ? (
+                    <AdminEmptyState title="No users found" description="Try a different search term or wait for new registrations." />
+                ) : (
+                    <div className="admin-table-wrap">
+                        <table className="admin-data-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Portfolio Value</th>
+                                    <th>Transactions</th>
+                                    <th>Join Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users.map((user) => (
+                                    <tr key={user._id}>
+                                        <td>
+                                            <div className="admin-user-cell">
+                                                <div className="admin-avatar">{user.username?.slice(0, 1)?.toUpperCase()}</div>
+                                                <div>
+                                                    <strong>{user.username}</strong>
+                                                    <div className="admin-muted">{user.role === 'admin' ? 'Administrator' : 'Investor'}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{user.email}</td>
+                                        <td>{formatMoney(user.portfolioValue)}</td>
+                                        <td>{user.transactionCount}</td>
+                                        <td>{formatDate(user.createdAt)}</td>
+                                        <td><AdminStatusPill value={user.accountStatus} /></td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                                <button
+                                                    type="button"
+                                                    className="admin-outline-button"
+                                                    disabled={busyId === user._id || user.role === 'admin'}
+                                                    onClick={() => handleStatusToggle(user)}
+                                                >
+                                                    {user.accountStatus === 'active' ? 'Suspend' : 'Activate'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="admin-primary-button"
+                                                    onClick={() => navigate(`/admin/portfolios?userId=${user._id}`)}
+                                                >
+                                                    View Portfolio
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="admin-danger-button"
+                                                    disabled={busyId === user._id || user.role === 'admin'}
+                                                    onClick={() => handleDelete(user)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </AdminPanel>
         </div>
     );
 }

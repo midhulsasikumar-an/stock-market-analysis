@@ -2,8 +2,12 @@ const express = require("express");
 const axios = require("axios");
 const router = express.Router();
 const StockCache = require("../models/StockCache");
+const { optionalAuthMiddleware } = require("../middleware/auth");
+const { canUserAccessSymbol, filterVisibleSymbolsForUser, getVisibilityForSymbols } = require("../utils/stockVisibility");
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
+
+router.use(optionalAuthMiddleware);
 
 // ─── Cache TTL Settings (milliseconds) ─────────────────────────────────────
 // Uses MongoDB StockCache model with TTL auto-expiration.
@@ -64,12 +68,22 @@ function proxyError(res, err, label) {
     return res.status(502).json({ error: "Failed to fetch market data." });
 }
 
+async function rejectHiddenSymbol(req, res, symbol) {
+    const allowed = await canUserAccessSymbol(req.userId, symbol);
+    if (!allowed) {
+        res.status(404).json({ error: "Symbol unavailable" });
+        return true;
+    }
+    return false;
+}
+
 // ─────────────────────────────────────────────────────────────────
 // GET /api/market/quote?symbol=AAPL
 // ─────────────────────────────────────────────────────────────────
 router.get("/quote", async (req, res) => {
     const { symbol } = req.query;
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
+    if (await rejectHiddenSymbol(req, res, symbol)) return;
 
     const key = `quote:${symbol.toUpperCase()}`;
     const cached = await getCached(key);
@@ -194,6 +208,7 @@ async function candleFromYahoo(symbol, resolution, days) {
 router.get("/candle", async (req, res) => {
     const { symbol, resolution = "D", days = 90 } = req.query;
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
+    if (await rejectHiddenSymbol(req, res, symbol)) return;
 
     const key = `candle:${symbol.toUpperCase()}:${resolution}:${days}`;
     const cached = await getCached(key);
@@ -301,6 +316,7 @@ router.get("/news", async (req, res) => {
 router.get("/recommendation", async (req, res) => {
     const { symbol } = req.query;
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
+    if (await rejectHiddenSymbol(req, res, symbol)) return;
 
     const key = `rec:${symbol.toUpperCase()}`;
     const cached = await getCached(key);
@@ -321,6 +337,7 @@ router.get("/recommendation", async (req, res) => {
 router.get("/profile", async (req, res) => {
     const { symbol } = req.query;
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
+    if (await rejectHiddenSymbol(req, res, symbol)) return;
 
     const key = `profile:${symbol.toUpperCase()}`;
     const cached = await getCached(key);
@@ -342,6 +359,7 @@ router.get("/profile", async (req, res) => {
 router.get("/metrics", async (req, res) => {
     const { symbol } = req.query;
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
+    if (await rejectHiddenSymbol(req, res, symbol)) return;
 
     const key = `metrics:${symbol.toUpperCase()}`;
     const cached = await getCached(key);
@@ -363,6 +381,7 @@ router.get("/metrics", async (req, res) => {
 router.get("/overview", async (req, res) => {
     const { symbol } = req.query;
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
+    if (await rejectHiddenSymbol(req, res, symbol)) return;
 
     const key = `overview:${symbol.toUpperCase()}`;
     const cached = await getCached(key);
@@ -391,7 +410,10 @@ router.get("/symbols", async (req, res) => {
     const { exchange = "US" } = req.query;
     const key = `symbols:${exchange}`;
     const cached = await getCached(key);
-    if (cached) return res.json(cached);
+    if (cached) {
+        const visibleCached = await filterVisibleSymbolsForUser(req.userId, cached);
+        return res.json(visibleCached);
+    }
 
     try {
         const { data } = await fh.get("/stock/symbol", {
@@ -402,7 +424,8 @@ router.get("/symbols", async (req, res) => {
         const filtered = (Array.isArray(data) ? data : [])
             .filter(s => s.type === "Common Stock" && s.symbol && !s.symbol.includes("."));
         await setCached(key, filtered, "symbols", TTL.symbols);
-        return res.json(filtered);
+        const visible = await filterVisibleSymbolsForUser(req.userId, filtered);
+        return res.json(visible);
     } catch (err) { return proxyError(res, err, `symbols:${exchange}`); }
 });
 
@@ -418,8 +441,29 @@ router.get("/search", async (req, res) => {
         const { data } = await fh.get("/search", {
             params: { q, token: FINNHUB_KEY }
         });
-        return res.json(data);
+        const visible = Array.isArray(data?.result)
+            ? await filterVisibleSymbolsForUser(req.userId, data.result)
+            : [];
+        return res.json({ ...data, result: visible, count: visible.length });
     } catch (err) { return proxyError(res, err, `search:${q}`); }
+});
+
+router.get("/visibility", async (req, res) => {
+    try {
+        const symbols = String(req.query.symbols || "")
+            .split(",")
+            .map((item) => item.trim().toUpperCase())
+            .filter(Boolean);
+
+        if (symbols.length === 0) {
+            return res.json({ success: true, data: [] });
+        }
+
+        const visibility = await getVisibilityForSymbols(symbols);
+        return res.json({ success: true, data: visibility });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Error fetching symbol visibility" });
+    }
 });
 
 // ─────────────────────────────────────────────────────────────────
@@ -441,6 +485,7 @@ router.get("/earnings", async (req, res) => {
     // Finnhub has earnings too
     const { symbol } = req.query;
     if (!symbol) return res.status(400).json({ error: "symbol is required" });
+    if (await rejectHiddenSymbol(req, res, symbol)) return;
     try {
         const { data } = await fh.get("/stock/earnings", {
             params: { symbol, token: FINNHUB_KEY }
