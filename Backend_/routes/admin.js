@@ -11,6 +11,7 @@ const SearchHistory = require("../models/SearchHistory");
 const Notification = require("../models/Notification");
 const WatchlistUser = require("../models/WatchlistUser");
 const AdminActivityLog = require("../models/AdminActivityLog");
+const AdminAnnouncement = require("../models/AdminAnnouncement");
 const AdminPlatformSetting = require("../models/AdminPlatformSetting");
 const AdminStockVisibility = require("../models/AdminStockVisibility");
 const PriceCache = require("../models/PriceCache");
@@ -613,6 +614,105 @@ router.get("/recent-users", async (req, res) => {
         return res.json({ success: true, data: users });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Error fetching recent users" });
+    }
+});
+
+router.get("/announcements", async (req, res) => {
+    try {
+        const announcements = await AdminAnnouncement.find()
+            .populate("createdBy", "username email")
+            .sort({ createdAt: -1 })
+            .lean();
+
+        return res.json({ success: true, data: announcements });
+    } catch (error) {
+        console.error("Admin announcements list error:", error.message);
+        return res.status(500).json({ success: false, message: "Error fetching announcements" });
+    }
+});
+
+router.post("/announcements", async (req, res) => {
+    try {
+        const title = typeof req.body.title === "string" ? req.body.title.trim() : "";
+        const message = typeof req.body.message === "string" ? req.body.message.trim() : "";
+        const target = typeof req.body.target === "string" ? req.body.target.trim().toLowerCase() : "all";
+        const severity = typeof req.body.severity === "string" ? req.body.severity.trim().toLowerCase() : "info";
+
+        if (!title || title.length > 80) {
+            return res.status(400).json({ success: false, message: "Title is required and must be 80 characters or fewer" });
+        }
+        if (!message || message.length > 500) {
+            return res.status(400).json({ success: false, message: "Message is required and must be 500 characters or fewer" });
+        }
+        if (!["all", "active"].includes(target)) {
+            return res.status(400).json({ success: false, message: "Invalid target audience" });
+        }
+        if (!["info", "warning", "maintenance"].includes(severity)) {
+            return res.status(400).json({ success: false, message: "Invalid severity" });
+        }
+
+        const recipientFilter = target === "active" ? { accountStatus: "active" } : {};
+        const recipientCount = await User.countDocuments(recipientFilter);
+
+        const announcement = await AdminAnnouncement.create({
+            title,
+            message,
+            target,
+            severity,
+            createdBy: req.userId,
+            isActive: true
+        });
+
+        await logAdminAction(req.userId, "ANNOUNCEMENT_SENT", null, {
+            title,
+            target,
+            severity,
+            recipientCount
+        });
+
+        const hydrated = await AdminAnnouncement.findById(announcement._id)
+            .populate("createdBy", "username email")
+            .lean();
+
+        return res.json({
+            success: true,
+            data: hydrated,
+            meta: {
+                recipientCount,
+                sentAt: announcement.createdAt
+            },
+            message: "Announcement sent"
+        });
+    } catch (error) {
+        console.error("Admin announcement create error:", error.message);
+        return res.status(500).json({ success: false, message: "Error creating announcement" });
+    }
+});
+
+router.patch("/announcements/:id/expire", async (req, res) => {
+    try {
+        const announcement = await AdminAnnouncement.findById(req.params.id);
+        if (!announcement) {
+            return res.status(404).json({ success: false, message: "Announcement not found" });
+        }
+
+        if (!announcement.isActive) {
+            return res.json({ success: true, data: announcement, message: "Announcement already expired" });
+        }
+
+        announcement.isActive = false;
+        announcement.expiredAt = new Date();
+        await announcement.save();
+
+        await logAdminAction(req.userId, "ANNOUNCEMENT_EXPIRED", null, {
+            announcementId: announcement._id.toString(),
+            title: announcement.title
+        });
+
+        return res.json({ success: true, data: announcement, message: "Announcement expired" });
+    } catch (error) {
+        console.error("Admin announcement expire error:", error.message);
+        return res.status(500).json({ success: false, message: "Error expiring announcement" });
     }
 });
 

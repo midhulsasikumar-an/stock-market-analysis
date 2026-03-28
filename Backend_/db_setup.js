@@ -37,6 +37,7 @@ async function run() {
         require("./models/Transaction"),
         require("./models/StockCache"),
         require("./models/PriceCache"),
+        require("./models/AdminAnnouncement"),
         require("./models/ServerMeta"),
     ];
 

@@ -12,6 +12,7 @@ const searchHistoryRoutes = require("./routes/searchHistory");
 const settingsRoutes = require("./routes/settings");
 const transactionRoutes = require("./routes/transactions");
 const adminRoutes = require("./routes/admin");
+const announcementRoutes = require("./routes/announcements");
 const avatarRoutes = require("./routes/avatar");
 const profileRoutes = require("./routes/profile");
 const cors = require("cors");
@@ -83,6 +84,7 @@ app.use("/api/search-history", searchHistoryRoutes); // Search history
 app.use("/api/settings", settingsRoutes);   // User app settings
 app.use("/api/transactions", transactionRoutes); // Buy/Sell transaction ledger
 app.use("/api/admin", adminRoutes);         // Admin functionality
+app.use("/api/announcements", announcementRoutes); // Public active announcements
 app.use("/api/avatar", avatarRoutes);       // Avatar dropdown API
 app.use("/api/profile", profileRoutes);     // Profile management and uploads
 

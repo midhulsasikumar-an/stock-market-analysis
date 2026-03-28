@@ -50,6 +50,14 @@ const adminService = {
     getWatchlistVsPortfolio: () => request('/analytics/watchlist-vs-portfolio'),
     getLatencyHistory: (days = 7) => request(`/health/latency-history${buildQuery({ days })}`),
     getActivityLogs: (params = {}) => request(`/activity-log${buildQuery(params)}`),
+    getAnnouncements: () => request('/announcements'),
+    createAnnouncement: (payload) => request('/announcements', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    expireAnnouncement: (id) => request(`/announcements/${id}/expire`, {
+        method: 'PATCH'
+    }),
     getSystemHealth: () => request('/system-health'),
     getPlatformSettings: () => request('/platform-settings'),
     updatePlatformSettings: (payload) => request('/platform-settings', {
