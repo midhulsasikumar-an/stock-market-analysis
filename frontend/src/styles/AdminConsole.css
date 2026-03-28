@@ -76,7 +76,23 @@
 .admin-nav-list {
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+.admin-nav-group {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
+}
+
+.admin-nav-section-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    color: #94a3b8;
+    padding: 2px 8px;
 }
 
 .admin-nav-link {
@@ -88,6 +104,7 @@
     color: #cbd5e1;
     text-decoration: none;
     border: 1px solid transparent;
+    border-left: 3px solid transparent;
     transition: all 0.2s ease;
 }
 
@@ -96,6 +113,10 @@
     color: #f8fafc;
     border-color: rgba(34, 197, 94, 0.25);
     background: linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(15, 23, 42, 0.7));
+}
+
+.admin-nav-link.is-active {
+    border-left-color: #14b8a6;
 }
 
 .admin-nav-icon {

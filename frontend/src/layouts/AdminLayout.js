@@ -3,17 +3,39 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/AdminConsole.css';
 
-const navItems = [
-    { label: 'Dashboard', path: '/admin', icon: '01' },
-    { label: 'User Management', path: '/admin/users', icon: '02' },
-    { label: 'Stock Management', path: '/admin/stocks', icon: '03' },
-    { label: 'Trades Explorer', path: '/admin/trades', icon: '04' },
-    { label: 'Portfolio Inspector', path: '/admin/portfolios', icon: '05' },
-    { label: 'Analytics', path: '/admin/analytics', icon: '06' },
-    { label: 'Activity Logs', path: '/admin/activity-logs', icon: '07' },
-    { label: 'System Health', path: '/admin/system-health', icon: '08' },
-    { label: 'Platform Settings', path: '/admin/settings', icon: '09' }
+const navGroups = [
+    {
+        label: 'Overview',
+        items: [
+            { label: 'Dashboard', path: '/admin', icon: '01' }
+        ]
+    },
+    {
+        label: 'Users',
+        items: [
+            { label: 'User Management', path: '/admin/users', icon: '02' },
+            { label: 'Portfolio Inspector', path: '/admin/portfolios', icon: '05' }
+        ]
+    },
+    {
+        label: 'Market Data',
+        items: [
+            { label: 'Trades Explorer', path: '/admin/trades', icon: '04' },
+            { label: 'Analytics', path: '/admin/analytics', icon: '06' }
+        ]
+    },
+    {
+        label: 'System',
+        items: [
+            { label: 'Activity Logs', path: '/admin/activity-logs', icon: '07' },
+            { label: 'System Health', path: '/admin/system-health', icon: '08' },
+            { label: 'Platform Settings', path: '/admin/settings', icon: '09' },
+            { label: 'Announcements', path: '/admin/announcements', icon: '10' }
+        ]
+    }
 ];
+
+const navItems = navGroups.flatMap((group) => group.items);
 
 export default function AdminLayout() {
     const { user, logout } = useAuth();
@@ -22,9 +44,16 @@ export default function AdminLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [navSearch, setNavSearch] = useState('');
 
-    const filteredItems = useMemo(() => navItems.filter((item) => (
-        item.label.toLowerCase().includes(navSearch.toLowerCase())
-    )), [navSearch]);
+    const filteredGroups = useMemo(() => {
+        const searchValue = navSearch.trim().toLowerCase();
+
+        return navGroups
+            .map((group) => ({
+                ...group,
+                items: group.items.filter((item) => item.label.toLowerCase().includes(searchValue))
+            }))
+            .filter((group) => group.items.length > 0);
+    }, [navSearch]);
 
     const activeLabel = useMemo(() => {
         return navItems.find((item) => location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path)))?.label || 'Dashboard';
@@ -57,18 +86,29 @@ export default function AdminLayout() {
                 </div>
 
                 <nav className="admin-nav-list">
-                    {filteredItems.map((item) => (
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            end={item.path === '/admin'}
-                            className={({ isActive }) => `admin-nav-link ${isActive ? 'is-active' : ''}`}
-                            onClick={() => setSidebarOpen(false)}
-                        >
-                            <span className="admin-nav-icon">{item.icon}</span>
-                            <span>{item.label}</span>
-                        </NavLink>
+                    {filteredGroups.map((group) => (
+                        <div key={group.label} className="admin-nav-group">
+                            <div className="admin-nav-section-label">{group.label}</div>
+                            {group.items.map((item) => (
+                                <NavLink
+                                    key={item.path}
+                                    to={item.path}
+                                    end={item.path === '/admin'}
+                                    className={({ isActive }) => `admin-nav-link ${isActive ? 'is-active' : ''}`}
+                                    onClick={() => setSidebarOpen(false)}
+                                >
+                                    <span className="admin-nav-icon">{item.icon}</span>
+                                    <span>{item.label}</span>
+                                </NavLink>
+                            ))}
+                        </div>
                     ))}
+
+                    {filteredGroups.length === 0 ? (
+                        <div className="admin-muted" style={{ fontSize: 13, padding: '6px 8px' }}>
+                            No matching sections.
+                        </div>
+                    ) : null}
                 </nav>
 
                 <div className="admin-sidebar-footer">

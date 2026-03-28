@@ -22,6 +22,7 @@ import AdminAnalytics from './Pages/AdminAnalytics';
 import AdminActivityLogs from './Pages/AdminActivityLogs';
 import AdminSystemHealth from './Pages/AdminSystemHealth';
 import AdminSettings from './Pages/AdminSettings';
+import AdminAnnouncements from './Pages/AdminAnnouncements';
 import AdminLayout from './layouts/AdminLayout';
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -73,6 +74,7 @@ function App() {
             <Route path='activity-logs' element={<AdminActivityLogs />} />
             <Route path='system-health' element={<AdminSystemHealth />} />
             <Route path='settings' element={<AdminSettings />} />
+            <Route path='announcements' element={<AdminAnnouncements />} />
           </Route>
 
           {/* Stocks Explorer — public */}
