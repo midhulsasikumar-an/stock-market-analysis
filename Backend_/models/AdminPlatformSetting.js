@@ -13,17 +13,6 @@ const adminPlatformSettingSchema = new mongoose.Schema({
         min: 5,
         max: 3600
     },
-    maxTradeValue: {
-        type: Number,
-        default: 250000,
-        min: 1000
-    },
-    maxDailyTrades: {
-        type: Number,
-        default: 50,
-        min: 1,
-        max: 10000
-    },
     maintenanceMode: {
         type: Boolean,
         default: false

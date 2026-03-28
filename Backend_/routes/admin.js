@@ -13,6 +13,8 @@ const WatchlistUser = require("../models/WatchlistUser");
 const AdminActivityLog = require("../models/AdminActivityLog");
 const AdminPlatformSetting = require("../models/AdminPlatformSetting");
 const AdminStockVisibility = require("../models/AdminStockVisibility");
+const PriceCache = require("../models/PriceCache");
+const { getCachedPrices } = require("../utils/priceCache");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
@@ -32,6 +34,7 @@ function getDateFrom(period) {
         case "1M": return new Date(now - 30 * 24 * 60 * 60 * 1000);
         case "6M": return new Date(now - 180 * 24 * 60 * 60 * 1000);
         case "1Y": return new Date(now - 365 * 24 * 60 * 60 * 1000);
+        case "ALL": return null;
         default: return null;
     }
 }
@@ -43,8 +46,22 @@ function getGroupFormat(period) {
         case "1M": return "%m-%d";
         case "6M": return "%Y-%m";
         case "1Y": return "%Y-%m";
+        case "ALL": return "%Y-%m";
         default: return "%Y-%m";
     }
+}
+
+function formatUptime(seconds) {
+    const safeSeconds = Math.max(Math.floor(Number(seconds) || 0), 0);
+    const d = Math.floor(safeSeconds / 86400);
+    const h = Math.floor((safeSeconds % 86400) / 3600);
+    const m = Math.floor((safeSeconds % 3600) / 60);
+    const s = Math.floor(safeSeconds % 60);
+
+    if (d > 0) return `${d}d ${h}h ${m}m`;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
 }
 
 async function logAdminActivity({ actorId, action, entityType, entityId = "", description, severity = "info", metadata = {} }) {
@@ -66,7 +83,13 @@ async function logAdminActivity({ actorId, action, entityType, entityId = "", de
 async function getPlatformSettings() {
     return AdminPlatformSetting.findOneAndUpdate(
         { key: "platform" },
-        { $setOnInsert: { key: "platform" } },
+        {
+            $setOnInsert: { key: "platform" },
+            $unset: {
+                maxTradeValue: "",
+                maxDailyTrades: ""
+            }
+        },
         { upsert: true, new: true }
     );
 }
@@ -97,6 +120,69 @@ async function getInvestmentSummary() {
         totalInvestment,
         totalCurrentValue,
         totalProfitLoss: totalCurrentValue - totalInvestment
+    };
+}
+
+async function getPlatformPnLSummary() {
+    const portfolios = await Portfolio.find({ "holdings.0": { $exists: true } })
+        .select("holdings")
+        .lean();
+
+    const holdings = portfolios.flatMap((portfolio) => portfolio.holdings || []);
+    console.log('[AdminStats] Holdings found:', holdings.length);
+    if (!holdings.length) {
+        return {
+            totalPnL: 0,
+            pnlStatus: "live",
+            lastPriceUpdate: null,
+            totalHoldings: 0,
+            pricedHoldings: 0,
+            unpricedHoldings: 0
+        };
+    }
+
+    const uniqueSymbols = [...new Set(
+        holdings
+            .map((holding) => (holding.symbol || "").toUpperCase().trim())
+            .filter(Boolean)
+    )];
+    console.log('[AdminStats] Unique symbols:', uniqueSymbols);
+
+    const prices = await getCachedPrices(uniqueSymbols, finnhubClient);
+    console.log('[AdminStats] Prices returned:', prices);
+
+    let totalPnL = 0;
+    let pricedHoldings = 0;
+
+    holdings.forEach((holding) => {
+        const symbol = (holding.symbol || "").toUpperCase().trim();
+        const quantity = Number(holding.quantity) || 0;
+        const buyPrice = Number(holding.avgBuyPrice) || 0;
+        const currentPrice = prices[symbol];
+
+        if (!symbol || quantity <= 0 || buyPrice < 0) {
+            return;
+        }
+
+        if (typeof currentPrice === "number" && Number.isFinite(currentPrice) && currentPrice > 0) {
+            totalPnL += (currentPrice - buyPrice) * quantity;
+            pricedHoldings += 1;
+        }
+    });
+
+    const totalHoldings = holdings.filter((holding) => Number(holding.quantity) > 0).length;
+    const unpricedHoldings = Math.max(totalHoldings - pricedHoldings, 0);
+    const lastUpdatedEntry = await PriceCache.findOne().sort({ lastUpdated: -1 }).select("lastUpdated").lean();
+    console.log('[AdminStats] Calculated P&L:', totalPnL);
+
+    return {
+        totalPnL,
+        totalProfitLoss: totalPnL,
+        pnlStatus: "live",
+        lastPriceUpdate: lastUpdatedEntry?.lastUpdated || null,
+        totalHoldings,
+        pricedHoldings,
+        unpricedHoldings
     };
 }
 
@@ -183,11 +269,12 @@ async function fetchFinnhubSymbols(exchange) {
 
 router.get("/dashboard", async (req, res) => {
     try {
-        const [totalUsers, totalTransactions, activeAlerts, investmentSummary] = await Promise.all([
+        const [totalUsers, totalTransactions, activeAlerts, investmentSummary, pnlSummary] = await Promise.all([
             User.countDocuments(),
             Transaction.countDocuments(),
             Alert.countDocuments({ isActive: true }).catch(() => 0),
-            getInvestmentSummary()
+            getInvestmentSummary(),
+            getPlatformPnLSummary()
         ]);
 
         const activePortfolios = await Portfolio.countDocuments({ "holdings.0": { $exists: true } });
@@ -223,7 +310,16 @@ router.get("/dashboard", async (req, res) => {
                 totalPortfolios: activePortfolios,
                 activeAlerts,
                 totalInvestment: investmentSummary.totalInvestment,
-                totalProfitLoss: investmentSummary.totalProfitLoss,
+                totalProfitLoss: pnlSummary.totalPnL,
+                totalPnL: pnlSummary.totalPnL,
+                pnlStatus: pnlSummary.pnlStatus,
+                lastPriceUpdate: pnlSummary.lastPriceUpdate,
+                pnlCoverage: {
+                    totalHoldings: pnlSummary.totalHoldings,
+                    pricedHoldings: pnlSummary.pricedHoldings,
+                    unpricedHoldings: pnlSummary.unpricedHoldings,
+                    isComplete: pnlSummary.unpricedHoldings === 0
+                },
                 recentTransactions,
                 chartData: chartDataRaw,
                 apiCallsToday
@@ -237,10 +333,11 @@ router.get("/dashboard", async (req, res) => {
 
 router.get("/stats", async (req, res) => {
     try {
-        const [totalUsers, totalTransactions, investmentSummary] = await Promise.all([
+        const [totalUsers, totalTransactions, investmentSummary, pnlSummary] = await Promise.all([
             User.countDocuments(),
             Transaction.countDocuments(),
-            getInvestmentSummary()
+            getInvestmentSummary(),
+            getPlatformPnLSummary()
         ]);
 
         const activePortfolios = await Portfolio.countDocuments({ "holdings.0": { $exists: true } });
@@ -268,6 +365,16 @@ router.get("/stats", async (req, res) => {
                 activePortfolios,
                 totalTransactions,
                 totalInvestment: investmentSummary.totalInvestment,
+                totalProfitLoss: pnlSummary.totalPnL,
+                totalPnL: pnlSummary.totalPnL,
+                pnlStatus: pnlSummary.pnlStatus,
+                lastPriceUpdate: pnlSummary.lastPriceUpdate,
+                pnlCoverage: {
+                    totalHoldings: pnlSummary.totalHoldings,
+                    pricedHoldings: pnlSummary.pricedHoldings,
+                    unpricedHoldings: pnlSummary.unpricedHoldings,
+                    isComplete: pnlSummary.unpricedHoldings === 0
+                },
                 trends: {
                     userGrowth: Number(userGrowth),
                     userTrendUp: Number(userGrowth) >= 0,
@@ -284,11 +391,28 @@ router.get("/stats", async (req, res) => {
 
 router.get("/chart", async (req, res) => {
     try {
-        const period = req.query.period || "1W";
-        const dateFrom = getDateFrom(period);
+        const period = req.query.period || "ALL";
+        const from = typeof req.query.from === "string" ? req.query.from.trim() : "";
+        const to = typeof req.query.to === "string" ? req.query.to.trim() : "";
         const groupFmt = getGroupFormat(period);
 
-        const matchStage = dateFrom ? { $match: { executedAt: { $gte: dateFrom } } } : { $match: {} };
+        let dateFilter = null;
+        if (from && to) {
+            const fromDate = new Date(from);
+            const toDate = new Date(to);
+            if (!Number.isNaN(fromDate.getTime()) && !Number.isNaN(toDate.getTime())) {
+                dateFilter = { executedAt: { $gte: fromDate, $lte: toDate } };
+            }
+        }
+
+        if (!dateFilter) {
+            const fallbackFrom = getDateFrom(period);
+            if (fallbackFrom) {
+                dateFilter = { executedAt: { $gte: fallbackFrom, $lte: new Date() } };
+            }
+        }
+
+        const matchStage = dateFilter ? { $match: dateFilter } : { $match: {} };
 
         const chartRaw = await Transaction.aggregate([
             matchStage,
@@ -360,13 +484,22 @@ router.get("/system-health", async (req, res) => {
             Transaction.distinct("userId", { executedAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } })
         ]);
 
+        const uptimeSeconds = Math.floor(process.uptime());
+        const uptimeFormatted = formatUptime(uptimeSeconds);
+
         const responseLatency = Date.now() - startedAt;
 
         return res.json({
             success: true,
             data: {
                 mongo: { status: mongoStatus, latency: mongoLatency },
-                express: { status: "Active", uptime: Math.round(process.uptime()) },
+                express: {
+                    status: "Active",
+                    uptime: uptimeSeconds,
+                    uptimeSeconds,
+                    uptimeFormatted,
+                    startedAt: null
+                },
                 finnhub: { status: finnhubStatus, latency: finnhubLatency, requestsToday: transactionsToday },
                 metrics: {
                     responseLatency,
@@ -848,24 +981,22 @@ router.put("/platform-settings", async (req, res) => {
     try {
         const payload = {
             apiRefreshInterval: Number(req.body.apiRefreshInterval),
-            maxTradeValue: Number(req.body.maxTradeValue),
-            maxDailyTrades: Number(req.body.maxDailyTrades),
             maintenanceMode: Boolean(req.body.maintenanceMode)
         };
 
         if (!Number.isFinite(payload.apiRefreshInterval) || payload.apiRefreshInterval < 5) {
             return res.status(400).json({ success: false, message: "API refresh interval must be at least 5 seconds" });
         }
-        if (!Number.isFinite(payload.maxTradeValue) || payload.maxTradeValue <= 0) {
-            return res.status(400).json({ success: false, message: "Trading limit must be greater than zero" });
-        }
-        if (!Number.isFinite(payload.maxDailyTrades) || payload.maxDailyTrades <= 0) {
-            return res.status(400).json({ success: false, message: "Daily trade limit must be greater than zero" });
-        }
 
         const settings = await AdminPlatformSetting.findOneAndUpdate(
             { key: "platform" },
-            { $set: { ...payload, key: "platform" } },
+            {
+                $set: { ...payload, key: "platform" },
+                $unset: {
+                    maxTradeValue: "",
+                    maxDailyTrades: ""
+                }
+            },
             { upsert: true, new: true, runValidators: true }
         );
 

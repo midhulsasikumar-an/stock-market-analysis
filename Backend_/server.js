@@ -2,6 +2,7 @@ require("dotenv").config(); // MUST be first — loads .env before any route mod
 
 const express = require("express");
 const mongoose = require("mongoose");
+const ServerMeta = require("./models/ServerMeta");
 const authRoutes = require("./routes/auth");
 const marketRoutes = require("./routes/market");
 const watchlistRoutes = require("./routes/watchlist");
@@ -115,6 +116,17 @@ app.use((err, req, res, next) => {
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/stock-market-analysis")
     .then(async () => {
         console.log("✅ Database connected to stock-market-analysis");
+
+        try {
+            const now = new Date();
+            await ServerMeta.findOneAndUpdate(
+                { key: "server_start" },
+                { $set: { value: now, updatedAt: now } },
+                { upsert: true, new: true }
+            );
+        } catch (error) {
+            console.error("⚠️ Failed to persist server_start metadata:", error.message);
+        }
 
         // Seed master admin account if it doesn't exist
         try {

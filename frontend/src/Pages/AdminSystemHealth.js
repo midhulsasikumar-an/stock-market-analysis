@@ -8,10 +8,26 @@ import {
     formatMoney
 } from '../components/admin/AdminUI';
 
+function formatUptime(seconds) {
+    const safeSeconds = Math.max(Math.floor(Number(seconds) || 0), 0);
+    const d = Math.floor(safeSeconds / 86400);
+    const h = Math.floor((safeSeconds % 86400) / 3600);
+    const m = Math.floor((safeSeconds % 3600) / 60);
+    const s = Math.floor(safeSeconds % 60);
+
+    if (d > 0) return `${d}d ${h}h ${m}m`;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+}
+
 export default function AdminSystemHealth() {
     const [health, setHealth] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const uptimeSeconds = health?.express?.uptimeSeconds ?? health?.express?.uptime;
+    const uptimeFormatted = health?.express?.uptimeFormatted || formatUptime(uptimeSeconds);
 
     useEffect(() => {
         let active = true;
@@ -59,7 +75,11 @@ export default function AdminSystemHealth() {
                         <AdminStatCard label="Response Latency" value={`${health.metrics?.responseLatency || 0} ms`} />
                         <AdminStatCard label="Average Trade Value" value={formatMoney(health.metrics?.averageTradeValue || 0)} />
                         <AdminStatCard label="Active Users 30D" value={health.metrics?.activeUsers30d || 0} />
-                        <AdminStatCard label="API Uptime" value={`${Math.floor((health.express?.uptime || 0) / 60)} min`} />
+                        <AdminStatCard
+                            label="API Uptime"
+                            value={uptimeFormatted}
+                            helper="since last server restart"
+                        />
                     </div>
 
                     <div className="admin-grid admin-grid-three">
@@ -76,8 +96,8 @@ export default function AdminSystemHealth() {
                         <AdminPanel title="Express API uptime">
                             <div className="admin-health-card">
                                 <div>
-                                    <strong>Core API process</strong>
-                                    <div className="admin-muted">{health.express?.uptime || 0} seconds uptime</div>
+                                    <strong>Core API process — {uptimeFormatted} uptime</strong>
+                                    <div className="admin-muted">since last server restart</div>
                                 </div>
                                 <AdminStatusPill value={health.express?.status || 'Unknown'} />
                             </div>

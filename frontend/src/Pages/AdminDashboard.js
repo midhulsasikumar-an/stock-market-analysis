@@ -38,6 +38,39 @@ const fmtDate = (d) => {
     return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
 };
 
+const getDateRange = (period) => {
+    const now = new Date();
+    const from = new Date();
+
+    switch (period) {
+        case '1D':
+            from.setDate(now.getDate() - 1);
+            break;
+        case '1W':
+            from.setDate(now.getDate() - 7);
+            break;
+        case '1M':
+            from.setMonth(now.getMonth() - 1);
+            break;
+        case '1Y':
+            from.setFullYear(now.getFullYear() - 1);
+            break;
+        case 'ALL':
+            from.setFullYear(2000);
+            break;
+        default:
+            from.setMonth(now.getMonth() - 1);
+            break;
+    }
+
+    return { from: from.toISOString(), to: now.toISOString() };
+};
+
+const fmtCurrencyFull = (value) => Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
+
 // ─── Shared chart options ──────────────────────────────────────────────────────
 const chartOptions = {
     responsive: true,
@@ -130,7 +163,7 @@ export default function AdminDashboard() {
     const [statsLoading, setStatsLoading] = useState(true);
 
     const [chartData, setChartData] = useState(null);
-    const [chartPeriod, setChartPeriod] = useState('1W');
+    const [chartPeriod, setChartPeriod] = useState('ALL');
     const [chartLoading, setChartLoading] = useState(false);
 
     const [health, setHealth] = useState(null);
@@ -165,8 +198,11 @@ export default function AdminDashboard() {
     const fetchChart = useCallback(async (period) => {
         setChartLoading(true);
         try {
-            const r = await fetch(`${API_URL}/api/admin/chart?period=${period}`, { headers });
+            const { from, to } = getDateRange(period);
+            const query = new URLSearchParams({ period, from, to }).toString();
+            const r = await fetch(`${API_URL}/api/admin/chart?${query}`, { headers });
             const j = await r.json();
+            console.log('[AdminDashboard] /api/admin/chart raw response:', { period, payload: j });
             if (j.success) setChartData(j.data);
         } catch { /* silent */ } finally { setChartLoading(false); }
     }, []); // eslint-disable-line
@@ -292,7 +328,25 @@ export default function AdminDashboard() {
     } : null);
 
     const recentTxs = dashData?.recentTransactions || [];
-    const totalPnL = dashData?.totalProfitLoss ?? 0;
+    const rawTotalPnL = stats?.totalPnL ?? dashData?.totalPnL ?? dashData?.totalProfitLoss;
+    const totalPnL = Number.isFinite(Number(rawTotalPnL)) ? Number(rawTotalPnL) : null;
+    const lastPriceUpdate = stats?.lastPriceUpdate ?? dashData?.lastPriceUpdate ?? null;
+
+    const pnlToneClass = totalPnL == null
+        ? 'text-secondary'
+        : totalPnL > 0
+            ? 'text-success'
+            : totalPnL < 0
+                ? 'text-danger'
+                : 'text-secondary';
+
+    const pnlDisplayText = totalPnL == null
+        ? 'Unavailable'
+        : totalPnL > 0
+            ? `+$${fmtCurrencyFull(totalPnL)}`
+            : totalPnL < 0
+                ? `-$${fmtCurrencyFull(Math.abs(totalPnL))}`
+                : '$0.00';
 
     // ── Health derived ──────────────────────────────────────────────────────────
     const mongo = health?.mongo;
@@ -444,9 +498,45 @@ export default function AdminDashboard() {
                                 </div>
                             ) : buySellChartData ? (
                                 <Line data={buySellChartData} options={chartOptions} />
+                            ) : chartPeriod === '1D' ? (
+                                <div className="d-flex align-items-center justify-content-center h-100 text-center px-3">
+                                    <div>
+                                        <div className="mb-2" style={{ fontSize: '1.35rem' }}>🕒</div>
+                                        <p className="text-white mb-1 small fw-bold">No trades in the last 24 hours</p>
+                                        <p className="text-muted small mb-0">
+                                            Reason: no transactions were executed in this 1D window.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : chartPeriod === 'ALL' && (s?.totalTransactions || 0) === 0 ? (
+                                <div className="d-flex align-items-center justify-content-center h-100 text-center px-3">
+                                    <div>
+                                        <div className="mb-2" style={{ fontSize: '1.35rem' }}>📭</div>
+                                        <p className="text-white mb-1 small fw-bold">No trades recorded yet</p>
+                                        <p className="text-muted small mb-0">
+                                            Reason: the database currently has zero trade records.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (s?.totalTransactions || 0) > 0 ? (
+                                <div className="d-flex align-items-center justify-content-center h-100 text-center px-3">
+                                    <div>
+                                        <div className="mb-2" style={{ fontSize: '1.35rem' }}>🗓️</div>
+                                        <p className="text-white mb-1 small fw-bold">No trades in this selected period</p>
+                                        <p className="text-muted small mb-0">
+                                            Reason: this time window has no executions. Try 1M or ALL to view recorded transactions.
+                                        </p>
+                                    </div>
+                                </div>
                             ) : (
-                                <div className="d-flex align-items-center justify-content-center h-100">
-                                    <p className="text-muted small">No transaction data for this period</p>
+                                <div className="d-flex align-items-center justify-content-center h-100 text-center px-3">
+                                    <div>
+                                        <div className="mb-2" style={{ fontSize: '1.35rem' }}>📭</div>
+                                        <p className="text-white mb-1 small fw-bold">No transaction data available</p>
+                                        <p className="text-muted small mb-0">
+                                            Reason: the database currently has zero trade records.
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -473,18 +563,20 @@ export default function AdminDashboard() {
                                     <span className="placeholder col-8 bg-white bg-opacity-25 rounded" style={{ height: '48px', display: 'block' }} />
                                 </div>
                             ) : (
-                                <h1 className="text-white fw-bold mb-3 display-5">
-                                    {totalPnL >= 0 ? '+' : '-'}
-                                    {Math.abs(totalPnL) >= 1000
-                                        ? `$${(Math.abs(totalPnL) / 1000).toFixed(1)}K`
-                                        : `$${Math.abs(totalPnL).toFixed(2)}`}
+                                <h1 className={`fw-bold mb-3 display-5 ${pnlToneClass}`}>
+                                    {pnlDisplayText}
                                 </h1>
                             )}
-                            <div className="d-inline-flex px-3 py-2 rounded-pill bg-white bg-opacity-25 text-white fw-bold align-items-center gap-2 mb-4" style={{ backdropFilter: 'blur(5px)' }}>
-                                <span>{totalPnL >= 0 ? '📈 Grown' : '📉 Decreased'} By</span>
-                            </div>
                             <p className="text-white mb-3" style={{ opacity: 0.85, fontSize: '0.9rem' }}>
                                 Global tracking analytics <br />across all portfolios.
+                            </p>
+                            {totalPnL === 0 ? (
+                                <p className="mb-2" style={{ color: '#cbd5e1', fontSize: '0.78rem' }}>
+                                    Prices loading...
+                                </p>
+                            ) : null}
+                            <p className="mb-3" style={{ color: '#cbd5e1', fontSize: '0.78rem' }}>
+                                Prices cached · Last updated {lastPriceUpdate ? timeAgo(lastPriceUpdate) : 'pending'}
                             </p>
                             {/* Mini stats */}
                             <div className="d-flex gap-3">
@@ -642,8 +734,8 @@ export default function AdminDashboard() {
                                     </div>
                                     <div className="d-flex justify-content-between">
                                         <span className="text-muted small">Network P&amp;L</span>
-                                        <span className={`small fw-bold ${totalPnL >= 0 ? 'text-success' : 'text-danger'}`}>
-                                            {totalPnL >= 0 ? '+' : ''}{fmtMoney(totalPnL)}
+                                        <span className={`small fw-bold ${pnlToneClass}`}>
+                                            {pnlDisplayText}
                                         </span>
                                     </div>
                                     <div className="d-flex justify-content-between">
