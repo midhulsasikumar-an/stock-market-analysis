@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 
 const adminActivityLogSchema = new mongoose.Schema({
+    category: {
+        type: String,
+        default: "admin",
+        trim: true,
+        index: true
+    },
     actorId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

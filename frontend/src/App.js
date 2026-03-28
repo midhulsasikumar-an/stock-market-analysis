@@ -25,6 +25,7 @@ import AdminSettings from './Pages/AdminSettings';
 import AdminLayout from './layouts/AdminLayout';
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
@@ -32,6 +33,18 @@ function App() {
       {/* AuthProvider wraps everything so all routes have access to auth state.
           It runs a server-side token check on mount and clears stale sessions. */}
       <AuthProvider>
+        <Toaster
+          position="top-right"
+          containerStyle={{ zIndex: 9999 }}
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#111827',
+              color: '#FFFFFF',
+              border: '1px solid #374151'
+            }
+          }}
+        />
         <Routes>
           {/* Public Routes */}
           <Route path='/' element={<Home />} />

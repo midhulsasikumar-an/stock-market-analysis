@@ -8,6 +8,45 @@ import {
     formatDateTime
 } from '../components/admin/AdminUI';
 
+function getCategoryBadgeStyle(category = '') {
+    const normalized = String(category || '').toLowerCase();
+
+    if (normalized === 'admin') {
+        return {
+            background: 'rgba(99, 102, 241, 0.22)',
+            color: '#c7d2fe',
+            border: '1px solid rgba(99, 102, 241, 0.5)'
+        };
+    }
+
+    if (normalized === 'trade') {
+        return {
+            background: 'rgba(16, 185, 129, 0.16)',
+            color: '#6ee7b7',
+            border: '1px solid rgba(16, 185, 129, 0.45)'
+        };
+    }
+
+    if (normalized === 'registration') {
+        return {
+            background: 'rgba(14, 165, 233, 0.16)',
+            color: '#7dd3fc',
+            border: '1px solid rgba(14, 165, 233, 0.45)'
+        };
+    }
+
+    return {
+        background: 'rgba(148, 163, 184, 0.18)',
+        color: '#cbd5e1',
+        border: '1px solid rgba(148, 163, 184, 0.45)'
+    };
+}
+
+function formatCategoryLabel(category = '') {
+    if (!category) return 'Unknown';
+    return category.charAt(0).toUpperCase() + category.slice(1);
+}
+
 export default function AdminActivityLogs() {
     const [category, setCategory] = useState('all');
     const [logs, setLogs] = useState([]);
@@ -63,7 +102,22 @@ export default function AdminActivityLogs() {
                             <tbody>
                                 {logs.map((log) => (
                                     <tr key={log._id}>
-                                        <td><AdminStatusPill value={log.category} /></td>
+                                        <td>
+                                            <span
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    borderRadius: 999,
+                                                    padding: '3px 10px',
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    letterSpacing: '0.01em',
+                                                    ...getCategoryBadgeStyle(log.category)
+                                                }}
+                                            >
+                                                {formatCategoryLabel(log.category)}
+                                            </span>
+                                        </td>
                                         <td>{log.actor}</td>
                                         <td>{log.message}</td>
                                         <td><AdminStatusPill value={log.severity} /></td>

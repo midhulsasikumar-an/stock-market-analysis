@@ -15,6 +15,7 @@ const AdminPlatformSetting = require("../models/AdminPlatformSetting");
 const AdminStockVisibility = require("../models/AdminStockVisibility");
 const PriceCache = require("../models/PriceCache");
 const { getCachedPrices } = require("../utils/priceCache");
+const { logAdminAction } = require("../utils/logAdminAction");
 const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
@@ -575,7 +576,7 @@ router.get("/activity-log", async (req, res) => {
             })),
             ...adminActions.map((log) => ({
                 _id: `admin-${log._id}`,
-                category: "admin",
+                category: log.category || "admin",
                 type: log.action,
                 severity: log.severity,
                 actor: log.actorId?.username || log.actorId?.email || "Admin",
@@ -979,6 +980,8 @@ router.get("/platform-settings", async (req, res) => {
 
 router.put("/platform-settings", async (req, res) => {
     try {
+        const previousSettings = await getPlatformSettings();
+
         const payload = {
             apiRefreshInterval: Number(req.body.apiRefreshInterval),
             maintenanceMode: Boolean(req.body.maintenanceMode)
@@ -1000,15 +1003,26 @@ router.put("/platform-settings", async (req, res) => {
             { upsert: true, new: true, runValidators: true }
         );
 
-        await logAdminActivity({
-            actorId: req.userId,
-            action: "SETTINGS_UPDATED",
-            entityType: "platform-settings",
-            entityId: settings._id.toString(),
-            description: `Platform settings updated${payload.maintenanceMode ? " with maintenance mode enabled" : ""}`,
-            severity: payload.maintenanceMode ? "warning" : "info",
-            metadata: payload
-        });
+        const changes = {
+            apiRefreshInterval: {
+                from: Number.isFinite(Number(previousSettings.apiRefreshInterval))
+                    ? Number(previousSettings.apiRefreshInterval)
+                    : null,
+                to: payload.apiRefreshInterval
+            },
+            maintenanceMode: {
+                from: Boolean(previousSettings.maintenanceMode),
+                to: payload.maintenanceMode
+            }
+        };
+
+        await logAdminAction(req.userId, "SETTINGS_UPDATED", null, { changes });
+
+        if (changes.maintenanceMode.from !== changes.maintenanceMode.to) {
+            await logAdminAction(req.userId, "MAINTENANCE_TOGGLED", null, {
+                enabled: payload.maintenanceMode
+            });
+        }
 
         return res.json({ success: true, data: settings, message: "Platform settings updated" });
     } catch (error) {
@@ -1019,7 +1033,7 @@ router.put("/platform-settings", async (req, res) => {
 
 router.patch("/users/:id/status", async (req, res) => {
     try {
-        const { accountStatus } = req.body;
+        const { accountStatus, reason = "" } = req.body;
         if (!["active", "suspended"].includes(accountStatus)) {
             return res.status(400).json({ success: false, message: "Invalid status" });
         }
@@ -1033,15 +1047,13 @@ router.patch("/users/:id/status", async (req, res) => {
         user.accountStatus = accountStatus;
         await user.save();
 
-        await logAdminActivity({
-            actorId: req.userId,
-            action: accountStatus === "active" ? "USER_ACTIVATED" : "USER_SUSPENDED",
-            entityType: "user",
-            entityId: user._id.toString(),
-            description: `${user.username} was ${accountStatus === "active" ? "activated" : "suspended"}`,
-            severity: accountStatus === "active" ? "info" : "warning",
-            metadata: { username: user.username, email: user.email, accountStatus }
-        });
+        if (accountStatus === "suspended") {
+            await logAdminAction(req.userId, "USER_SUSPENDED", user._id, {
+                reason: typeof reason === "string" ? reason.trim() : ""
+            });
+        } else {
+            await logAdminAction(req.userId, "USER_REACTIVATED", user._id, {});
+        }
 
         return res.json({ success: true, message: `User status updated to ${accountStatus}` });
     } catch (error) {
@@ -1100,14 +1112,12 @@ router.delete("/users/:id", async (req, res) => {
             Alert.deleteMany({ userId }).catch(() => null)
         ]);
 
-        await logAdminActivity({
-            actorId: req.userId,
-            action: "USER_DELETED",
-            entityType: "user",
-            entityId: userId.toString(),
-            description: `${user.username} and related portfolio data were deleted`,
-            severity: "critical",
-            metadata: { username: user.username, email: user.email }
+        await logAdminAction(req.userId, "USER_DELETED", {
+            _id: userId,
+            username: user.username,
+            email: user.email
+        }, {
+            email: user.email
         });
 
         return res.json({ success: true, message: "User deleted successfully" });
