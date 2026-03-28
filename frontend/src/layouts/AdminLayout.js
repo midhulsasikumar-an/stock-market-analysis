@@ -111,10 +111,6 @@ export default function AdminLayout() {
                     ) : null}
                 </nav>
 
-                <div className="admin-sidebar-footer">
-                    <span>Locked to admin routes only</span>
-                    <small>User dashboard routes redirect back here.</small>
-                </div>
             </aside>
 
             <div className="admin-shell">

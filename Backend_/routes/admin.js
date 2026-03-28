@@ -534,6 +534,14 @@ router.get("/activity-log", async (req, res) => {
     try {
         const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
         const type = req.query.type || "all";
+        const fromDate = typeof req.query.fromDate === "string" ? req.query.fromDate.trim() : "";
+        const toDate = typeof req.query.toDate === "string" ? req.query.toDate.trim() : "";
+
+        const parsedFrom = fromDate ? new Date(fromDate) : null;
+        const parsedTo = toDate ? new Date(toDate) : null;
+        const hasFrom = parsedFrom && !Number.isNaN(parsedFrom.getTime());
+        const hasTo = parsedTo && !Number.isNaN(parsedTo.getTime());
+        if (hasTo) parsedTo.setHours(23, 59, 59, 999);
 
         const [tradeEvents, registrations, adminActions] = await Promise.all([
             Transaction.find()
@@ -585,6 +593,14 @@ router.get("/activity-log", async (req, res) => {
                 metadata: log.metadata || {}
             }))
         ]
+            .filter((item) => {
+                if (!hasFrom && !hasTo) return true;
+                const ts = new Date(item.timestamp);
+                if (Number.isNaN(ts.getTime())) return false;
+                if (hasFrom && ts < parsedFrom) return false;
+                if (hasTo && ts > parsedTo) return false;
+                return true;
+            })
             .filter((item) => type === "all" || item.category === type)
             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
             .slice(0, limit);

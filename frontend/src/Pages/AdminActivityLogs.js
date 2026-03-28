@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import adminService from '../services/adminService';
 import {
     AdminEmptyState,
@@ -52,17 +52,69 @@ export default function AdminActivityLogs() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [fromDateInput, setFromDateInput] = useState('');
+    const [toDateInput, setToDateInput] = useState('');
+    const [appliedFromDate, setAppliedFromDate] = useState('');
+    const [appliedToDate, setAppliedToDate] = useState('');
 
     useEffect(() => {
         setLoading(true);
-        adminService.getActivityLogs({ type: category, limit: 100 })
+        adminService.getActivityLogs({ type: 'all', limit: 200, fromDate: appliedFromDate, toDate: appliedToDate })
             .then((response) => {
                 setLogs(response.data || []);
                 setError('');
             })
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false));
-    }, [category]);
+    }, [appliedFromDate, appliedToDate]);
+
+    const categoryCounts = useMemo(() => {
+        const counts = {
+            all: logs.length,
+            trade: 0,
+            registration: 0,
+            admin: 0,
+            security: 0
+        };
+
+        logs.forEach((log) => {
+            const key = String(log.category || '').toLowerCase();
+            if (key in counts && key !== 'all') {
+                counts[key] += 1;
+            }
+        });
+
+        return counts;
+    }, [logs]);
+
+    const filteredLogs = useMemo(() => {
+        const source = category === 'all'
+            ? logs
+            : logs.filter((log) => String(log.category || '').toLowerCase() === category);
+
+        return [...source].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }, [logs, category]);
+
+    const filterTabs = [
+        { key: 'all', label: 'All', count: categoryCounts.all },
+        { key: 'trade', label: 'Trade', count: categoryCounts.trade },
+        { key: 'registration', label: 'Registration', count: categoryCounts.registration },
+        { key: 'admin', label: 'Admin', count: categoryCounts.admin },
+        { key: 'security', label: 'Security', count: categoryCounts.security }
+    ];
+
+    const handleApplyFilter = () => {
+        setAppliedFromDate(fromDateInput);
+        setAppliedToDate(toDateInput);
+    };
+
+    const handleClearFilter = () => {
+        setFromDateInput('');
+        setToDateInput('');
+        setAppliedFromDate('');
+        setAppliedToDate('');
+        setCategory('all');
+    };
 
     return (
         <div>
@@ -70,22 +122,85 @@ export default function AdminActivityLogs() {
                 eyebrow="Platform audit trail"
                 title="Activity Logs"
                 description="Review trade events, user registrations, and admin-originated actions in one chronological stream."
-                actions={(
-                    <select className="admin-select" value={category} onChange={(event) => setCategory(event.target.value)}>
-                        <option value="all">All events</option>
-                        <option value="trade">Trades</option>
-                        <option value="registration">Registrations</option>
-                        <option value="admin">Admin actions</option>
-                    </select>
-                )}
             />
 
             <AdminPanel title="Recent events" subtitle="Newest platform activity first">
+                <div className="admin-actions-row" style={{ gridTemplateColumns: '2fr 2fr auto auto', marginBottom: 16 }}>
+                    <div>
+                        <label className="admin-help-text" htmlFor="activity-from-date">From date</label>
+                        <input
+                            id="activity-from-date"
+                            type="date"
+                            className="admin-date-input"
+                            value={fromDateInput}
+                            onChange={(event) => setFromDateInput(event.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label className="admin-help-text" htmlFor="activity-to-date">To date</label>
+                        <input
+                            id="activity-to-date"
+                            type="date"
+                            className="admin-date-input"
+                            value={toDateInput}
+                            onChange={(event) => setToDateInput(event.target.value)}
+                        />
+                    </div>
+                    <button type="button" className="admin-primary-button" onClick={handleApplyFilter}>
+                        Apply filter
+                    </button>
+                    <button type="button" className="admin-outline-button" onClick={handleClearFilter}>
+                        Clear
+                    </button>
+                </div>
+
+                <div style={{
+                    display: 'flex',
+                    gap: 6,
+                    flexWrap: 'wrap',
+                    marginBottom: 16,
+                    borderBottom: '1px solid rgba(148, 163, 184, 0.2)',
+                    paddingBottom: 4
+                }}>
+                    {filterTabs.map((tab) => {
+                        const isActive = category === tab.key;
+                        const isSecurityHot = tab.key === 'security' && tab.count > 0;
+
+                        return (
+                            <button
+                                key={tab.key}
+                                type="button"
+                                onClick={() => setCategory(tab.key)}
+                                style={{
+                                    border: 'none',
+                                    background: 'transparent',
+                                    color: isSecurityHot
+                                        ? '#fca5a5'
+                                        : isActive
+                                            ? '#14b8a6'
+                                            : '#94a3b8',
+                                    padding: '10px 14px',
+                                    marginBottom: -5,
+                                    borderBottom: isSecurityHot
+                                        ? '3px solid #ef4444'
+                                        : isActive
+                                            ? '3px solid #14b8a6'
+                                            : '3px solid transparent',
+                                    fontWeight: isActive ? 700 : 600,
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {`${tab.label} (${tab.count})`}
+                            </button>
+                        );
+                    })}
+                </div>
+
                 {error ? <p className="text-danger mb-3">{error}</p> : null}
 
                 {loading ? (
                     <p className="admin-muted mb-0">Loading activity logs...</p>
-                ) : logs.length === 0 ? (
+                ) : filteredLogs.length === 0 ? (
                     <AdminEmptyState title="No events recorded" description="Change the filter or wait for new platform activity." />
                 ) : (
                     <div className="admin-table-wrap">
@@ -100,7 +215,7 @@ export default function AdminActivityLogs() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {logs.map((log) => (
+                                {filteredLogs.map((log) => (
                                     <tr key={log._id}>
                                         <td>
                                             <span

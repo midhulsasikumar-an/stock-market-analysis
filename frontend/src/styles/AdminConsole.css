@@ -1,7 +1,7 @@
 .admin-console {
+    --admin-sidebar-width: 280px;
     min-height: 100vh;
-    display: grid;
-    grid-template-columns: 280px 1fr;
+    display: block;
     background:
         radial-gradient(circle at top left, rgba(14, 165, 233, 0.14), transparent 28%),
         radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.08), transparent 30%),
@@ -10,8 +10,10 @@
 }
 
 .admin-sidebar {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    width: var(--admin-sidebar-width);
     height: 100vh;
     padding: 28px 20px;
     border-right: 1px solid rgba(148, 163, 184, 0.16);
@@ -20,7 +22,28 @@
     display: flex;
     flex-direction: column;
     gap: 22px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
     z-index: 20;
+}
+
+.admin-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .admin-branding {
@@ -74,9 +97,32 @@
 }
 
 .admin-nav-list {
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.admin-nav-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.admin-nav-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-nav-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+.admin-nav-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .admin-nav-group {
@@ -133,6 +179,7 @@
 
 .admin-sidebar-footer {
     margin-top: auto;
+    flex-shrink: 0;
     padding: 16px;
     border-radius: 16px;
     border: 1px solid rgba(148, 163, 184, 0.14);
@@ -143,6 +190,9 @@
 }
 
 .admin-shell {
+    margin-left: var(--admin-sidebar-width);
+    height: 100vh;
+    overflow-y: auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -505,16 +555,13 @@
 }
 
 @media (max-width: 920px) {
-    .admin-console {
-        grid-template-columns: 1fr;
-    }
-
     .admin-sidebar {
         position: fixed;
         inset: 0 auto 0 0;
         width: min(320px, 86vw);
         transform: translateX(-100%);
         transition: transform 0.22s ease;
+        overflow-y: auto;
     }
 
     .admin-sidebar.is-open {
@@ -529,6 +576,12 @@
     .admin-page-header {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .admin-shell {
+        margin-left: 0;
+        height: auto;
+        overflow-y: visible;
     }
 
     .admin-topbar-right,
