@@ -46,6 +46,7 @@ const adminService = {
     getTransactions: (params = {}) => request(`/transactions${buildQuery(params)}`),
     getPortfolioInspector: (userId) => request(`/portfolio-inspector/${userId}`),
     getAnalytics: (params = {}) => request(`/analytics${buildQuery(params)}`),
+    getActivityTimeline: (days = 30) => request(`/analytics/activity${buildQuery({ days })}`),
     getActivityLogs: (params = {}) => request(`/activity-log${buildQuery(params)}`),
     getSystemHealth: () => request('/system-health'),
     getPlatformSettings: () => request('/platform-settings'),

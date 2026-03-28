@@ -249,6 +249,56 @@ function buildDateRangeFilter(startDate, endDate) {
     return Object.keys(range).length ? range : undefined;
 }
 
+async function getActivityTimeline(days) {
+    const safeDays = Math.min(Math.max(parseInt(days, 10) || 30, 1), 90);
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - (safeDays - 1));
+
+    const aggregated = await Transaction.aggregate([
+        { $match: { executedAt: { $gte: start } } },
+        {
+            $group: {
+                _id: { $dateToString: { format: "%Y-%m-%d", date: "$executedAt" } },
+                tradeEntries: { $sum: 1 },
+                users: { $addToSet: "$userId" }
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                tradeEntries: 1,
+                activeUsers: { $size: "$users" }
+            }
+        }
+    ]);
+
+    const map = aggregated.reduce((acc, row) => {
+        acc[row._id] = {
+            activeUsers: Number(row.activeUsers) || 0,
+            tradeEntries: Number(row.tradeEntries) || 0
+        };
+        return acc;
+    }, {});
+
+    const timeline = [];
+    for (let i = 0; i < safeDays; i += 1) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + i);
+        const isoDay = date.toISOString().slice(0, 10);
+        const row = map[isoDay] || { activeUsers: 0, tradeEntries: 0 };
+
+        timeline.push({
+            date: isoDay,
+            label: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+            activeUsers: row.activeUsers,
+            tradeEntries: row.tradeEntries
+        });
+    }
+
+    return { days: safeDays, timeline };
+}
+
 async function fetchFinnhubSymbols(exchange) {
     if (!FINNHUB_KEY) {
         throw new Error("Finnhub API key is not configured");
@@ -897,6 +947,17 @@ router.get("/analytics", async (req, res) => {
     } catch (error) {
         console.error("Admin analytics error:", error.message);
         return res.status(500).json({ success: false, message: "Error fetching analytics" });
+    }
+});
+
+router.get("/analytics/activity", async (req, res) => {
+    try {
+        const { days = 30 } = req.query;
+        const activity = await getActivityTimeline(days);
+        return res.json({ success: true, data: activity.timeline, meta: { days: activity.days } });
+    } catch (error) {
+        console.error("Admin activity timeline error:", error.message);
+        return res.status(500).json({ success: false, message: "Error fetching activity timeline" });
     }
 });
 
