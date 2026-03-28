@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Line } from 'react-chartjs-2';
+import { Link } from 'react-router-dom';
 import {
     Chart as ChartJS,
     CategoryScale, LinearScale, PointElement,
@@ -31,11 +32,6 @@ const timeAgo = (dateStr) => {
     if (m < 60) return `${m}m ago`;
     if (h < 24) return `${h}h ago`;
     return `${d}d ago`;
-};
-
-const fmtDate = (d) => {
-    if (!d) return '—';
-    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
 };
 
 const getDateRange = (period) => {
@@ -169,19 +165,8 @@ export default function AdminDashboard() {
     const [health, setHealth] = useState(null);
     const [healthLoading, setHealthLoading] = useState(true);
 
-    const [recentUsers, setRecentUsers] = useState([]);
-    const [usersLoading, setUsersLoading] = useState(true);
-
-    const [allUsers, setAllUsers] = useState([]);
-    const [allUsersLoading, setAllUsersLoading] = useState(true);
-
-    const [activityLog, setActivityLog] = useState([]);
-    const [activityLoading, setActivityLoading] = useState(true);
-
     const [error, setError] = useState(null);
     const [lastRefresh, setLastRefresh] = useState(null);
-    const [userSearch, setUserSearch] = useState('');
-    const [expandUsers, setExpandUsers] = useState(false);
 
     const headers = authService.getAuthHeaders();
 
@@ -216,33 +201,6 @@ export default function AdminDashboard() {
         } catch { /* silent */ } finally { setHealthLoading(false); }
     }, []); // eslint-disable-line
 
-    const fetchRecentUsers = useCallback(async () => {
-        setUsersLoading(true);
-        try {
-            const r = await fetch(`${API_URL}/api/admin/recent-users`, { headers });
-            const j = await r.json();
-            if (j.success) setRecentUsers(j.data);
-        } catch { /* silent */ } finally { setUsersLoading(false); }
-    }, []); // eslint-disable-line
-
-    const fetchAllUsers = useCallback(async () => {
-        setAllUsersLoading(true);
-        try {
-            const r = await fetch(`${API_URL}/api/admin/users`, { headers });
-            const j = await r.json();
-            if (j.success) setAllUsers(j.data);
-        } catch { /* silent */ } finally { setAllUsersLoading(false); }
-    }, []); // eslint-disable-line
-
-    const fetchActivityLog = useCallback(async () => {
-        setActivityLoading(true);
-        try {
-            const r = await fetch(`${API_URL}/api/admin/activity-log`, { headers });
-            const j = await r.json();
-            if (j.success) setActivityLog(j.data);
-        } catch { /* silent */ } finally { setActivityLoading(false); }
-    }, []); // eslint-disable-line
-
     const fetchDashboard = useCallback(async () => {
         setDashLoading(true);
         try {
@@ -259,11 +217,8 @@ export default function AdminDashboard() {
         fetchStats();
         fetchChart(chartPeriod);
         fetchHealth();
-        fetchRecentUsers();
-        fetchAllUsers();
-        fetchActivityLog();
         setLastRefresh(new Date());
-    }, [fetchDashboard, fetchStats, fetchChart, fetchHealth, fetchRecentUsers, fetchAllUsers, fetchActivityLog, chartPeriod]);
+    }, [fetchDashboard, fetchStats, fetchChart, fetchHealth, chartPeriod]);
 
     // Initial load
     useEffect(() => { refreshAll(); }, []); // eslint-disable-line
@@ -352,29 +307,6 @@ export default function AdminDashboard() {
     const mongo = health?.mongo;
     const express_ = health?.express;
     const finnhub = health?.finnhub;
-
-    // ── User search filter ──────────────────────────────────────────────────────
-    const filteredUsers = allUsers.filter(u =>
-        !userSearch ||
-        u.username?.toLowerCase().includes(userSearch.toLowerCase()) ||
-        u.email?.toLowerCase().includes(userSearch.toLowerCase())
-    );
-    const displayedUsers = expandUsers ? filteredUsers : filteredUsers.slice(0, 8);
-
-    // ── Handle user status toggle ───────────────────────────────────────────────
-    const toggleUserStatus = async (userId, currentStatus) => {
-        const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
-        try {
-            await fetch(`${API_URL}/api/admin/users/${userId}/status`, {
-                method: 'PATCH',
-                headers,
-                body: JSON.stringify({ accountStatus: newStatus })
-            });
-            setAllUsers(prev => prev.map(u =>
-                u._id === userId ? { ...u, accountStatus: newStatus } : u
-            ));
-        } catch { /* silent */ }
-    };
 
     if (dashLoading && !dashData) {
         return (
@@ -607,10 +539,13 @@ export default function AdminDashboard() {
                 <div className="col-12 col-lg-8">
                     <div className="bg-glass-card p-4 h-100" style={{ borderRadius: '16px' }}>
                         <div className="d-flex justify-content-between align-items-center mb-4">
-                            <h5 className="text-white fw-bold mb-0">Live Platform Updates</h5>
-                            <span className="badge bg-success bg-opacity-10 text-success px-2 py-1 rounded-pill small">
-                                ● Live
-                            </span>
+                            <div className="d-flex align-items-center gap-3">
+                                <h5 className="text-white fw-bold mb-0">Live Platform Updates</h5>
+                                <Link to="/admin/trades" className="text-info small fw-semibold" style={{ textDecoration: 'none' }}>
+                                    View all
+                                </Link>
+                            </div>
+                            <span className="badge bg-success bg-opacity-10 text-success px-2 py-1 rounded-pill small">● Live</span>
                         </div>
                         <div className="table-responsive">
                             <table className="table table-dark table-hover mb-0 align-middle" style={{ background: 'transparent' }}>
@@ -749,212 +684,6 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* ── SECTION 6: User Management Table ────────────────────────────── */}
-            <div className="row g-4 mb-4">
-                <div className="col-12">
-                    <div className="bg-glass-card p-4" style={{ borderRadius: '16px' }}>
-                        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                            <h5 className="text-white fw-bold mb-0">User Management</h5>
-                            <div className="d-flex gap-2 align-items-center">
-                                <input
-                                    type="text"
-                                    className="form-control form-control-sm bg-dark text-white border-secondary"
-                                    placeholder="Search users…"
-                                    style={{ width: '200px', fontSize: '0.8rem' }}
-                                    value={userSearch}
-                                    onChange={e => setUserSearch(e.target.value)}
-                                />
-                                <span className="text-muted small">{filteredUsers.length} users</span>
-                            </div>
-                        </div>
-
-                        {allUsersLoading ? (
-                            <div className="text-center py-4">
-                                <div className="spinner-border text-primary spinner-border-sm" />
-                            </div>
-                        ) : (
-                            <>
-                                <div className="table-responsive">
-                                    <table className="table table-dark table-hover mb-0 align-middle" style={{ background: 'transparent' }}>
-                                        <thead>
-                                            <tr>
-                                                <th className="text-muted small fw-bold border-bottom border-secondary pb-3 border-opacity-25">User</th>
-                                                <th className="text-muted small fw-bold border-bottom border-secondary pb-3 border-opacity-25">Email</th>
-                                                <th className="text-muted small fw-bold border-bottom border-secondary pb-3 border-opacity-25 text-end">Portfolio Value</th>
-                                                <th className="text-muted small fw-bold border-bottom border-secondary pb-3 border-opacity-25 text-center">Transactions</th>
-                                                <th className="text-muted small fw-bold border-bottom border-secondary pb-3 border-opacity-25">Joined</th>
-                                                <th className="text-muted small fw-bold border-bottom border-secondary pb-3 border-opacity-25 text-center">Status</th>
-                                                <th className="text-muted small fw-bold border-bottom border-secondary pb-3 border-opacity-25 text-center">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {displayedUsers.map((u, idx) => (
-                                                <tr key={u._id || idx} style={{ borderBottomColor: 'rgba(255,255,255,0.04)' }}>
-                                                    <td className="py-3">
-                                                        <div className="d-flex align-items-center gap-2">
-                                                            <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-                                                                style={{
-                                                                    width: '32px', height: '32px', flexShrink: 0,
-                                                                    background: `hsl(${(u.username?.charCodeAt(0) || 65) * 5}, 60%, 30%)`,
-                                                                    fontSize: '0.75rem'
-                                                                }}>
-                                                                {(u.username || '?').charAt(0).toUpperCase()}
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-white fw-bold small">{u.username}</div>
-                                                                {u.role === 'admin' && (
-                                                                    <span className="badge bg-primary bg-opacity-10 text-primary" style={{ fontSize: '0.6rem' }}>Admin</span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-3 text-muted small">{u.email}</td>
-                                                    <td className="py-3 text-white fw-bold text-end small">
-                                                        {fmtMoney(u.portfolioValue || 0)}
-                                                    </td>
-                                                    <td className="py-3 text-center">
-                                                        <span className="badge bg-secondary bg-opacity-25 text-white px-2 py-1">
-                                                            {u.transactionCount || 0}
-                                                        </span>
-                                                    </td>
-                                                    <td className="py-3 text-muted small">{fmtDate(u.createdAt)}</td>
-                                                    <td className="py-3 text-center">
-                                                        <span className={`badge rounded-pill px-2 py-1 small fw-bold ${u.accountStatus === 'active'
-                                                            ? 'bg-success bg-opacity-10 text-success'
-                                                            : 'bg-danger bg-opacity-10 text-danger'}`}>
-                                                            {u.accountStatus}
-                                                        </span>
-                                                    </td>
-                                                    <td className="py-3 text-center">
-                                                        <div className="d-flex gap-1 justify-content-center">
-                                                            <button
-                                                                className={`btn btn-sm fw-bold border-0 ${u.accountStatus === 'active'
-                                                                    ? 'bg-danger bg-opacity-10 text-danger'
-                                                                    : 'bg-success bg-opacity-10 text-success'}`}
-                                                                style={{ fontSize: '0.65rem', padding: '3px 8px', borderRadius: '6px' }}
-                                                                onClick={() => toggleUserStatus(u._id, u.accountStatus)}
-                                                                disabled={u.role === 'admin'}
-                                                                title={u.role === 'admin' ? 'Cannot modify admin' : ''}
-                                                            >
-                                                                {u.accountStatus === 'active' ? 'Suspend' : 'Activate'}
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {filteredUsers.length === 0 && (
-                                                <tr><td colSpan="7" className="text-center py-4 text-muted">No users found</td></tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                {filteredUsers.length > 8 && (
-                                    <div className="text-center mt-3">
-                                        <button
-                                            className="btn btn-sm btn-outline-secondary"
-                                            style={{ fontSize: '0.75rem' }}
-                                            onClick={() => setExpandUsers(v => !v)}
-                                        >
-                                            {expandUsers ? `Show less ↑` : `Show all ${filteredUsers.length} users ↓`}
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* ── SECTION 7 & 8: Recent Users + Activity Log ──────────────────── */}
-            <div className="row g-4 mb-2">
-
-                {/* Recent Users */}
-                <div className="col-12 col-lg-5">
-                    <div className="bg-glass-card p-4 h-100" style={{ borderRadius: '16px' }}>
-                        <h5 className="text-white fw-bold mb-4">Recent Registrations</h5>
-                        {usersLoading ? (
-                            <div className="text-center py-3">
-                                <div className="spinner-border text-primary spinner-border-sm" />
-                            </div>
-                        ) : recentUsers.length === 0 ? (
-                            <p className="text-muted small text-center py-3">No users yet</p>
-                        ) : (
-                            <div className="d-flex flex-column gap-2">
-                                {recentUsers.map((u, i) => (
-                                    <div key={u._id || i} className="d-flex align-items-center justify-content-between p-2 rounded-3"
-                                        style={{ background: 'rgba(255,255,255,0.02)' }}>
-                                        <div className="d-flex align-items-center gap-2">
-                                            <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-                                                style={{
-                                                    width: '34px', height: '34px',
-                                                    background: `hsl(${(u.username?.charCodeAt(0) || 65) * 5}, 60%, 28%)`,
-                                                    fontSize: '0.75rem', flexShrink: 0
-                                                }}>
-                                                {(u.username || '?').charAt(0).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <div className="text-white small fw-bold">{u.username}</div>
-                                                <div className="text-muted" style={{ fontSize: '0.65rem' }}>{u.email}</div>
-                                            </div>
-                                        </div>
-                                        <div className="text-end">
-                                            <div className="text-muted" style={{ fontSize: '0.65rem' }}>{timeAgo(u.createdAt)}</div>
-                                            <span className={`badge small ${u.accountStatus === 'active'
-                                                ? 'bg-success bg-opacity-10 text-success'
-                                                : 'bg-secondary text-muted'}`}
-                                                style={{ fontSize: '0.55rem' }}>
-                                                {u.accountStatus}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Admin Activity Log */}
-                <div className="col-12 col-lg-7">
-                    <div className="bg-glass-card p-4 h-100" style={{ borderRadius: '16px' }}>
-                        <div className="d-flex justify-content-between align-items-center mb-4">
-                            <h5 className="text-white fw-bold mb-0">Activity Log</h5>
-                            <span className="text-muted small">Last 10 events</span>
-                        </div>
-                        {activityLoading ? (
-                            <div className="text-center py-3">
-                                <div className="spinner-border text-primary spinner-border-sm" />
-                            </div>
-                        ) : activityLog.length === 0 ? (
-                            <p className="text-muted small text-center py-3">No activity yet</p>
-                        ) : (
-                            <div className="d-flex flex-column gap-2">
-                                {activityLog.map((log, i) => (
-                                    <div key={log._id || i} className="d-flex align-items-start gap-3 p-2 rounded-3"
-                                        style={{ background: 'rgba(255,255,255,0.02)' }}>
-                                        <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-1"
-                                            style={{
-                                                width: '28px', height: '28px',
-                                                background: log.type === 'BUY'
-                                                    ? 'rgba(16,185,129,0.15)'
-                                                    : 'rgba(239,68,68,0.15)',
-                                                fontSize: '0.7rem'
-                                            }}>
-                                            {log.type === 'BUY' ? '📈' : '📉'}
-                                        </div>
-                                        <div className="flex-grow-1">
-                                            <p className="text-white mb-0 small">{log.message}</p>
-                                        </div>
-                                        <div className="text-muted flex-shrink-0" style={{ fontSize: '0.65rem', whiteSpace: 'nowrap' }}>
-                                            {timeAgo(log.timestamp)}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
