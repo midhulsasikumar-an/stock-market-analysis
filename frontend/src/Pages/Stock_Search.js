@@ -145,8 +145,20 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
 
     const aiSignal = weightedScore >= 3 ? 'Bullish' : weightedScore <= -3 ? 'Bearish' : 'Neutral';
     const aiClass = aiSignal === 'Bullish' ? 'pos' : aiSignal === 'Bearish' ? 'neg' : 'neu';
+    const aiIcon = aiSignal === 'Bullish' ? '↗' : aiSignal === 'Bearish' ? '↘' : '→';
+    const aiBg = aiSignal === 'Bullish' ? 'rgba(16,185,129,0.12)' : aiSignal === 'Bearish' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)';
+    const aiBorder = aiSignal === 'Bullish' ? 'rgba(16,185,129,0.25)' : aiSignal === 'Bearish' ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)';
+    const aiText = aiSignal === 'Bullish' ? '#10b981' : aiSignal === 'Bearish' ? '#ef4444' : '#f59e0b';
     const riskLevel = Math.abs(priceMomentum) >= 4 ? 'High' : Math.abs(priceMomentum) >= 2 ? 'Medium' : 'Low';
     const formatSigned = (value) => `${value > 0 ? '+' : ''}${value.toFixed(2)}%`;
+    const recommendationSegments = [
+        { key: 'strongSell', value: strongSell, color: '#ef4444' },
+        { key: 'sell', value: sell, color: '#f87171' },
+        { key: 'hold', value: hold, color: '#94a3b8' },
+        { key: 'buy', value: buy, color: '#34d399' },
+        { key: 'strongBuy', value: strongBuy, color: '#10b981' },
+    ];
+    const recommendationSum = recommendationSegments.reduce((sum, segment) => sum + segment.value, 0);
 
     return (
         <div className="order-panel">
@@ -155,7 +167,21 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
                     <div className="order-symbol">{symbol}</div>
                     <div className={`order-price ${(quote?.dp ?? 0) >= 0 ? 'price-up' : 'price-down'}`}>
                         ${price.toFixed(2)}
-                        <span className="order-change">
+                        <span
+                            className="order-change"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                padding: '0.18rem 0.5rem',
+                                borderRadius: '999px',
+                                marginLeft: '0.5rem',
+                                background: (quote?.dp ?? 0) >= 0 ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
+                                border: `1px solid ${(quote?.dp ?? 0) >= 0 ? 'rgba(16,185,129,0.22)' : 'rgba(239,68,68,0.22)'}`,
+                                color: (quote?.dp ?? 0) >= 0 ? '#10b981' : '#ef4444'
+                            }}
+                        >
+                            <span aria-hidden="true">{(quote?.dp ?? 0) >= 0 ? '▲' : '▼'}</span>
                             {' '}({(quote?.dp ?? 0).toFixed(2)}%)
                         </span>
                     </div>
@@ -186,7 +212,23 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
             <div className="analysis-grid-2">
                 <div className="analysis-chip">
                     <span>AI Signal</span>
-                    <strong className={aiClass}>{aiSignal}</strong>
+                    <strong
+                        className={aiClass}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            width: 'fit-content',
+                            padding: '0.22rem 0.5rem',
+                            borderRadius: '999px',
+                            background: aiBg,
+                            border: `1px solid ${aiBorder}`,
+                            color: aiText,
+                        }}
+                    >
+                        <span aria-hidden="true">{aiIcon}</span>
+                        {aiSignal}
+                    </strong>
                 </div>
                 <div className="analysis-chip">
                     <span>Confidence</span>
@@ -200,6 +242,19 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
 
             <div className="order-section">
                 <div className="order-section-label">Analyst Recommendation</div>
+                <div className="analysis-rec-bar" aria-label="Analyst recommendation distribution">
+                    {recommendationSegments.map((segment) => (
+                        <div
+                            key={segment.key}
+                            className="analysis-rec-bar-segment"
+                            style={{
+                                width: recommendationSum > 0 ? `${(segment.value / recommendationSum) * 100}%` : '0%',
+                                background: segment.color,
+                            }}
+                            title={`${segment.key}: ${segment.value}`}
+                        />
+                    ))}
+                </div>
                 <div className="analysis-rec-grid">
                     <div><span>Strong Buy</span><b>{strongBuy}</b></div>
                     <div><span>Buy</span><b>{buy}</b></div>
@@ -253,10 +308,6 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
                     with <strong>{confidence}%</strong> confidence.
                 </p>
             </div>
-
-            <p style={{ fontSize: '11px', opacity: 0.6, fontStyle: 'italic', color: '#94a3b8', margin: '8px 0 0' }}>
-                AI predictions are for informational purposes only and do not constitute financial advice. Always do your own research.
-            </p>
 
             {/* ── Action Buttons ── */}
             <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
@@ -671,13 +722,9 @@ export default function StockPage() {
                 <button
                     type="button"
                     className="btn-glass stock-back-btn"
-                    onClick={() => {
-                        const u = localStorage.getItem("user");
-                        const r = u ? JSON.parse(u).role : null;
-                        navigate(r === 'admin' ? '/admin' : '/dashboard');
-                    }}
+                    onClick={() => navigate(-1)}
                 >
-                    ← Back to Dashboard
+                    ← Back
                 </button>
             </div>
 

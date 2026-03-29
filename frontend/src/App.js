@@ -10,6 +10,7 @@ import Settings from './Pages/Settings';
 import Portfolio from './Pages/Portfolio';
 import StocksPage from './Pages/StocksPage';
 import SectorPage from './Pages/SectorPage';
+import NotFound from './Pages/NotFound';
 import Login from './components/Login';
 import Register from './components/Register';
 import { PublicRoute, AdminRoute, UserRoute } from './components/ProtectedRoute';
@@ -87,6 +88,9 @@ function App() {
 
           {/* Stock Detail Page — public */}
           <Route path='/stock/:symbol' element={<StockSearch />} />
+
+          {/* Catch-all 404 route — must remain last */}
+          <Route path='*' element={<NotFound />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

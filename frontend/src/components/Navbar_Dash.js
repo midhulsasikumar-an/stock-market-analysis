@@ -82,7 +82,9 @@ export default function Navbar_Dash() {
       setLoading(true);
       try {
         const data = await fetchSearch(query);
-        const results = Array.isArray(data?.result) ? data.result.slice(0, 8) : [];
+        const results = Array.isArray(data?.result)
+          ? data.result.filter((stock) => stock.type === 'Common Stock' && !(stock.symbol || '').includes('.')).slice(0, 6)
+          : [];
 
         const enriched = await Promise.all(results.map(async (item) => {
           try {
@@ -239,7 +241,16 @@ export default function Navbar_Dash() {
               aria-haspopup="listbox"
             />
             <div className={`nav-search-spinner ${loading ? 'visible' : ''}`} aria-hidden="true">
-              <span className="spinner-border spinner-border-sm" />
+              <div
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid rgba(255,255,255,0.2)',
+                  borderTop: '2px solid #3b82f6',
+                  borderRadius: '50%',
+                  animation: 'spin 0.8s linear infinite'
+                }}
+              />
             </div>
           </form>
 
