@@ -40,6 +40,32 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
 };
 
+const formatSignedMoney = (value) => {
+  if (value == null || isNaN(value)) return '$0';
+  const abs = Math.abs(value);
+  if (value > 0) return `+$${Math.round(abs).toLocaleString('en-US')}`;
+  if (value < 0) return `-$${Math.round(abs).toLocaleString('en-US')}`;
+  return '$0';
+};
+
+const formatSignedPercent = (value) => {
+  if (value == null || isNaN(value)) return '0.00%';
+  const abs = Math.abs(value).toFixed(2);
+  if (value > 0) return `+${abs}%`;
+  if (value < 0) return `-${abs}%`;
+  return `${abs}%`;
+};
+
+const formatCsvDate = (date) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
+const csvEscape = (value) => {
+  const text = value == null ? '' : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+};
+
 // ─── Sell Modal ───────────────────────────────────────────────────────────────
 function SellModal({ holding, onClose, onSuccess }) {
   const [form, setForm] = useState({ quantity: '', sellPrice: (holding.currentPrice || holding.avgBuyPrice || '').toString() });
@@ -216,21 +242,59 @@ function TransactionHistory({ transactions, loading }) {
   const paginated = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
 
+  const handleDownloadCsv = () => {
+    if (!transactions.length) return;
+
+    const rows = [
+      ['Date', 'Stock', 'Type', 'Quantity', 'Price', 'Total'],
+      ...transactions.map((tx) => [
+        formatDate(tx.executedAt || tx.createdAt),
+        tx.symbol || '',
+        tx.type || '',
+        tx.quantity ?? '',
+        (tx.pricePerUnit ?? 0).toFixed(2),
+        (tx.totalAmount ?? 0).toFixed(2),
+      ])
+    ];
+
+    const csv = rows.map((row) => row.map(csvEscape).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tradetrack-transactions-${formatCsvDate(new Date())}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="bg-glass-card mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="d-flex justify-content-between align-items-start mb-3 gap-3 flex-wrap">
         <h6 className="text-white fw-bold mb-0">Transaction History</h6>
-        <div className="d-flex gap-2">
-          {['ALL', 'BUY', 'SELL'].map(f => (
-            <button
-              key={f}
-              className={`btn btn-sm ${filter === f ? 'btn-primary' : 'btn-outline-secondary'}`}
-              style={{ fontSize: '0.7rem', padding: '3px 10px' }}
-              onClick={() => { setFilter(f); setPage(0); }}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="d-flex gap-2 align-items-center flex-wrap justify-content-end">
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-primary"
+            style={{ fontSize: '0.7rem', padding: '3px 10px' }}
+            onClick={handleDownloadCsv}
+            disabled={!transactions.length}
+          >
+            Download CSV
+          </button>
+          <div className="d-flex gap-2">
+            {['ALL', 'BUY', 'SELL'].map(f => (
+              <button
+                key={f}
+                className={`btn btn-sm ${filter === f ? 'btn-primary' : 'btn-outline-secondary'}`}
+                style={{ fontSize: '0.7rem', padding: '3px 10px' }}
+                onClick={() => { setFilter(f); setPage(0); }}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -318,6 +382,14 @@ function PnLTable({ holdings }) {
 
   if (holdings.length === 0) return null;
 
+  const getPnlStyle = (value) => ({
+    background: value > 0
+      ? 'rgba(16,185,129,0.05)'
+      : value < 0
+        ? 'rgba(239,68,68,0.05)'
+        : 'rgba(148,163,184,0.04)'
+  });
+
   return (
     <div className="bg-glass-card mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -335,7 +407,7 @@ function PnLTable({ holdings }) {
         <div style={{ flex: '0 0 70px' }}>Stock</div>
         <div style={{ flex: 1 }}>Qty</div>
         <div style={{ flex: 1 }}>Avg Buy</div>
-        <div style={{ flex: 1 }}>CMP</div>
+        <div style={{ flex: 1 }}>Current Price</div>
         <div style={{ flex: 1 }}>Invested</div>
         <div style={{ flex: 1 }}>Value</div>
         <div style={{ flex: 1, textAlign: 'right' }}>P&L</div>
@@ -343,7 +415,7 @@ function PnLTable({ holdings }) {
 
       <div className="d-flex flex-column gap-1">
         {holdings.map((h, i) => (
-          <div key={h._id || i} className="d-flex align-items-center px-2 py-2 rounded-3" style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.78rem' }}>
+          <div key={h._id || i} className="d-flex align-items-center px-2 py-2 rounded-3" style={{ ...getPnlStyle(h.profitLoss || 0), fontSize: '0.78rem' }}>
             <div style={{ flex: '0 0 70px' }}>
               <span className="text-white fw-bold" style={{ fontSize: '0.78rem' }}>{h.symbol}</span>
             </div>
@@ -353,12 +425,12 @@ function PnLTable({ holdings }) {
             <div style={{ flex: 1, color: '#94a3b8' }}>{formatMoney(h.invested)}</div>
             <div style={{ flex: 1, color: '#e2e8f0' }}>{formatMoney(h.currentValue)}</div>
             <div style={{ flex: 1, textAlign: 'right' }}>
-              <span className={`fw-bold ${h.profitLoss >= 0 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.78rem' }}>
-                {h.profitLoss >= 0 ? '+' : ''}{formatMoney(h.profitLoss)}
+              <span className={`fw-bold ${h.profitLoss > 0 ? 'text-success' : h.profitLoss < 0 ? 'text-danger' : 'text-muted'}`} style={{ fontSize: '0.78rem' }}>
+                {formatSignedMoney(h.profitLoss)}
               </span>
               <br />
-              <span className={h.profitLoss >= 0 ? 'text-success' : 'text-danger'} style={{ fontSize: '0.65rem' }}>
-                ({h.profitLossPct >= 0 ? '+' : ''}{(h.profitLossPct ?? 0).toFixed(2)}%)
+              <span className={h.profitLoss > 0 ? 'text-success' : h.profitLoss < 0 ? 'text-danger' : 'text-muted'} style={{ fontSize: '0.65rem' }}>
+                ({formatSignedPercent(h.profitLossPct ?? 0)})
               </span>
             </div>
           </div>
@@ -604,12 +676,31 @@ export default function Portfolio() {
             <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Current Value</p>
             <h3 className="fw-bold text-white mb-0">{formatMoney(s.totalCurrentValue)}</h3>
           </div>
-          <div className="bg-glass-card stat-card-glow-green hover-glow">
+          <div
+            className="bg-glass-card hover-glow"
+            style={{
+              background: (s.totalProfitLoss || 0) > 0
+                ? 'linear-gradient(180deg, rgba(16,185,129,0.14), rgba(15,23,42,0.78))'
+                : (s.totalProfitLoss || 0) < 0
+                  ? 'linear-gradient(180deg, rgba(239,68,68,0.14), rgba(15,23,42,0.78))'
+                  : 'linear-gradient(180deg, rgba(148,163,184,0.12), rgba(15,23,42,0.78))',
+              border: (s.totalProfitLoss || 0) > 0
+                ? '1px solid rgba(16,185,129,0.18)'
+                : (s.totalProfitLoss || 0) < 0
+                  ? '1px solid rgba(239,68,68,0.18)'
+                  : '1px solid rgba(148,163,184,0.16)'
+            }}
+          >
             <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Gain / Loss</p>
-            <h3 className={`fw-bold mb-0 ${(s.totalProfitLoss || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
-              {formatMoney(s.totalProfitLoss)}
-            </h3>
-            <p className={`small mb-0 mt-1 ${(s.totalProfitLoss || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
+            <div className={`d-inline-flex align-items-center gap-2 ${(s.totalProfitLoss || 0) > 0 ? 'text-success' : (s.totalProfitLoss || 0) < 0 ? 'text-danger' : 'text-muted'}`}>
+              <span aria-hidden="true" style={{ fontSize: '1rem', lineHeight: 1 }}>
+                {(s.totalProfitLoss || 0) > 0 ? '▲' : (s.totalProfitLoss || 0) < 0 ? '▼' : '●'}
+              </span>
+              <h3 className="fw-bold mb-0" style={{ fontSize: '1.5rem' }}>
+                {formatSignedMoney(s.totalProfitLoss)}
+              </h3>
+            </div>
+            <p className={`small mb-0 mt-1 ${(s.totalProfitLoss || 0) > 0 ? 'text-success' : (s.totalProfitLoss || 0) < 0 ? 'text-danger' : 'text-muted'}`}>
               {(s.totalReturnPct || 0).toFixed(2)}%
             </p>
           </div>
@@ -725,51 +816,68 @@ export default function Portfolio() {
         <div className="d-flex flex-column gap-4">
           <div className="bg-glass-card h-100 overflow-hidden d-flex flex-column">
             <h6 className="text-white mb-3 fw-bold">Current Holdings</h6>
+            <div className="d-flex px-2 py-1 mb-2" style={{ fontSize: '0.6rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <div style={{ flex: '0 0 88px' }}>Symbol</div>
+              <div style={{ flex: '0 0 66px' }}>Trend</div>
+              <div style={{ flex: '0 0 70px', textAlign: 'right' }}>Qty</div>
+              <div style={{ flex: '0 0 92px', textAlign: 'right' }}>Buy Price</div>
+              <div style={{ flex: 1, textAlign: 'right' }}>Current Value</div>
+              <div style={{ flex: '0 0 92px', textAlign: 'right' }}>P&L</div>
+              <div style={{ flex: '0 0 58px', textAlign: 'right' }}>Action</div>
+            </div>
             <div className="d-flex flex-column gap-1 overflow-auto">
               {holdings.length > 0 ? holdings.map((row, i) => (
-                <div key={row._id || i} className="p-3 rounded-3 hover-glow border-bottom border-secondary border-opacity-10">
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <div>
-                      <span className="text-white fw-bold small">{row.symbol}</span>
-                      {row.name && row.name !== row.symbol && (
-                        <span className="text-muted ms-2" style={{ fontSize: '0.6rem' }}>{row.name}</span>
-                      )}
-                    </div>
-                    <div className="d-flex align-items-center gap-2">
-                      <span className="text-white small fw-bold">{formatMoney(row.currentValue)}</span>
-                      {/* ── Sell Button ── */}
-                      <button
-                        className="btn btn-sm"
-                        style={{
-                          fontSize: '0.65rem',
-                          padding: '2px 8px',
-                          background: 'rgba(239,68,68,0.12)',
-                          color: '#ef4444',
-                          border: '1px solid rgba(239,68,68,0.25)',
-                          borderRadius: '6px',
-                          lineHeight: 1.4
-                        }}
-                        onClick={() => setSellHolding(row)}
-                      >
-                        Sell
-                      </button>
+                <div key={row._id || i} className="d-flex align-items-center p-3 rounded-3 hover-glow border-bottom border-secondary border-opacity-10" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                  <div style={{ flex: '0 0 88px' }}>
+                    <span className="text-white fw-bold small d-block">{row.symbol}</span>
+                    {row.name && row.name !== row.symbol && (
+                      <span className="text-muted" style={{ fontSize: '0.6rem' }}>{row.name}</span>
+                    )}
+                  </div>
+                  <div style={{ flex: '0 0 66px' }}>
+                    <div
+                      title={row.profitLoss > 0 ? 'In profit' : row.profitLoss < 0 ? 'At a loss' : 'Flat'}
+                      className="d-inline-flex align-items-center justify-content-center rounded-pill"
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        background: row.profitLoss > 0 ? 'rgba(16,185,129,0.18)' : row.profitLoss < 0 ? 'rgba(239,68,68,0.18)' : 'rgba(148,163,184,0.18)',
+                        border: row.profitLoss > 0 ? '1px solid rgba(16,185,129,0.3)' : row.profitLoss < 0 ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(148,163,184,0.25)'
+                      }}
+                    >
+                      <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: row.profitLoss > 0 ? '#10b981' : row.profitLoss < 0 ? '#ef4444' : '#94a3b8' }} />
                     </div>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <span className="text-muted" style={{ fontSize: '0.65rem' }}>
-                      {row.quantity} Shares @ {formatMoney(row.avgBuyPrice)}
-                    </span>
-                    <span className={`small ${row.profitLoss >= 0 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.7rem' }}>
-                      {row.profitLossPct >= 0 ? '+' : ''}{(row.profitLossPct ?? 0).toFixed(2)}%
+                  <div style={{ flex: '0 0 70px', textAlign: 'right' }}>
+                    <span className="text-white small fw-semibold">{row.quantity}</span>
+                  </div>
+                  <div style={{ flex: '0 0 92px', textAlign: 'right' }}>
+                    <span className="text-muted small">{formatMoney(row.avgBuyPrice)}</span>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'right' }}>
+                    <span className="text-white small fw-semibold">{formatMoney(row.currentValue)}</span>
+                  </div>
+                  <div style={{ flex: '0 0 92px', textAlign: 'right' }}>
+                    <span className={`small fw-bold ${row.profitLoss > 0 ? 'text-success' : row.profitLoss < 0 ? 'text-danger' : 'text-muted'}`}>
+                      {formatSignedMoney(row.profitLoss)}
                     </span>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span className="text-muted" style={{ fontSize: '0.6rem' }}>
-                      CMP: {formatMoney(row.currentPrice)}
-                    </span>
-                    <span className={`fw-bold ${row.profitLoss >= 0 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.7rem' }}>
-                      {row.profitLoss >= 0 ? '+' : ''}{formatMoney(row.profitLoss)}
-                    </span>
+                  <div style={{ flex: '0 0 58px', textAlign: 'right' }}>
+                    <button
+                      className="btn btn-sm"
+                      style={{
+                        fontSize: '0.65rem',
+                        padding: '2px 8px',
+                        background: 'rgba(239,68,68,0.12)',
+                        color: '#ef4444',
+                        border: '1px solid rgba(239,68,68,0.25)',
+                        borderRadius: '6px',
+                        lineHeight: 1.4
+                      }}
+                      onClick={() => setSellHolding(row)}
+                    >
+                      Sell
+                    </button>
                   </div>
                 </div>
               )) : (
