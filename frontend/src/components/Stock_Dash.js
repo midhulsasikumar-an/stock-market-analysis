@@ -6,8 +6,8 @@ import '../styles/DashboardRedesign.css';
 const DASHBOARD_UI_CONFIG = [
   { id: 'gainers', title: "Top Stocks Today", emoji: "📈", stroke: "#2ef08a" },
   { id: 'losers', title: "Top Losers", emoji: "📉", stroke: "#ff3e3e" },
-  { id: 'trending', title: "Trending", emoji: "🚩", stroke: "#2ec8f0" },
-  { id: 'searched', title: "Most Searched", emoji: "⭐", stroke: "#ffcc00" }
+  { id: 'trending', title: "Trending", emoji: "🚩", stroke: "#f59e0b" },
+  { id: 'searched', title: "Most Searched", emoji: "⭐", stroke: "#3b82f6" }
 ];
 
 const CANDIDATE_SYMBOLS = ['AAPL', 'MSFT', 'NVDA', 'TSLA', 'AMZN', 'GOOGL', 'META'];
@@ -99,7 +99,12 @@ export default function Stock_Dash() {
         const color = isPositive ? "var(--dash-accent-green)" : "var(--dash-accent-red)";
 
         return (
-          <div key={card.id} className="bottom-card-redesign" onClick={() => navigate(`/stock/${data.symbol}`)}>
+          <div
+            key={card.id}
+            className="bottom-card-redesign"
+            style={{ borderTop: `3px solid ${card.stroke}` }}
+            onClick={() => navigate(`/stock/${data.symbol}`)}
+          >
             <div className="bottom-card-title">
               {card.title} {card.emoji}
             </div>

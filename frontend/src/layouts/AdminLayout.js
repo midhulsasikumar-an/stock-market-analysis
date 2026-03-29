@@ -82,7 +82,7 @@ export default function AdminLayout() {
                     <img 
                         src="/tt-logo.png" 
                         alt="TradeTrack" 
-                        style={{height:'36px', width:'auto', objectFit:'contain'}} 
+                        style={{height:'32px', width:'auto', objectFit:'contain', filter:'brightness(0) invert(1)'}} 
                     />
                 </div>
 

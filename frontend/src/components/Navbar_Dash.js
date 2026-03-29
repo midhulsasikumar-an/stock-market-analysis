@@ -188,6 +188,7 @@ export default function Navbar_Dash() {
           src="/tt-logo.png"
           alt="TradeTrack"
           className="brand-logo"
+          style={{ height: '32px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
           onError={(e) => { e.target.style.display = 'none'; }}
         />
         <span className="brand-name">TradeTrack</span>

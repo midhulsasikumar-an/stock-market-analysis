@@ -30,7 +30,11 @@ export default function Navbar() {
 
         {/* ── Brand ── */}
         <Link className="tt-nav-brand" to="/">
-          <img src="/tt-logo.png" alt="TradeTrack logo" />
+          <img
+            src="/tt-logo.png"
+            alt="TradeTrack"
+            style={{ height: '32px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+          />
           <span>TradeTrack</span>
         </Link>
 

@@ -16,7 +16,7 @@ export default function Footer() {
               <img 
                 src="/tt-logo.png" 
                 alt="TradeTrack" 
-                style={{height:'32px', width:'auto', objectFit:'contain'}}
+                style={{height:'28px', width:'auto', objectFit:'contain', marginBottom:'12px', filter:'brightness(0) invert(1)'}}
               />
             </div>
             <p className="tt-footer-desc">

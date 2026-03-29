@@ -173,16 +173,25 @@ export default function Market_Overview_Dash() {
       <div className="global-activity-redesign mb-4">
         <div className="activity-item-redesign">
           <span className="activity-label-redesign">Primary Indices</span>
-          <div className="activity-value-redesign d-flex gap-3">
-            <span className="text-success">SENSEX: 72,506.14 (+0.84%)</span>
-            <span className="text-success">NIFTY 50: 21,894.55 (+0.63%)</span>
+          <div className="activity-value-redesign activity-indices-stack">
+            <div className="activity-index-item">
+              <span className="activity-index-name">SENSEX</span>
+              <span className="activity-index-value text-success">72,506.14</span>
+            </div>
+            <div className="activity-index-item">
+              <span className="activity-index-name">NIFTY 50</span>
+              <span className="activity-index-value text-success">21,894.55</span>
+            </div>
           </div>
           <div className="text-muted" style={{ fontSize: '0.72rem', marginTop: '0.35rem' }}>
             Updated {formatRelativeUpdate(lastUpdated)} · Auto-refreshes every 60s
           </div>
         </div>
-        <div className="activity-item-redesign ms-4 border-start ps-4" style={{ borderColor: 'rgba(255,255,255,0.1) !important' }}>
-          <span className="activity-label-redesign">Session Overview</span>
+        <div className="activity-item-redesign ms-4 border-start ps-4 position-relative" style={{ borderColor: 'rgba(255,255,255,0.1) !important' }}>
+          <div className="d-flex justify-content-between align-items-start gap-3">
+            <span className="activity-label-redesign mb-0">Session Overview</span>
+            <span className="session-ai-badge">AI Summary</span>
+          </div>
           <p className="mb-0 text-muted" style={{ fontSize: '0.75rem', maxWidth: '500px' }}>
             Markets continue to show bullish bias today with strong rallies in tech stocks. Domestic indices are outperforming peers.
           </p>

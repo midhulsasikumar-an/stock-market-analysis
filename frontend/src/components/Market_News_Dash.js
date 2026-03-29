@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchMarketNews } from '../services/finnhub';
 
 // Helper: Convert timestamp to relative time
@@ -117,15 +118,10 @@ export default function Market_News_Dash() {
               />
             ))}
           </div>
-          <div className="news-footer">
-            <a
-              href="https://finnhub.io/news"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="keep-reading-link"
-            >
-              Keep reading →
-            </a>
+          <div className="news-footer" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Link to="/news" className="keep-reading-link">
+              View all news →
+            </Link>
           </div>
         </>
       )}

@@ -96,7 +96,7 @@ export default function Login() {
                     <img 
                         src="/tt-logo.png" 
                         alt="TradeTrack" 
-                        style={{height:'48px', width:'auto', objectFit:'contain'}}
+                        style={{height:'48px', width:'auto', objectFit:'contain', marginBottom:'8px', filter:'brightness(0) invert(1)'}}
                     />
                 </div>
 
