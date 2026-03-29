@@ -40,10 +40,13 @@ function App() {
           toastOptions={{
             duration: 4000,
             style: {
-              background: '#111827',
-              color: '#FFFFFF',
-              border: '1px solid #374151'
-            }
+              background: '#1e293b',
+              color: '#f8fafc',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px'
+            },
+            success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
+            error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } }
           }}
         />
         <Routes>

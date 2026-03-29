@@ -6,6 +6,7 @@ import { getSectorById } from "../data/stocksData";
 import { fetchQuote, fetchSymbolVisibility } from "../services/finnhub";
 import watchlistService from "../services/watchlistService";
 import authService from "../services/authService";
+import toast from 'react-hot-toast';
 import "./Stocks.css";
 
 const formatPercent = (value) => {
@@ -133,11 +134,18 @@ export default function SectorPage() {
       setTimeout(() => setMessage(""), 3000);
       return;
     }
+    const loadingId = toast.loading('Saving...');
     try {
       await watchlistService.addToWatchlist(stock.symbol, stock.companyName, "stock");
       setMessage(`✓ ${stock.symbol} added to watchlist`);
       setTimeout(() => setMessage(""), 3000);
+      toast.success(`${stock.symbol} added to watchlist`, { id: loadingId });
     } catch (error) {
+      if ((error.message || '').toLowerCase().includes('already')) {
+        toast.error(`${stock.symbol} is already in your watchlist`, { id: loadingId });
+      } else {
+        toast.error('Something went wrong. Please try again.', { id: loadingId });
+      }
       setMessage(error.message || "Failed to add to watchlist");
       setTimeout(() => setMessage(""), 3000);
     }

@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { fetchQuote, fetchMarketNews, fetchCandles } from '../services/finnhub';
 import watchlistService from '../services/watchlistService';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 // Default watchlist symbols (fallbacks for new users)
 const DEFAULT_SYMBOLS = [
@@ -28,7 +30,7 @@ const getSparklinePoints = (prices) => {
 const formatUsdPrice = (value) => (value ? `$${value.toFixed(2)}` : '---');
 
 // WatchlistRow Component
-const WatchlistRow = ({ item, isSelected, onClick, onRemove }) => {
+const WatchlistRow = ({ item, isSelected, onClick, pendingRemove, onRequestRemove, onConfirmRemove, onCancelRemove }) => {
   const isPositive = (item.changePercent || 0) >= 0;
   return (
     <div
@@ -60,10 +62,46 @@ const WatchlistRow = ({ item, isSelected, onClick, onRemove }) => {
             {isPositive ? '+' : ''}{item.changePercent ? item.changePercent.toFixed(2) : '0.00'}%
           </div>
         </div>
-        <button
-          className="remove-btn-redesign"
-          onClick={(e) => { e.stopPropagation(); onRemove(item.symbol); }}
-        >×</button>
+        {pendingRemove ? (
+          <div className="d-flex align-items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="btn btn-sm"
+              style={{
+                fontSize: '0.62rem',
+                padding: '0.35rem 0.55rem',
+                background: 'rgba(255,255,255,0.06)',
+                color: '#94a3b8',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '6px'
+              }}
+              onClick={onCancelRemove}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm"
+              style={{
+                fontSize: '0.62rem',
+                padding: '0.35rem 0.55rem',
+                background: 'rgba(239,68,68,0.15)',
+                color: '#ef4444',
+                border: '1px solid rgba(239,68,68,0.3)',
+                borderRadius: '6px',
+                fontWeight: 700
+              }}
+              onClick={onConfirmRemove}
+            >
+              Remove {item.symbol}?
+            </button>
+          </div>
+        ) : (
+          <button
+            className="remove-btn-redesign"
+            onClick={(e) => { e.stopPropagation(); onRequestRemove(item.symbol); }}
+          >×</button>
+        )}
       </div>
     </div>
   );
@@ -130,6 +168,9 @@ export default function Watchlist() {
   const [loading, setLoading] = useState(true);
   const [newSymbol, setNewSymbol] = useState('');
   const [error, setError] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const navigate = useNavigate();
+  const [pendingRemoveSymbol, setPendingRemoveSymbol] = useState(null);
 
   const initialLoadDone = useRef(false);
 
@@ -161,18 +202,23 @@ export default function Watchlist() {
       }));
       setQuotes(results);
       setHistory(historyResults);
+      setLastUpdated(new Date());
     } catch (err) { }
   }, [watchlist]);
 
   useEffect(() => { fetchWatchlistFromDB(); }, [fetchWatchlistFromDB]);
 
   useEffect(() => {
-    if (initialLoadDone.current) {
-      refreshMarketData();
-      const interval = setInterval(refreshMarketData, 60000);
-      return () => clearInterval(interval);
-    }
-  }, [refreshMarketData]);
+    if (!initialLoadDone.current) return;
+    refreshMarketData();
+    const interval = setInterval(refreshMarketData, 60000);
+    return () => clearInterval(interval);
+  }, [refreshMarketData, watchlist]);
+
+  const formatWatchlistUpdate = (timestamp) => {
+    if (!timestamp) return 'pending';
+    return timestamp.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  };
 
   useEffect(() => {
     if (selected) {
@@ -189,23 +235,48 @@ export default function Watchlist() {
   const handleAddSymbol = async (e) => {
     e.preventDefault();
     const symbol = newSymbol.trim().toUpperCase();
-    if (!symbol || watchlist.find(w => w.symbol === symbol)) { setNewSymbol(''); return; }
+    if (!symbol) { setNewSymbol(''); return; }
+    if (watchlist.find(w => w.symbol === symbol)) {
+      toast.error(`${symbol} is already in your watchlist`);
+      setNewSymbol('');
+      return;
+    }
+    const loadingId = toast.loading('Saving...');
     try {
       const newItem = await watchlistService.addToWatchlist(symbol);
       setWatchlist(prev => [newItem, ...prev]);
       setNewSymbol('');
+      toast.success(`${symbol} added to watchlist`, { id: loadingId });
     } catch (err) {
+      toast.error('Something went wrong. Please try again.', { id: loadingId });
       setError("Add failed");
       setTimeout(() => setError(null), 3000);
     }
   };
 
   const handleRemove = async (symbol) => {
+    const loadingId = toast.loading('Saving...');
     try {
       await watchlistService.removeFromWatchlist(symbol);
       setWatchlist(prev => prev.filter(w => w.symbol !== symbol));
       if (selected?.symbol === symbol) setSelected(null);
-    } catch (err) { }
+      toast.success(`${symbol} removed from watchlist`, { id: loadingId });
+    } catch (err) {
+      toast.error('Something went wrong. Please try again.', { id: loadingId });
+    }
+  };
+
+  const handleRequestRemove = (symbol) => {
+    setPendingRemoveSymbol(symbol);
+  };
+
+  const handleCancelRemove = () => {
+    setPendingRemoveSymbol(null);
+  };
+
+  const handleConfirmRemove = async (symbol) => {
+    setPendingRemoveSymbol(null);
+    await handleRemove(symbol);
   };
 
   const enrichedList = watchlist.map(item => ({
@@ -240,6 +311,21 @@ export default function Watchlist() {
       <div className="flex-grow-1 overflow-auto pe-1 custom-scrollbar">
         {loading && watchlist.length === 0 ? (
           <div className="text-center p-3 opacity-50 small">Syncing...</div>
+        ) : enrichedList.length === 0 ? (
+          <div className="empty-state-card empty-state-card--compact watchlist-empty">
+            <div className="empty-state-icon" aria-hidden="true">👁️</div>
+            <h4 className="empty-state-title">Your watchlist is empty</h4>
+            <p className="empty-state-subtitle">
+              Search for stocks above and add them to track live prices.
+            </p>
+            <button
+              type="button"
+              className="empty-state-button"
+              onClick={() => navigate('/stocks')}
+            >
+              Search Stocks
+            </button>
+          </div>
         ) : (
           enrichedList.map((item) => (
             <WatchlistRow
@@ -247,7 +333,10 @@ export default function Watchlist() {
               item={item}
               isSelected={selected?.symbol === item.symbol}
               onClick={setSelected}
-              onRemove={handleRemove}
+              pendingRemove={pendingRemoveSymbol === item.symbol}
+              onRequestRemove={handleRequestRemove}
+              onConfirmRemove={() => handleConfirmRemove(item.symbol)}
+              onCancelRemove={handleCancelRemove}
             />
           ))
         )}
@@ -256,6 +345,10 @@ export default function Watchlist() {
       {selectedEnriched && (
         <DetailPanel item={selectedEnriched} news={news} onClose={() => setSelected(null)} />
       )}
+
+      <div className="mt-3 pt-2 text-muted" style={{ fontSize: '0.72rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        Prices updated {formatWatchlistUpdate(lastUpdated)}
+      </div>
     </div>
   );
 }

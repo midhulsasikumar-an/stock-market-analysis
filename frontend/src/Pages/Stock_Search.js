@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Price_Chart from "../components/Price_Chart";
 import Technical_Analysis from "../components/Technical_Analysis";
 import Footer from "../components/Footer";
+import toast from 'react-hot-toast';
 import watchlistService from "../services/watchlistService";
 import authService from "../services/authService";
 import transactionService from "../services/transactionService";
@@ -272,7 +273,7 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
                     onClick={onInvestClick}
                     style={{ flex: 1, padding: '12px 0', background: 'var(--primary-color, #3b82f6)', color: 'white', border: 'none' }}
                 >
-                    + Buy
+                    + Add to Portfolio
                 </button>
                 {holding?.inPortfolio && (
                     <button
@@ -280,7 +281,7 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
                         onClick={onSellClick}
                         style={{ flex: 1, padding: '12px 0', background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
                     >
-                        − Sell
+                        Record Sale
                     </button>
                 )}
             </div>
@@ -323,7 +324,7 @@ function BuyModal({ symbol, quote, profile, onClose, onSuccess }) {
         <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.75)', zIndex: 9999 }}>
             <div className="bg-glass-card p-4" style={{ width: '400px', maxWidth: '95vw', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h5 className="text-white fw-bold mb-0">Buy {symbol}</h5>
+                    <h5 className="text-white fw-bold mb-0">Log Investment</h5>
                     <button className="btn btn-sm text-muted" onClick={onClose} style={{ fontSize: '1.5rem', lineHeight: 1 }}>×</button>
                 </div>
 
@@ -392,7 +393,7 @@ function BuyModal({ symbol, quote, profile, onClose, onSuccess }) {
                     {err && <div className="alert alert-danger py-2 small mb-3">{err}</div>}
 
                     <button type="submit" className="btn btn-primary w-100 mt-1" disabled={loading}>
-                        {loading ? 'Processing...' : `Buy ${form.quantity || '0'} shares`}
+                        {loading ? 'Processing...' : 'Log Investment'}
                     </button>
                 </form>
             </div>
@@ -436,7 +437,7 @@ function SellModal({ symbol, quote, holding, onClose, onSuccess }) {
         <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.75)', zIndex: 9999 }}>
             <div className="bg-glass-card p-4" style={{ width: '400px', maxWidth: '95vw', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(239,68,68,0.15)' }}>
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h5 className="text-white fw-bold mb-0">Sell {symbol}</h5>
+                    <h5 className="text-white fw-bold mb-0">Record Sale</h5>
                     <button className="btn btn-sm text-muted" onClick={onClose} style={{ fontSize: '1.5rem', lineHeight: 1 }}>×</button>
                 </div>
 
@@ -507,42 +508,10 @@ function SellModal({ symbol, quote, holding, onClose, onSuccess }) {
                     {err && <div className="alert alert-danger py-2 small mb-3">{err}</div>}
 
                     <button type="submit" className="btn w-100 mt-1" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }} disabled={loading}>
-                        {loading ? 'Processing...' : `Sell ${form.quantity || '0'} shares of ${symbol}`}
+                        {loading ? 'Processing...' : 'Record Sale'}
                     </button>
                 </form>
             </div>
-        </div>
-    );
-}
-
-// --------------------------------------------------------------------------
-// SUCCESS Toast Notification
-// --------------------------------------------------------------------------
-function Toast({ message, type, onHide }) {
-    useEffect(() => {
-        const t = setTimeout(onHide, 3500);
-        return () => clearTimeout(t);
-    }, [onHide]);
-
-    return (
-        <div style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            zIndex: 10000,
-            background: type === 'buy' ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)',
-            color: 'white',
-            padding: '14px 22px',
-            borderRadius: '12px',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            backdropFilter: 'blur(10px)'
-        }}>
-            {type === 'buy' ? '✅' : '📤'} {message}
         </div>
     );
 }
@@ -562,6 +531,7 @@ export default function StockPage() {
     const [loading, setLoading] = useState(true);
     const [inWatchlist, setInWatchlist] = useState(false);
     const [watchlistLoading, setWatchlistLoading] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState(null);
 
     // Portfolio holding state
     const [holding, setHolding] = useState({ inPortfolio: false, quantity: 0, avgBuyPrice: 0, currentPrice: 0 });
@@ -569,7 +539,6 @@ export default function StockPage() {
     // Modal state
     const [showBuyModal, setShowBuyModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
-    const [toast, setToast] = useState(null); // { message, type }
 
     const loadHolding = async () => {
         if (!authService.isAuthenticated()) return;
@@ -598,6 +567,7 @@ export default function StockPage() {
                 setMetrics(mx);
                 setRecommendation(rec);
                 setEarnings(eps);
+                setLastUpdated(new Date());
             } catch (err) {
                 console.error(err);
             } finally {
@@ -631,16 +601,25 @@ export default function StockPage() {
             window.alert("Please login to manage your watchlist.");
             return;
         }
+        const loadingId = toast.loading('Saving...');
         try {
             setWatchlistLoading(true);
             if (inWatchlist) {
                 await watchlistService.removeFromWatchlist(symbol);
                 setInWatchlist(false);
+                toast.success(`${symbol} removed from watchlist`, { id: loadingId });
             } else {
                 await watchlistService.addToWatchlist(symbol, profile?.name || symbol, 'stock');
                 setInWatchlist(true);
+                toast.success(`${symbol} added to watchlist`, { id: loadingId });
             }
         } catch (err) {
+            const message = err.message || "Failed to update watchlist.";
+            if (message.toLowerCase().includes('already')) {
+                toast.error(`${symbol} is already in your watchlist`, { id: loadingId });
+            } else {
+                toast.error('Something went wrong. Please try again.', { id: loadingId });
+            }
             window.alert(err.message || "Failed to update watchlist.");
         } finally {
             setWatchlistLoading(false);
@@ -651,10 +630,8 @@ export default function StockPage() {
     const handleTransactionSuccess = (type) => {
         setShowBuyModal(false);
         setShowSellModal(false);
-        const msg = type === 'buy'
-            ? `Successfully added ${symbol} to your portfolio!`
-            : `Successfully sold ${symbol}!`;
-        setToast({ message: msg, type });
+        if (type === 'buy') toast.success('Investment logged successfully');
+        else toast.success('Sale recorded successfully');
         // Refresh holding status
         setTimeout(loadHolding, 500);
     };
@@ -676,6 +653,17 @@ export default function StockPage() {
     };
 
     const isPos = (quote?.dp ?? 0) >= 0;
+    const formatLocalTimestamp = (timestamp) => {
+        if (!timestamp) return '';
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short',
+        }).format(timestamp);
+    };
 
     return (
         <div className="stock-search-page">
@@ -740,10 +728,7 @@ export default function StockPage() {
                                     </span>
                                 </div>
                                 <div className="scard-timestamp">
-                                    {new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
-                                    {' · '}
-                                    {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                                    {' USA '}
+                                    {formatLocalTimestamp(lastUpdated || new Date())}
                                     <span className="market-open-badge">OPEN</span>
                                 </div>
                             </div>
@@ -814,15 +799,6 @@ export default function StockPage() {
                     holding={holding}
                     onClose={() => setShowSellModal(false)}
                     onSuccess={handleTransactionSuccess}
-                />
-            )}
-
-            {/* ── Toast ── */}
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onHide={() => setToast(null)}
                 />
             )}
 

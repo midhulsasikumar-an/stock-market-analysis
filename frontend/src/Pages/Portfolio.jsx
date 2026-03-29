@@ -11,6 +11,7 @@ import {
   Filler
 } from 'chart.js';
 import { Doughnut, Line } from 'react-chartjs-2';
+import toast from 'react-hot-toast';
 import authService from '../services/authService';
 import transactionService from '../services/transactionService';
 
@@ -44,11 +45,17 @@ function SellModal({ holding, onClose, onSuccess }) {
   const [form, setForm] = useState({ quantity: '', sellPrice: (holding.currentPrice || holding.avgBuyPrice || '').toString() });
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
+  const [confirmFullSale, setConfirmFullSale] = useState(false);
 
   const maxQty = holding.quantity ?? 0;
   const total = (Number(form.quantity) || 0) * (Number(form.sellPrice) || 0);
   const buyTotal = (Number(form.quantity) || 0) * (holding.avgBuyPrice ?? 0);
   const pnl = total - buyTotal;
+  const isFullSale = Number(form.quantity) > 0 && Number(form.quantity) === Number(maxQty);
+
+  useEffect(() => {
+    setConfirmFullSale(false);
+  }, [form.quantity, maxQty]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,13 +64,21 @@ function SellModal({ holding, onClose, onSuccess }) {
       setErr(`Insufficient quantity. You hold ${maxQty} shares.`);
       return;
     }
+    if (isFullSale && !confirmFullSale) {
+      setErr('This will mark the holding as fully sold. Confirm to continue.');
+      setConfirmFullSale(true);
+      return;
+    }
     setLoading(true);
     setErr('');
+    const loadingId = toast.loading('Saving...');
     try {
       await transactionService.sell(holding.symbol, form.quantity, form.sellPrice);
+      toast.success('Sale recorded successfully', { id: loadingId });
       onSuccess();
     } catch (er) {
       setErr(er.message || 'Failed to sell stock');
+      toast.error('Something went wrong. Please try again.', { id: loadingId });
     } finally {
       setLoading(false);
     }
@@ -145,14 +160,42 @@ function SellModal({ holding, onClose, onSuccess }) {
 
           {err && <div className="alert alert-danger py-2 small mb-3">{err}</div>}
 
+          {isFullSale && confirmFullSale && (
+            <div className="mb-3 p-3 rounded" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
+              <div className="text-white fw-bold small mb-1">This will mark {holding.symbol} as fully sold in your portfolio.</div>
+              <div className="text-muted small">This will delete all recorded transactions for this holding.</div>
+            </div>
+          )}
+
           <button
             type="submit"
             className="btn w-100 mt-1"
             style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
             disabled={loading}
           >
-            {loading ? 'Processing...' : `Sell ${form.quantity || '0'} shares of ${holding.symbol}`}
+            {loading ? 'Processing...' : isFullSale && !confirmFullSale ? 'Continue' : `Sell ${form.quantity || '0'} shares of ${holding.symbol}`}
           </button>
+          {isFullSale && confirmFullSale && (
+            <div className="d-flex gap-2 mt-2">
+              <button
+                type="button"
+                className="btn btn-outline-secondary w-50"
+                onClick={() => setConfirmFullSale(false)}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn w-50"
+                style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
+                onClick={handleSubmit}
+                disabled={loading}
+              >
+                Yes, remove
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>
@@ -339,6 +382,7 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [, forceTick] = useState(0);
 
   // Transaction history
   const [transactions, setTransactions] = useState([]);
@@ -351,9 +395,8 @@ export default function Portfolio() {
 
   // Sell Modal
   const [sellHolding, setSellHolding] = useState(null); // holding object
-  const [toast, setToast] = useState(null);
 
-  const fetchPortfolio = useCallback(async () => {
+  const fetchPortfolio = useCallback(async (updateStamp = true) => {
     try {
       const response = await fetch(`${API_URL}/api/portfolio/summary`, {
         headers: authService.getAuthHeaders()
@@ -362,7 +405,7 @@ export default function Portfolio() {
       if (data.success) {
         setPortfolioData(data.data);
         setError(null);
-        setLastUpdated(new Date());
+        if (updateStamp) setLastUpdated(new Date());
       } else {
         setError(data.message || "Failed to load portfolio");
       }
@@ -387,17 +430,23 @@ export default function Portfolio() {
   }, []);
 
   useEffect(() => {
-    fetchPortfolio();
+    fetchPortfolio(true);
     fetchTransactions();
-    const interval = setInterval(fetchPortfolio, 60000);
+    const interval = setInterval(() => fetchPortfolio(false), 60000);
     return () => clearInterval(interval);
   }, [fetchPortfolio, fetchTransactions]);
+
+  useEffect(() => {
+    const interval = setInterval(() => forceTick((value) => value + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // ─── Add holding handler ──────────────────────────────────────────────────
   const handleAddHolding = async (e) => {
     e.preventDefault();
     if (!addForm.symbol || !addForm.quantity || !addForm.avgBuyPrice) return;
     setAddLoading(true);
+    const loadingId = toast.loading('Saving...');
     try {
       await transactionService.buy(
         addForm.symbol,
@@ -410,9 +459,9 @@ export default function Portfolio() {
       setAddForm({ symbol: '', name: '', quantity: '', avgBuyPrice: '', sector: '' });
       fetchPortfolio();
       fetchTransactions();
-      setToast({ message: `${addForm.symbol.toUpperCase()} added to portfolio!`, type: 'buy' });
+      toast.success('Investment logged successfully', { id: loadingId });
     } catch (err) {
-      alert(err.message || "Failed to add holding");
+      toast.error('Something went wrong. Please try again.', { id: loadingId });
     } finally {
       setAddLoading(false);
     }
@@ -423,7 +472,21 @@ export default function Portfolio() {
     setSellHolding(null);
     fetchPortfolio();
     fetchTransactions();
-    setToast({ message: 'Sell order recorded successfully!', type: 'sell' });
+    toast.success('Sale recorded successfully');
+  };
+
+  const handleRefresh = () => {
+    setLastUpdated(new Date());
+    fetchPortfolio(false);
+    fetchTransactions();
+  };
+
+  const formatPortfolioRefresh = (timestamp) => {
+    if (!timestamp) return 'Last refreshed: pending';
+    const elapsedMinutes = Math.floor((Date.now() - timestamp.getTime()) / 60000);
+    if (elapsedMinutes < 1) return 'Last refreshed: Just now';
+    if (elapsedMinutes < 60) return `Last refreshed: ${elapsedMinutes} min ago`;
+    return `Last refreshed: Updated at ${timestamp.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
   };
 
   // ─── Chart data ───────────────────────────────────────────────────────────
@@ -518,44 +581,60 @@ export default function Portfolio() {
           </p>
         </div>
         <div className="d-flex gap-2">
-          <button className="btn btn-sm btn-outline-primary" onClick={() => { fetchPortfolio(); fetchTransactions(); }} title="Refresh prices">
+          <button className="btn btn-sm btn-outline-primary" onClick={handleRefresh} title="Refreshes current prices from Finnhub API">
             🔄 Refresh
           </button>
+          <span className="text-muted align-self-center" style={{ fontSize: '0.72rem' }}>
+            {formatPortfolioRefresh(lastUpdated)}
+          </span>
           <button className="btn btn-sm btn-primary" onClick={() => setShowAddModal(true)}>
-            + Add Stock
+            + Log Investment
           </button>
         </div>
       </div>
 
       {/* ─── Top Stat Cards ───────────────────────────────────────────────── */}
-      <div className="mini-stats-grid mb-4">
-        <div className="bg-glass-card stat-card-glow-blue hover-glow">
-          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Invested</p>
-          <h3 className="fw-bold text-white mb-0">{formatMoney(s.totalInvested)}</h3>
-        </div>
-        <div className="bg-glass-card stat-card-glow-blue hover-glow">
-          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Current Value</p>
-          <h3 className="fw-bold text-white mb-0">{formatMoney(s.totalCurrentValue)}</h3>
-        </div>
-        <div className="bg-glass-card stat-card-glow-green hover-glow">
-          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Gain / Loss</p>
-          <h3 className={`fw-bold mb-0 ${(s.totalProfitLoss || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
-            {formatMoney(s.totalProfitLoss)}
-          </h3>
-          <p className={`small mb-0 mt-1 ${(s.totalProfitLoss || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
-            {(s.totalReturnPct || 0).toFixed(2)}%
-          </p>
-        </div>
-        <div className="bg-glass-card stat-card-glow-blue hover-glow">
-          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Holdings</p>
-          <h3 className="fw-bold text-white mb-0">{s.holdingsCount || 0} Stocks</h3>
-          {s.todayChange != null && (
-            <p className={`small mb-0 mt-1 ${s.todayChange >= 0 ? 'text-success' : 'text-danger'}`}>
-              Today: {s.todayChange >= 0 ? '+' : ''}{formatMoney(s.todayChange)}
+      {holdings.length > 0 ? (
+        <div className="mini-stats-grid mb-4">
+          <div className="bg-glass-card stat-card-glow-blue hover-glow">
+            <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Invested</p>
+            <h3 className="fw-bold text-white mb-0">{formatMoney(s.totalInvested)}</h3>
+          </div>
+          <div className="bg-glass-card stat-card-glow-blue hover-glow">
+            <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Current Value</p>
+            <h3 className="fw-bold text-white mb-0">{formatMoney(s.totalCurrentValue)}</h3>
+          </div>
+          <div className="bg-glass-card stat-card-glow-green hover-glow">
+            <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Gain / Loss</p>
+            <h3 className={`fw-bold mb-0 ${(s.totalProfitLoss || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
+              {formatMoney(s.totalProfitLoss)}
+            </h3>
+            <p className={`small mb-0 mt-1 ${(s.totalProfitLoss || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
+              {(s.totalReturnPct || 0).toFixed(2)}%
             </p>
-          )}
+          </div>
+          <div className="bg-glass-card stat-card-glow-blue hover-glow">
+            <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Holdings</p>
+            <h3 className="fw-bold text-white mb-0">{s.holdingsCount || 0} Stocks</h3>
+            {s.todayChange != null && (
+              <p className={`small mb-0 mt-1 ${s.todayChange >= 0 ? 'text-success' : 'text-danger'}`}>
+                Today: {s.todayChange >= 0 ? '+' : ''}{formatMoney(s.todayChange)}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="empty-state-card empty-state-card--compact mb-4">
+          <div className="empty-state-icon" aria-hidden="true">📊</div>
+          <h4 className="empty-state-title">No investments tracked yet</h4>
+          <p className="empty-state-subtitle">
+            Add your first holding to start tracking performance.
+          </p>
+          <button type="button" className="empty-state-button" onClick={() => setShowAddModal(true)}>
+            + Log Your First Investment
+          </button>
+        </div>
+      )}
 
       {/* ─── Main Grid ────────────────────────────────────────────────────── */}
       <div className="portfolio-grid">
@@ -587,7 +666,11 @@ export default function Portfolio() {
                 </div>
               </div>
             ) : (
-              <p className="text-muted text-center py-4">No holdings yet. Add stocks to see allocation.</p>
+              <div className="empty-state-row empty-state-card--compact">
+                <div className="empty-state-icon" aria-hidden="true">📊</div>
+                <p className="empty-state-title mb-0">No investments tracked yet</p>
+                <p className="empty-state-subtitle">Add your first holding to start tracking performance.</p>
+              </div>
             )}
           </div>
 
@@ -627,7 +710,11 @@ export default function Portfolio() {
                     <Line data={performanceData} options={{ plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, maintainAspectRatio: false }} />
                   </div>
                 ) : (
-                  <p className="text-muted small text-center py-4">Add holdings to see performance</p>
+                  <div className="empty-state-row empty-state-card--compact">
+                    <div className="empty-state-icon" aria-hidden="true">📊</div>
+                    <p className="empty-state-title mb-0">No investments tracked yet</p>
+                    <p className="empty-state-subtitle">Add your first holding to start tracking performance.</p>
+                  </div>
                 )}
               </div>
             </div>
@@ -686,11 +773,10 @@ export default function Portfolio() {
                   </div>
                 </div>
               )) : (
-                <div className="text-center py-5">
-                  <p className="text-muted mb-3">No holdings yet</p>
-                  <button className="btn btn-sm btn-primary" onClick={() => setShowAddModal(true)}>
-                    + Add Your First Stock
-                  </button>
+                <div className="empty-state-row empty-state-card--compact">
+                  <div className="empty-state-icon" aria-hidden="true">📊</div>
+                  <p className="empty-state-title mb-0">No holdings recorded</p>
+                  <p className="empty-state-subtitle">Use '+ Add to Portfolio' to log your investments.</p>
                 </div>
               )}
             </div>
@@ -709,7 +795,7 @@ export default function Portfolio() {
         <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.7)', zIndex: 9999 }}>
           <div className="bg-glass-card p-4" style={{ width: '420px', maxWidth: '95vw', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h5 className="text-white fw-bold mb-0">Add Stock</h5>
+              <h5 className="text-white fw-bold mb-0">Log a New Investment</h5>
               <button className="btn btn-sm text-muted" onClick={() => setShowAddModal(false)} style={{ fontSize: '1.5rem', lineHeight: 1 }}>×</button>
             </div>
             <form onSubmit={handleAddHolding}>
@@ -730,11 +816,14 @@ export default function Portfolio() {
                     value={addForm.quantity} onChange={e => setAddForm(p => ({ ...p, quantity: e.target.value }))} required />
                 </div>
                 <div className="col-6">
-                  <label className="text-muted small mb-1">Buy Price *</label>
+                  <label className="text-muted small mb-1">Purchase Price *</label>
                   <input type="number" className="form-control bg-dark text-white border-secondary" placeholder="150.00" min="0" step="any"
                     value={addForm.avgBuyPrice} onChange={e => setAddForm(p => ({ ...p, avgBuyPrice: e.target.value }))} required />
                 </div>
               </div>
+              <p className="text-muted small mb-3" style={{ fontSize: '0.75rem', lineHeight: 1.5 }}>
+                Enter the price and quantity as they were when you bought this stock in real life. TradeTrack uses this to calculate your current P&amp;L.
+              </p>
               <div className="mb-4">
                 <label className="text-muted small mb-1">Sector</label>
                 <select className="form-control bg-dark text-white border-secondary"
@@ -751,7 +840,7 @@ export default function Portfolio() {
                 </select>
               </div>
               <button type="submit" className="btn btn-primary w-100" disabled={addLoading}>
-                {addLoading ? 'Adding...' : 'Add to Portfolio'}
+                {addLoading ? 'Saving...' : 'Save Investment'}
               </button>
             </form>
           </div>
@@ -767,30 +856,6 @@ export default function Portfolio() {
         />
       )}
 
-      {/* ─── Toast Notification ───────────────────────────────────────────── */}
-      {toast && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            zIndex: 10000,
-            background: toast.type === 'buy' ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)',
-            color: 'white',
-            padding: '14px 22px',
-            borderRadius: '12px',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}
-          onClick={() => setToast(null)}
-        >
-          {toast.type === 'buy' ? '✅' : '📤'} {toast.message}
-        </div>
-      )}
     </div>
   );
 }

@@ -202,7 +202,11 @@ export default function Portfolio_Dash() {
                 </div>
               </div>
             ) : (
-              <p className="text-muted text-center py-4">No holdings to display allocation</p>
+              <div className="empty-state-row empty-state-card--compact">
+                <div className="empty-state-icon" aria-hidden="true">📊</div>
+                <p className="empty-state-title mb-0">No investments tracked yet</p>
+                <p className="empty-state-subtitle">Add your first holding to start tracking performance.</p>
+              </div>
             )}
           </div>
 
@@ -246,7 +250,11 @@ export default function Portfolio_Dash() {
                     <Line data={performanceData} options={performanceOptions} />
                   </div>
                 ) : (
-                  <p className="text-muted small text-center py-4">No data available</p>
+                  <div className="empty-state-row empty-state-card--compact">
+                    <div className="empty-state-icon" aria-hidden="true">📊</div>
+                    <p className="empty-state-title mb-0">No investments tracked yet</p>
+                    <p className="empty-state-subtitle">Add your first holding to start tracking performance.</p>
+                  </div>
                 )}
               </div>
             </div>
@@ -283,7 +291,11 @@ export default function Portfolio_Dash() {
                   </div>
                 </div>
               )) : (
-                <p className="text-muted small text-center py-5">No holdings yet</p>
+                <div className="empty-state-row empty-state-card--compact">
+                  <div className="empty-state-icon" aria-hidden="true">📊</div>
+                  <p className="empty-state-title mb-0">No holdings recorded</p>
+                  <p className="empty-state-subtitle">Use '+ Add to Portfolio' to log your investments.</p>
+                </div>
               )}
             </div>
           </div>

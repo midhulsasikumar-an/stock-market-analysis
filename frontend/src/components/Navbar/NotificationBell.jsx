@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchQuote } from '../../services/finnhub';
+import toast from 'react-hot-toast';
 
 // ─── Threshold Configuration ─────────────────────────────────────────────────
 // These are realistic analyst price targets / key support-resistance levels
@@ -183,6 +184,9 @@ export default function NotificationBell() {
                 const merged = [...fresh, ...prev].slice(0, 50); // cap at 50
                 localStorage.setItem('stock_notifications', JSON.stringify(merged));
                 setUnreadCount(c => c + fresh.length);
+                if (fresh.length > 0) {
+                    toast.success(`${fresh.length} new alert${fresh.length === 1 ? '' : 's'} created`);
+                }
                 return merged;
             });
         }
@@ -219,6 +223,7 @@ export default function NotificationBell() {
         setNotifications([]);
         setUnreadCount(0);
         localStorage.removeItem('stock_notifications');
+        toast.success('All alerts cleared');
     };
 
     // ── Mark single as read ───────────────────────────────────────────────────
@@ -228,6 +233,7 @@ export default function NotificationBell() {
             localStorage.setItem('stock_notifications', JSON.stringify(updated));
             return updated;
         });
+        toast('Alert dismissed', { icon: '🔕' });
     };
 
     return (

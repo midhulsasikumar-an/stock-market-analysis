@@ -94,8 +94,12 @@ export default function Market_News_Dash() {
       )}
 
       {!loading && !error && news.length === 0 && (
-        <div className="news-empty">
-          <p className="text-muted mb-0">No news available at the moment.</p>
+        <div className="empty-state-card empty-state-card--compact news-empty">
+          <div className="empty-state-icon" aria-hidden="true">📰</div>
+          <h4 className="empty-state-title">No news available right now</h4>
+          <p className="empty-state-subtitle">
+            Market news refreshes automatically. Check back shortly.
+          </p>
         </div>
       )}
 

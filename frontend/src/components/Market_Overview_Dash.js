@@ -116,6 +116,16 @@ export default function Market_Overview_Dash() {
   const [candlesMap, setCandlesMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [crosshair, setCrosshair] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [, forceTick] = useState(0);
+
+  const formatRelativeUpdate = useCallback((timestamp) => {
+    if (!timestamp) return 'Just now';
+    const elapsedMinutes = Math.floor((Date.now() - timestamp.getTime()) / 60000);
+    if (elapsedMinutes < 1) return 'Just now';
+    if (elapsedMinutes < 60) return `${elapsedMinutes} min ago`;
+    return `Updated at ${timestamp.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+  }, []);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -137,6 +147,7 @@ export default function Market_Overview_Dash() {
     });
     setQuotes(newQ);
     setCandlesMap(newC);
+    setLastUpdated(new Date());
     setLoading(false);
   }, []);
 
@@ -145,6 +156,11 @@ export default function Market_Overview_Dash() {
     const iv = setInterval(fetchAll, 60_000);
     return () => clearInterval(iv);
   }, [fetchAll]);
+
+  useEffect(() => {
+    const iv = setInterval(() => forceTick((current) => current + 1), 60_000);
+    return () => clearInterval(iv);
+  }, []);
 
   const active = INDICES[activeIdx];
   const quote = quotes[active?.symbol];
@@ -160,6 +176,9 @@ export default function Market_Overview_Dash() {
           <div className="activity-value-redesign d-flex gap-3">
             <span className="text-success">SENSEX: 72,506.14 (+0.84%)</span>
             <span className="text-success">NIFTY 50: 21,894.55 (+0.63%)</span>
+          </div>
+          <div className="text-muted" style={{ fontSize: '0.72rem', marginTop: '0.35rem' }}>
+            Updated {formatRelativeUpdate(lastUpdated)} · Auto-refreshes every 60s
           </div>
         </div>
         <div className="activity-item-redesign ms-4 border-start ps-4" style={{ borderColor: 'rgba(255,255,255,0.1) !important' }}>

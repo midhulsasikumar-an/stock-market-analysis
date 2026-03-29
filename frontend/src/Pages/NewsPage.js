@@ -264,9 +264,12 @@ export default function NewsPage() {
                             <span>Fetching data from market feeds...</span>
                         </div>
                     ) : news.length === 0 ? (
-                        <div className="np-empty-state">
-                            <p>No current news items found for this selection.</p>
-                            <button onClick={() => { setActiveTab('All'); setSelectedSymbol(null); }}>Reset Filters</button>
+                        <div className="np-empty-state empty-state-card empty-state-card--compact">
+                            <div className="empty-state-icon" aria-hidden="true">📰</div>
+                            <h4 className="empty-state-title">No news available right now</h4>
+                            <p className="empty-state-subtitle">
+                                Market news refreshes automatically. Check back shortly.
+                            </p>
                         </div>
                     ) : (
                         <>
