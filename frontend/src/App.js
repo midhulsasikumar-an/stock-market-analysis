@@ -12,10 +12,21 @@ import StocksPage from './Pages/StocksPage';
 import SectorPage from './Pages/SectorPage';
 import Login from './components/Login';
 import Register from './components/Register';
-import ProtectedRoute, { PublicRoute, AdminRoute } from './components/ProtectedRoute';
+import { PublicRoute, AdminRoute, UserRoute } from './components/ProtectedRoute';
 import AdminDashboard from './Pages/AdminDashboard';
+import AdminUsers from './Pages/AdminUsers';
+import AdminStocks from './Pages/AdminStocks';
+import AdminTradesExplorer from './Pages/AdminTradesExplorer';
+import AdminPortfolioInspector from './Pages/AdminPortfolioInspector';
+import AdminAnalytics from './Pages/AdminAnalytics';
+import AdminActivityLogs from './Pages/AdminActivityLogs';
+import AdminSystemHealth from './Pages/AdminSystemHealth';
+import AdminSettings from './Pages/AdminSettings';
+import AdminAnnouncements from './Pages/AdminAnnouncements';
+import AdminLayout from './layouts/AdminLayout';
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
@@ -23,6 +34,18 @@ function App() {
       {/* AuthProvider wraps everything so all routes have access to auth state.
           It runs a server-side token check on mount and clears stale sessions. */}
       <AuthProvider>
+        <Toaster
+          position="top-right"
+          containerStyle={{ zIndex: 9999 }}
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#111827',
+              color: '#FFFFFF',
+              border: '1px solid #374151'
+            }
+          }}
+        />
         <Routes>
           {/* Public Routes */}
           <Route path='/' element={<Home />} />
@@ -32,7 +55,7 @@ function App() {
           <Route path='/register' element={<PublicRoute><Register /></PublicRoute>} />
 
           {/* Protected Dashboard Routes — require server-verified session */}
-          <Route path='/dashboard' element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+          <Route path='/dashboard' element={<UserRoute><DashboardLayout /></UserRoute>}>
             <Route index element={<DashboardHome />} />
             <Route path='portfolio' element={<Portfolio />} />
             <Route path='news' element={<NewsPage />} />
@@ -41,8 +64,17 @@ function App() {
           </Route>
 
           {/* Admin Routes — require admin role */}
-          <Route path='/admin' element={<AdminRoute><DashboardLayout /></AdminRoute>}>
+          <Route path='/admin' element={<AdminRoute><AdminLayout /></AdminRoute>}>
             <Route index element={<AdminDashboard />} />
+            <Route path='users' element={<AdminUsers />} />
+            <Route path='stocks' element={<AdminStocks />} />
+            <Route path='trades' element={<AdminTradesExplorer />} />
+            <Route path='portfolios' element={<AdminPortfolioInspector />} />
+            <Route path='analytics' element={<AdminAnalytics />} />
+            <Route path='activity-logs' element={<AdminActivityLogs />} />
+            <Route path='system-health' element={<AdminSystemHealth />} />
+            <Route path='settings' element={<AdminSettings />} />
+            <Route path='announcements' element={<AdminAnnouncements />} />
           </Route>
 
           {/* Stocks Explorer — public */}

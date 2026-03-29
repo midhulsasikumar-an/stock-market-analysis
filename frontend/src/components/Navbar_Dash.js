@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import ProfileAvatar from './Navbar/ProfileAvatar';
 import NotificationBell from './Navbar/NotificationBell';
 import { useAuth } from '../context/AuthContext';
+import { fetchSymbolVisibility } from '../services/finnhub';
 
 
 export default function Navbar_Dash() {
@@ -11,9 +12,14 @@ export default function Navbar_Dash() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = React.useState('');
 
-  const stockDetail = (e) => {
+  const stockDetail = async (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
+      const visibility = await fetchSymbolVisibility([searchTerm.trim().toUpperCase()]);
+      if (visibility[0] && !visibility[0].enabled) {
+        window.alert('This stock is currently unavailable to user accounts.');
+        return;
+      }
       navigate(`/stock/${searchTerm.trim().toUpperCase()}`);
       setSearchTerm('');
     }

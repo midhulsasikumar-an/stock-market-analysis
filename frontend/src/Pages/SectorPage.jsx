@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import NavbarDash from "../components/Navbar_Dash";
 import StocksFooter from "../components/StocksFooter";
 import { getSectorById } from "../data/stocksData";
-import { fetchQuote } from "../services/finnhub";
+import { fetchQuote, fetchSymbolVisibility } from "../services/finnhub";
 import watchlistService from "../services/watchlistService";
 import authService from "../services/authService";
 import "./Stocks.css";
@@ -38,6 +38,20 @@ export default function SectorPage() {
   const [message, setMessage] = useState("");
   const [liveQuotes, setLiveQuotes] = useState({});   // symbol → quote
   const [loadingQuotes, setLoadingQuotes] = useState(true);
+  const [enabledSymbols, setEnabledSymbols] = useState(null);
+
+  useEffect(() => {
+    if (!sectorData) return;
+    fetchSymbolVisibility(sectorData.stocks.map((stock) => stock.symbol)).then((visibility) => {
+      setEnabledSymbols(new Set(visibility.filter((item) => item.enabled).map((item) => item.symbol)));
+    });
+  }, [sectorData]);
+
+  const visibleSectorStocks = useMemo(() => {
+    if (!sectorData) return [];
+    if (!enabledSymbols) return sectorData.stocks;
+    return sectorData.stocks.filter((stock) => enabledSymbols.has(stock.symbol));
+  }, [enabledSymbols, sectorData]);
 
   // ── Fetch live quotes for all stocks in this sector ──────────────────────
   const loadQuotes = useCallback(async () => {
@@ -45,7 +59,7 @@ export default function SectorPage() {
     setLoadingQuotes(true);
 
     // Fetch all quotes in parallel (batched to avoid rate limit)
-    const symbols = sectorData.stocks.map(s => s.symbol);
+    const symbols = visibleSectorStocks.map(s => s.symbol);
     const BATCH = 6;  // 6 at a time
 
     const results = {};
@@ -65,7 +79,7 @@ export default function SectorPage() {
 
     setLiveQuotes(results);
     setLoadingQuotes(false);
-  }, [sectorData]);
+  }, [sectorData, visibleSectorStocks]);
 
   useEffect(() => {
     loadQuotes();
@@ -74,7 +88,7 @@ export default function SectorPage() {
   // ── Build enriched stock list ─────────────────────────────────────────────
   const enrichedStocks = useMemo(() => {
     if (!sectorData) return [];
-    return sectorData.stocks.map(stock => {
+    return visibleSectorStocks.map(stock => {
       const q = liveQuotes[stock.symbol];
       return {
         ...stock,
@@ -88,7 +102,7 @@ export default function SectorPage() {
         low: q?.l ?? null,
       };
     });
-  }, [sectorData, liveQuotes]);
+  }, [sectorData, liveQuotes, visibleSectorStocks]);
 
   const sortedStocks = useMemo(() => {
     const multiplier = sortDirection === "asc" ? 1 : -1;
@@ -187,6 +201,10 @@ export default function SectorPage() {
             <strong>{sectorData.stocks.length}</strong>
           </article>
           <article className="summary-card">
+            <span>Visible Stocks</span>
+            <strong>{visibleSectorStocks.length}</strong>
+          </article>
+          <article className="summary-card">
             <span>Gainers / Losers</span>
             <strong>
               <span className="text-up">{gainers}▲</span>
@@ -280,6 +298,11 @@ export default function SectorPage() {
                   </td>
                 </tr>
               ))}
+              {!loadingQuotes && sortedStocks.length === 0 && (
+                <tr>
+                  <td colSpan="8" className="text-center py-4 text-muted">No visible stocks remain in this sector.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </section>

@@ -3,6 +3,7 @@ const router = express.Router();
 const Transaction = require("../models/Transaction");
 const Portfolio = require("../models/Portfolio");
 const { authMiddleware } = require("../middleware/auth");
+const { canUserAccessSymbol } = require("../utils/stockVisibility");
 
 /**
  * @route   GET /api/transactions
@@ -113,6 +114,13 @@ router.post("/", authMiddleware, async (req, res) => {
                 success: false,
                 message: "symbol, type (BUY/SELL), quantity, and pricePerUnit are required"
             });
+        }
+
+        if (type.toUpperCase() === "BUY") {
+            const canAccess = await canUserAccessSymbol(req.userId, symbol);
+            if (!canAccess) {
+                return res.status(403).json({ success: false, message: "This stock is currently disabled for user trading" });
+            }
         }
 
         // Validate portfolio belongs to user if specified

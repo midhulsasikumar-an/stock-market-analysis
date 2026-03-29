@@ -2,6 +2,7 @@ require("dotenv").config(); // MUST be first — loads .env before any route mod
 
 const express = require("express");
 const mongoose = require("mongoose");
+const ServerMeta = require("./models/ServerMeta");
 const authRoutes = require("./routes/auth");
 const marketRoutes = require("./routes/market");
 const watchlistRoutes = require("./routes/watchlist");
@@ -11,6 +12,7 @@ const searchHistoryRoutes = require("./routes/searchHistory");
 const settingsRoutes = require("./routes/settings");
 const transactionRoutes = require("./routes/transactions");
 const adminRoutes = require("./routes/admin");
+const announcementRoutes = require("./routes/announcements");
 const avatarRoutes = require("./routes/avatar");
 const profileRoutes = require("./routes/profile");
 const cors = require("cors");
@@ -82,6 +84,7 @@ app.use("/api/search-history", searchHistoryRoutes); // Search history
 app.use("/api/settings", settingsRoutes);   // User app settings
 app.use("/api/transactions", transactionRoutes); // Buy/Sell transaction ledger
 app.use("/api/admin", adminRoutes);         // Admin functionality
+app.use("/api/announcements", announcementRoutes); // Public active announcements
 app.use("/api/avatar", avatarRoutes);       // Avatar dropdown API
 app.use("/api/profile", profileRoutes);     // Profile management and uploads
 
@@ -115,6 +118,17 @@ app.use((err, req, res, next) => {
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/stock-market-analysis")
     .then(async () => {
         console.log("✅ Database connected to stock-market-analysis");
+
+        try {
+            const now = new Date();
+            await ServerMeta.findOneAndUpdate(
+                { key: "server_start" },
+                { $set: { value: now, updatedAt: now } },
+                { upsert: true, new: true }
+            );
+        } catch (error) {
+            console.error("⚠️ Failed to persist server_start metadata:", error.message);
+        }
 
         // Seed master admin account if it doesn't exist
         try {

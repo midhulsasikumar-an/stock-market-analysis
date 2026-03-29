@@ -44,6 +44,37 @@ const ProtectedRoute = ({ children }) => {
 
 export default ProtectedRoute;
 
+export const UserRoute = ({ children }) => {
+    const { isAuthenticated, isLoading, user } = useAuth();
+
+    if (isLoading) {
+        return (
+            <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "100vh",
+                background: "#0a0a0f"
+            }}>
+                <div style={{
+                    width: "32px",
+                    height: "32px",
+                    border: "3px solid #333",
+                    borderTop: "3px solid #3b82f6",
+                    borderRadius: "50%",
+                    animation: "spin 0.8s linear infinite"
+                }}></div>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    if (user?.role === "admin") return <Navigate to="/admin" replace />;
+
+    return children;
+};
+
 /**
  * AdminRoute — ensures the user is logged in AND has role === 'admin'.
  * Non-admins are routed to regular dashboard.

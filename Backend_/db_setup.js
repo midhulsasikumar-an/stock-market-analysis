@@ -36,6 +36,9 @@ async function run() {
         require("./models/UserSettings"),
         require("./models/Transaction"),
         require("./models/StockCache"),
+        require("./models/PriceCache"),
+        require("./models/AdminAnnouncement"),
+        require("./models/ServerMeta"),
     ];
 
     for (const M of models) {
