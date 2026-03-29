@@ -241,7 +241,7 @@ export default function AdminAnalytics() {
                     <div className="admin-grid admin-grid-two">
                         <AdminPanel title="Most traded stocks" subtitle="Trade count by symbol">
                             {topStocks.length === 0 ? (
-                                <AdminEmptyState title="No trading data" description="Trades will appear here once the platform starts processing activity." />
+                                <AdminEmptyState title="No activity data" description="Activity will appear here once the platform starts processing usage." />
                             ) : (
                                 <div className="admin-chart-shell">
                                     <Bar
@@ -255,9 +255,9 @@ export default function AdminAnalytics() {
                             )}
                         </AdminPanel>
 
-                        <AdminPanel title="Trading volume" subtitle="Buy and sell volume over time">
+                        <AdminPanel title="Activity volume" subtitle="Platform activity over time">
                             {tradingVolume.length === 0 ? (
-                                <AdminEmptyState title="No volume data" description="Trading volume will render once there is activity in the selected period." />
+                                <AdminEmptyState title="No volume data" description="Activity volume will render once there is activity in the selected period." />
                             ) : (
                                 <div className="admin-chart-shell">
                                     <Bar

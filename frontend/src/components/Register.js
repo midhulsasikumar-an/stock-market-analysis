@@ -1,14 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import "./Register.css";
-
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
-const isGoogleConfigured =
-    GOOGLE_CLIENT_ID &&
-    !GOOGLE_CLIENT_ID.includes("your-google-client-id") &&
-    GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -27,35 +21,8 @@ export default function Register() {
     const [successMessage, setSuccessMessage] = useState("");
     const [globalError, setGlobalError] = useState("");
 
-    // Initialize Google Sign-In
     useEffect(() => {
-        if (!isGoogleConfigured) return;
-
-        const script = document.createElement("script");
-        script.src = "https://accounts.google.com/gsi/client";
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-
-        script.onload = () => {
-            if (window.google && document.getElementById("google-signin-button")) {
-                window.google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleSignUp
-                });
-                window.google.accounts.id.renderButton(
-                    document.getElementById("google-signin-button"),
-                    { theme: "outline", size: "large", width: "100%", text: "continue_with" }
-                );
-            }
-        };
-
-        return () => {
-            if (document.head.contains(script)) {
-                document.head.removeChild(script);
-            }
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        document.title = 'Create Account — TradeTrack';
     }, []);
 
     const validateForm = () => {
@@ -130,24 +97,6 @@ export default function Register() {
         }
     };
 
-    // FIXED: Now uses authService.googleAuth() instead of a raw fetch call
-    const handleGoogleSignUp = async (response) => {
-        setIsLoading(true);
-        setGlobalError("");
-        try {
-            const result = await authService.googleAuth(response.credential);
-            if (result.success) {
-                auth.login(result.user);
-                setSuccessMessage("Successfully signed up with Google! Redirecting...");
-                setTimeout(() => navigate("/dashboard", { replace: true }), 1500);
-            }
-        } catch (error) {
-            setGlobalError(error.message || "Google sign-up failed. Please try again.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     return (
         <div className="register-container">
             <div className="gradient-bg"></div>
@@ -159,16 +108,17 @@ export default function Register() {
 
                 {/* Logo Section */}
                 <div className="logo-section">
-                    <div className="logo-icon">
-                        <i className="fas fa-chart-line"></i>
-                    </div>
-                    <h1 className="app-title">TradeTrack</h1>
+                    <img 
+                        src="/tt-logo.png" 
+                        alt="TradeTrack" 
+                        style={{height:'48px', width:'auto', objectFit:'contain', marginBottom:'8px', filter:'brightness(0) invert(1)'}}
+                    />
                 </div>
 
                 {/* Header Section */}
                 <div className="header-section">
-                    <h2 className="page-title">Create Your Trading Account</h2>
-                    <p className="page-subtitle">Start your intelligent investing journey</p>
+                    <h2 className="page-title">Create Your Account</h2>
+                    <p className="page-subtitle">Track stocks, monitor portfolios, and get AI-powered insights</p>
                 </div>
 
                 {/* Alert Messages */}
@@ -325,18 +275,6 @@ export default function Register() {
                         )}
                     </button>
                 </form>
-
-                {/* Divider */}
-                <div className="divider"><span>OR</span></div>
-
-                {/* Google Sign Up Button */}
-                {isGoogleConfigured ? (
-                    <div id="google-signin-button" className="google-button-wrapper"></div>
-                ) : (
-                    <div style={{ textAlign: 'center', padding: '10px', color: '#888', fontSize: '13px', border: '1px dashed #444', borderRadius: '8px' }}>
-                        🔒 Google Sign-Up is not configured yet.
-                    </div>
-                )}
 
                 {/* Footer Section */}
                 <div className="footer-section">

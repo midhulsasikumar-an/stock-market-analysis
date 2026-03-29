@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import ProfileSettings from '../components/settings/ProfileSettings';
 
 export default function Profile() {
+    useEffect(() => {
+        document.title = 'Profile — TradeTrack';
+    }, []);
+
     return (
         <div className="settings-page-container">
             <div className="settings-header-box border-0">

@@ -99,7 +99,7 @@ export default function AdminStocks() {
                                         <td>
                                             <button
                                                 type="button"
-                                                className={stock.enabled ? 'admin-danger-button' : 'admin-primary-button'}
+                                                className={stock.enabled ? 'admin-danger-button' : 'admin-success-button'}
                                                 disabled={busySymbol === stock.symbol}
                                                 onClick={() => handleToggle(stock)}
                                             >

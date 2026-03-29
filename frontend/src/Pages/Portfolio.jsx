@@ -11,6 +11,7 @@ import {
   Filler
 } from 'chart.js';
 import { Doughnut, Line } from 'react-chartjs-2';
+import toast from 'react-hot-toast';
 import authService from '../services/authService';
 import transactionService from '../services/transactionService';
 
@@ -28,10 +29,10 @@ ChartJS.register(
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const formatMoney = (value) => {
-  if (value == null || isNaN(value)) return '$ 0';
+  if (value == null || isNaN(value)) return '$0';
   const abs = Math.abs(value);
   const sign = value < 0 ? '-' : '';
-  return `${sign}$ ${Math.round(abs).toLocaleString('en-US')}`;
+  return `${sign}$${Math.round(abs).toLocaleString('en-US')}`;
 };
 
 const formatDate = (dateStr) => {
@@ -39,16 +40,48 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
 };
 
+const formatSignedMoney = (value) => {
+  if (value == null || isNaN(value)) return '$0';
+  const abs = Math.abs(value);
+  if (value > 0) return `+$${Math.round(abs).toLocaleString('en-US')}`;
+  if (value < 0) return `-$${Math.round(abs).toLocaleString('en-US')}`;
+  return '$0';
+};
+
+const formatSignedPercent = (value) => {
+  if (value == null || isNaN(value)) return '0.00%';
+  const abs = Math.abs(value).toFixed(2);
+  if (value > 0) return `+${abs}%`;
+  if (value < 0) return `-${abs}%`;
+  return `${abs}%`;
+};
+
+const formatCsvDate = (date) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
+const csvEscape = (value) => {
+  const text = value == null ? '' : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+};
+
 // ─── Sell Modal ───────────────────────────────────────────────────────────────
 function SellModal({ holding, onClose, onSuccess }) {
   const [form, setForm] = useState({ quantity: '', sellPrice: (holding.currentPrice || holding.avgBuyPrice || '').toString() });
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
+  const [confirmFullSale, setConfirmFullSale] = useState(false);
 
   const maxQty = holding.quantity ?? 0;
   const total = (Number(form.quantity) || 0) * (Number(form.sellPrice) || 0);
   const buyTotal = (Number(form.quantity) || 0) * (holding.avgBuyPrice ?? 0);
   const pnl = total - buyTotal;
+  const isFullSale = Number(form.quantity) > 0 && Number(form.quantity) === Number(maxQty);
+
+  useEffect(() => {
+    setConfirmFullSale(false);
+  }, [form.quantity, maxQty]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,13 +90,21 @@ function SellModal({ holding, onClose, onSuccess }) {
       setErr(`Insufficient quantity. You hold ${maxQty} shares.`);
       return;
     }
+    if (isFullSale && !confirmFullSale) {
+      setErr('This will mark the holding as fully sold. Confirm to continue.');
+      setConfirmFullSale(true);
+      return;
+    }
     setLoading(true);
     setErr('');
+    const loadingId = toast.loading('Saving...');
     try {
       await transactionService.sell(holding.symbol, form.quantity, form.sellPrice);
+      toast.success('Sale recorded successfully', { id: loadingId });
       onSuccess();
     } catch (er) {
       setErr(er.message || 'Failed to sell stock');
+      toast.error('Something went wrong. Please try again.', { id: loadingId });
     } finally {
       setLoading(false);
     }
@@ -145,14 +186,42 @@ function SellModal({ holding, onClose, onSuccess }) {
 
           {err && <div className="alert alert-danger py-2 small mb-3">{err}</div>}
 
+          {isFullSale && confirmFullSale && (
+            <div className="mb-3 p-3 rounded" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
+              <div className="text-white fw-bold small mb-1">This will mark {holding.symbol} as fully sold in your portfolio.</div>
+              <div className="text-muted small">This will delete all recorded transactions for this holding.</div>
+            </div>
+          )}
+
           <button
             type="submit"
             className="btn w-100 mt-1"
             style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
             disabled={loading}
           >
-            {loading ? 'Processing...' : `Sell ${form.quantity || '0'} shares of ${holding.symbol}`}
+            {loading ? 'Processing...' : isFullSale && !confirmFullSale ? 'Continue' : `Sell ${form.quantity || '0'} shares of ${holding.symbol}`}
           </button>
+          {isFullSale && confirmFullSale && (
+            <div className="d-flex gap-2 mt-2">
+              <button
+                type="button"
+                className="btn btn-outline-secondary w-50"
+                onClick={() => setConfirmFullSale(false)}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn w-50"
+                style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
+                onClick={handleSubmit}
+                disabled={loading}
+              >
+                Yes, remove
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>
@@ -173,21 +242,59 @@ function TransactionHistory({ transactions, loading }) {
   const paginated = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
 
+  const handleDownloadCsv = () => {
+    if (!transactions.length) return;
+
+    const rows = [
+      ['Date', 'Stock', 'Type', 'Quantity', 'Price', 'Total'],
+      ...transactions.map((tx) => [
+        formatDate(tx.executedAt || tx.createdAt),
+        tx.symbol || '',
+        tx.type || '',
+        tx.quantity ?? '',
+        (tx.pricePerUnit ?? 0).toFixed(2),
+        (tx.totalAmount ?? 0).toFixed(2),
+      ])
+    ];
+
+    const csv = rows.map((row) => row.map(csvEscape).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tradetrack-transactions-${formatCsvDate(new Date())}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="bg-glass-card mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="d-flex justify-content-between align-items-start mb-3 gap-3 flex-wrap">
         <h6 className="text-white fw-bold mb-0">Transaction History</h6>
-        <div className="d-flex gap-2">
-          {['ALL', 'BUY', 'SELL'].map(f => (
-            <button
-              key={f}
-              className={`btn btn-sm ${filter === f ? 'btn-primary' : 'btn-outline-secondary'}`}
-              style={{ fontSize: '0.7rem', padding: '3px 10px' }}
-              onClick={() => { setFilter(f); setPage(0); }}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="d-flex gap-2 align-items-center flex-wrap justify-content-end">
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-primary"
+            style={{ fontSize: '0.7rem', padding: '3px 10px' }}
+            onClick={handleDownloadCsv}
+            disabled={!transactions.length}
+          >
+            Download CSV
+          </button>
+          <div className="d-flex gap-2">
+            {['ALL', 'BUY', 'SELL'].map(f => (
+              <button
+                key={f}
+                className={`btn btn-sm ${filter === f ? 'btn-primary' : 'btn-outline-secondary'}`}
+                style={{ fontSize: '0.7rem', padding: '3px 10px' }}
+                onClick={() => { setFilter(f); setPage(0); }}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -275,6 +382,14 @@ function PnLTable({ holdings }) {
 
   if (holdings.length === 0) return null;
 
+  const getPnlStyle = (value) => ({
+    background: value > 0
+      ? 'rgba(16,185,129,0.05)'
+      : value < 0
+        ? 'rgba(239,68,68,0.05)'
+        : 'rgba(148,163,184,0.04)'
+  });
+
   return (
     <div className="bg-glass-card mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -292,7 +407,7 @@ function PnLTable({ holdings }) {
         <div style={{ flex: '0 0 70px' }}>Stock</div>
         <div style={{ flex: 1 }}>Qty</div>
         <div style={{ flex: 1 }}>Avg Buy</div>
-        <div style={{ flex: 1 }}>CMP</div>
+        <div style={{ flex: 1 }}>Current Price</div>
         <div style={{ flex: 1 }}>Invested</div>
         <div style={{ flex: 1 }}>Value</div>
         <div style={{ flex: 1, textAlign: 'right' }}>P&L</div>
@@ -300,7 +415,7 @@ function PnLTable({ holdings }) {
 
       <div className="d-flex flex-column gap-1">
         {holdings.map((h, i) => (
-          <div key={h._id || i} className="d-flex align-items-center px-2 py-2 rounded-3" style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.78rem' }}>
+          <div key={h._id || i} className="d-flex align-items-center px-2 py-2 rounded-3" style={{ ...getPnlStyle(h.profitLoss || 0), fontSize: '0.78rem' }}>
             <div style={{ flex: '0 0 70px' }}>
               <span className="text-white fw-bold" style={{ fontSize: '0.78rem' }}>{h.symbol}</span>
             </div>
@@ -310,12 +425,12 @@ function PnLTable({ holdings }) {
             <div style={{ flex: 1, color: '#94a3b8' }}>{formatMoney(h.invested)}</div>
             <div style={{ flex: 1, color: '#e2e8f0' }}>{formatMoney(h.currentValue)}</div>
             <div style={{ flex: 1, textAlign: 'right' }}>
-              <span className={`fw-bold ${h.profitLoss >= 0 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.78rem' }}>
-                {h.profitLoss >= 0 ? '+' : ''}{formatMoney(h.profitLoss)}
+              <span className={`fw-bold ${h.profitLoss > 0 ? 'text-success' : h.profitLoss < 0 ? 'text-danger' : 'text-muted'}`} style={{ fontSize: '0.78rem' }}>
+                {formatSignedMoney(h.profitLoss)}
               </span>
               <br />
-              <span className={h.profitLoss >= 0 ? 'text-success' : 'text-danger'} style={{ fontSize: '0.65rem' }}>
-                ({h.profitLossPct >= 0 ? '+' : ''}{(h.profitLossPct ?? 0).toFixed(2)}%)
+              <span className={h.profitLoss > 0 ? 'text-success' : h.profitLoss < 0 ? 'text-danger' : 'text-muted'} style={{ fontSize: '0.65rem' }}>
+                ({formatSignedPercent(h.profitLossPct ?? 0)})
               </span>
             </div>
           </div>
@@ -339,6 +454,7 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [, forceTick] = useState(0);
 
   // Transaction history
   const [transactions, setTransactions] = useState([]);
@@ -351,9 +467,12 @@ export default function Portfolio() {
 
   // Sell Modal
   const [sellHolding, setSellHolding] = useState(null); // holding object
-  const [toast, setToast] = useState(null);
 
-  const fetchPortfolio = useCallback(async () => {
+  useEffect(() => {
+    document.title = 'Portfolio — TradeTrack';
+  }, []);
+
+  const fetchPortfolio = useCallback(async (updateStamp = true) => {
     try {
       const response = await fetch(`${API_URL}/api/portfolio/summary`, {
         headers: authService.getAuthHeaders()
@@ -362,7 +481,7 @@ export default function Portfolio() {
       if (data.success) {
         setPortfolioData(data.data);
         setError(null);
-        setLastUpdated(new Date());
+        if (updateStamp) setLastUpdated(new Date());
       } else {
         setError(data.message || "Failed to load portfolio");
       }
@@ -387,17 +506,23 @@ export default function Portfolio() {
   }, []);
 
   useEffect(() => {
-    fetchPortfolio();
+    fetchPortfolio(true);
     fetchTransactions();
-    const interval = setInterval(fetchPortfolio, 60000);
+    const interval = setInterval(() => fetchPortfolio(false), 60000);
     return () => clearInterval(interval);
   }, [fetchPortfolio, fetchTransactions]);
+
+  useEffect(() => {
+    const interval = setInterval(() => forceTick((value) => value + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // ─── Add holding handler ──────────────────────────────────────────────────
   const handleAddHolding = async (e) => {
     e.preventDefault();
     if (!addForm.symbol || !addForm.quantity || !addForm.avgBuyPrice) return;
     setAddLoading(true);
+    const loadingId = toast.loading('Saving...');
     try {
       await transactionService.buy(
         addForm.symbol,
@@ -410,9 +535,9 @@ export default function Portfolio() {
       setAddForm({ symbol: '', name: '', quantity: '', avgBuyPrice: '', sector: '' });
       fetchPortfolio();
       fetchTransactions();
-      setToast({ message: `${addForm.symbol.toUpperCase()} added to portfolio!`, type: 'buy' });
+      toast.success('Investment logged successfully', { id: loadingId });
     } catch (err) {
-      alert(err.message || "Failed to add holding");
+      toast.error('Something went wrong. Please try again.', { id: loadingId });
     } finally {
       setAddLoading(false);
     }
@@ -423,7 +548,21 @@ export default function Portfolio() {
     setSellHolding(null);
     fetchPortfolio();
     fetchTransactions();
-    setToast({ message: 'Sell order recorded successfully!', type: 'sell' });
+    toast.success('Sale recorded successfully');
+  };
+
+  const handleRefresh = () => {
+    setLastUpdated(new Date());
+    fetchPortfolio(false);
+    fetchTransactions();
+  };
+
+  const formatPortfolioRefresh = (timestamp) => {
+    if (!timestamp) return 'Last refreshed: pending';
+    const elapsedMinutes = Math.floor((Date.now() - timestamp.getTime()) / 60000);
+    if (elapsedMinutes < 1) return 'Last refreshed: Just now';
+    if (elapsedMinutes < 60) return `Last refreshed: ${elapsedMinutes} min ago`;
+    return `Last refreshed: Updated at ${timestamp.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
   };
 
   // ─── Chart data ───────────────────────────────────────────────────────────
@@ -518,44 +657,79 @@ export default function Portfolio() {
           </p>
         </div>
         <div className="d-flex gap-2">
-          <button className="btn btn-sm btn-outline-primary" onClick={() => { fetchPortfolio(); fetchTransactions(); }} title="Refresh prices">
+          <button className="btn btn-sm btn-outline-primary" onClick={handleRefresh} title="Refreshes current prices from Finnhub API">
             🔄 Refresh
           </button>
+          <span className="text-muted align-self-center" style={{ fontSize: '0.72rem' }}>
+            {formatPortfolioRefresh(lastUpdated)}
+          </span>
           <button className="btn btn-sm btn-primary" onClick={() => setShowAddModal(true)}>
-            + Add Stock
+            + Log Investment
           </button>
         </div>
       </div>
 
       {/* ─── Top Stat Cards ───────────────────────────────────────────────── */}
-      <div className="mini-stats-grid mb-4">
-        <div className="bg-glass-card stat-card-glow-blue hover-glow">
-          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Invested</p>
-          <h3 className="fw-bold text-white mb-0">{formatMoney(s.totalInvested)}</h3>
-        </div>
-        <div className="bg-glass-card stat-card-glow-blue hover-glow">
-          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Current Value</p>
-          <h3 className="fw-bold text-white mb-0">{formatMoney(s.totalCurrentValue)}</h3>
-        </div>
-        <div className="bg-glass-card stat-card-glow-green hover-glow">
-          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Gain / Loss</p>
-          <h3 className={`fw-bold mb-0 ${(s.totalProfitLoss || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
-            {formatMoney(s.totalProfitLoss)}
-          </h3>
-          <p className={`small mb-0 mt-1 ${(s.totalProfitLoss || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
-            {(s.totalReturnPct || 0).toFixed(2)}%
-          </p>
-        </div>
-        <div className="bg-glass-card stat-card-glow-blue hover-glow">
-          <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Holdings</p>
-          <h3 className="fw-bold text-white mb-0">{s.holdingsCount || 0} Stocks</h3>
-          {s.todayChange != null && (
-            <p className={`small mb-0 mt-1 ${s.todayChange >= 0 ? 'text-success' : 'text-danger'}`}>
-              Today: {s.todayChange >= 0 ? '+' : ''}{formatMoney(s.todayChange)}
+      {holdings.length > 0 ? (
+        <div className="mini-stats-grid mb-4">
+          <div className="bg-glass-card stat-card-glow-blue hover-glow">
+            <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Invested</p>
+            <h3 className="fw-bold text-white mb-0">{formatMoney(s.totalInvested)}</h3>
+          </div>
+          <div className="bg-glass-card stat-card-glow-blue hover-glow">
+            <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Current Value</p>
+            <h3 className="fw-bold text-white mb-0">{formatMoney(s.totalCurrentValue)}</h3>
+          </div>
+          <div
+            className="bg-glass-card hover-glow"
+            style={{
+              background: (s.totalProfitLoss || 0) > 0
+                ? 'linear-gradient(180deg, rgba(16,185,129,0.14), rgba(15,23,42,0.78))'
+                : (s.totalProfitLoss || 0) < 0
+                  ? 'linear-gradient(180deg, rgba(239,68,68,0.14), rgba(15,23,42,0.78))'
+                  : 'linear-gradient(180deg, rgba(148,163,184,0.12), rgba(15,23,42,0.78))',
+              border: (s.totalProfitLoss || 0) > 0
+                ? '1px solid rgba(16,185,129,0.18)'
+                : (s.totalProfitLoss || 0) < 0
+                  ? '1px solid rgba(239,68,68,0.18)'
+                  : '1px solid rgba(148,163,184,0.16)'
+            }}
+          >
+            <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Total Gain / Loss</p>
+            <div className={`d-inline-flex align-items-center gap-2 ${(s.totalProfitLoss || 0) > 0 ? 'text-success' : (s.totalProfitLoss || 0) < 0 ? 'text-danger' : 'text-muted'}`}>
+              <span aria-hidden="true" style={{ fontSize: '1rem', lineHeight: 1 }}>
+                {(s.totalProfitLoss || 0) > 0 ? '▲' : (s.totalProfitLoss || 0) < 0 ? '▼' : '●'}
+              </span>
+              <h3 className="fw-bold mb-0" style={{ fontSize: '1.5rem' }}>
+                {formatSignedMoney(s.totalProfitLoss)}
+              </h3>
+            </div>
+            <p className={`small mb-0 mt-1 ${(s.totalProfitLoss || 0) > 0 ? 'text-success' : (s.totalProfitLoss || 0) < 0 ? 'text-danger' : 'text-muted'}`}>
+              {(s.totalReturnPct || 0).toFixed(2)}%
             </p>
-          )}
+          </div>
+          <div className="bg-glass-card stat-card-glow-blue hover-glow">
+            <p className="text-muted text-uppercase small mb-2" style={{ fontSize: '0.65rem' }}>Holdings</p>
+            <h3 className="fw-bold text-white mb-0">{s.holdingsCount || 0} Stocks</h3>
+            {s.todayChange != null && (
+              <p className={`small mb-0 mt-1 ${s.todayChange >= 0 ? 'text-success' : 'text-danger'}`}>
+                Today: {s.todayChange >= 0 ? '+' : ''}{formatMoney(s.todayChange)}
+              </p>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="empty-state-card empty-state-card--compact mb-4">
+          <div className="empty-state-icon" aria-hidden="true">📊</div>
+          <h4 className="empty-state-title">No investments tracked yet</h4>
+          <p className="empty-state-subtitle">
+            Add your first holding to start tracking performance.
+          </p>
+          <button type="button" className="empty-state-button" onClick={() => setShowAddModal(true)}>
+            + Log Your First Investment
+          </button>
+        </div>
+      )}
 
       {/* ─── Main Grid ────────────────────────────────────────────────────── */}
       <div className="portfolio-grid">
@@ -587,7 +761,11 @@ export default function Portfolio() {
                 </div>
               </div>
             ) : (
-              <p className="text-muted text-center py-4">No holdings yet. Add stocks to see allocation.</p>
+              <div className="empty-state-row empty-state-card--compact">
+                <div className="empty-state-icon" aria-hidden="true">📊</div>
+                <p className="empty-state-title mb-0">No investments tracked yet</p>
+                <p className="empty-state-subtitle">Add your first holding to start tracking performance.</p>
+              </div>
             )}
           </div>
 
@@ -627,7 +805,11 @@ export default function Portfolio() {
                     <Line data={performanceData} options={{ plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, maintainAspectRatio: false }} />
                   </div>
                 ) : (
-                  <p className="text-muted small text-center py-4">Add holdings to see performance</p>
+                  <div className="empty-state-row empty-state-card--compact">
+                    <div className="empty-state-icon" aria-hidden="true">📊</div>
+                    <p className="empty-state-title mb-0">No investments tracked yet</p>
+                    <p className="empty-state-subtitle">Add your first holding to start tracking performance.</p>
+                  </div>
                 )}
               </div>
             </div>
@@ -638,59 +820,75 @@ export default function Portfolio() {
         <div className="d-flex flex-column gap-4">
           <div className="bg-glass-card h-100 overflow-hidden d-flex flex-column">
             <h6 className="text-white mb-3 fw-bold">Current Holdings</h6>
+            <div className="d-flex px-2 py-1 mb-2" style={{ fontSize: '0.6rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <div style={{ flex: '0 0 88px' }}>Symbol</div>
+              <div style={{ flex: '0 0 66px' }}>Trend</div>
+              <div style={{ flex: '0 0 70px', textAlign: 'right' }}>Qty</div>
+              <div style={{ flex: '0 0 92px', textAlign: 'right' }}>Buy Price</div>
+              <div style={{ flex: 1, textAlign: 'right' }}>Current Value</div>
+              <div style={{ flex: '0 0 92px', textAlign: 'right' }}>P&L</div>
+              <div style={{ flex: '0 0 58px', textAlign: 'right' }}>Action</div>
+            </div>
             <div className="d-flex flex-column gap-1 overflow-auto">
               {holdings.length > 0 ? holdings.map((row, i) => (
-                <div key={row._id || i} className="p-3 rounded-3 hover-glow border-bottom border-secondary border-opacity-10">
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <div>
-                      <span className="text-white fw-bold small">{row.symbol}</span>
-                      {row.name && row.name !== row.symbol && (
-                        <span className="text-muted ms-2" style={{ fontSize: '0.6rem' }}>{row.name}</span>
-                      )}
-                    </div>
-                    <div className="d-flex align-items-center gap-2">
-                      <span className="text-white small fw-bold">{formatMoney(row.currentValue)}</span>
-                      {/* ── Sell Button ── */}
-                      <button
-                        className="btn btn-sm"
-                        style={{
-                          fontSize: '0.65rem',
-                          padding: '2px 8px',
-                          background: 'rgba(239,68,68,0.12)',
-                          color: '#ef4444',
-                          border: '1px solid rgba(239,68,68,0.25)',
-                          borderRadius: '6px',
-                          lineHeight: 1.4
-                        }}
-                        onClick={() => setSellHolding(row)}
-                      >
-                        Sell
-                      </button>
+                <div key={row._id || i} className="d-flex align-items-center p-3 rounded-3 hover-glow border-bottom border-secondary border-opacity-10" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                  <div style={{ flex: '0 0 88px' }}>
+                    <span className="text-white fw-bold small d-block">{row.symbol}</span>
+                    {row.name && row.name !== row.symbol && (
+                      <span className="text-muted" style={{ fontSize: '0.6rem' }}>{row.name}</span>
+                    )}
+                  </div>
+                  <div style={{ flex: '0 0 66px' }}>
+                    <div
+                      title={row.profitLoss > 0 ? 'In profit' : row.profitLoss < 0 ? 'At a loss' : 'Flat'}
+                      className="d-inline-flex align-items-center justify-content-center rounded-pill"
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        background: row.profitLoss > 0 ? 'rgba(16,185,129,0.18)' : row.profitLoss < 0 ? 'rgba(239,68,68,0.18)' : 'rgba(148,163,184,0.18)',
+                        border: row.profitLoss > 0 ? '1px solid rgba(16,185,129,0.3)' : row.profitLoss < 0 ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(148,163,184,0.25)'
+                      }}
+                    >
+                      <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: row.profitLoss > 0 ? '#10b981' : row.profitLoss < 0 ? '#ef4444' : '#94a3b8' }} />
                     </div>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <span className="text-muted" style={{ fontSize: '0.65rem' }}>
-                      {row.quantity} Shares @ {formatMoney(row.avgBuyPrice)}
-                    </span>
-                    <span className={`small ${row.profitLoss >= 0 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.7rem' }}>
-                      {row.profitLossPct >= 0 ? '+' : ''}{(row.profitLossPct ?? 0).toFixed(2)}%
+                  <div style={{ flex: '0 0 70px', textAlign: 'right' }}>
+                    <span className="text-white small fw-semibold">{row.quantity}</span>
+                  </div>
+                  <div style={{ flex: '0 0 92px', textAlign: 'right' }}>
+                    <span className="text-muted small">{formatMoney(row.avgBuyPrice)}</span>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'right' }}>
+                    <span className="text-white small fw-semibold">{formatMoney(row.currentValue)}</span>
+                  </div>
+                  <div style={{ flex: '0 0 92px', textAlign: 'right' }}>
+                    <span className={`small fw-bold ${row.profitLoss > 0 ? 'text-success' : row.profitLoss < 0 ? 'text-danger' : 'text-muted'}`}>
+                      {formatSignedMoney(row.profitLoss)}
                     </span>
                   </div>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span className="text-muted" style={{ fontSize: '0.6rem' }}>
-                      CMP: {formatMoney(row.currentPrice)}
-                    </span>
-                    <span className={`fw-bold ${row.profitLoss >= 0 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.7rem' }}>
-                      {row.profitLoss >= 0 ? '+' : ''}{formatMoney(row.profitLoss)}
-                    </span>
+                  <div style={{ flex: '0 0 58px', textAlign: 'right' }}>
+                    <button
+                      className="btn btn-sm"
+                      style={{
+                        fontSize: '0.65rem',
+                        padding: '2px 8px',
+                        background: 'rgba(239,68,68,0.12)',
+                        color: '#ef4444',
+                        border: '1px solid rgba(239,68,68,0.25)',
+                        borderRadius: '6px',
+                        lineHeight: 1.4
+                      }}
+                      onClick={() => setSellHolding(row)}
+                    >
+                      Sell
+                    </button>
                   </div>
                 </div>
               )) : (
-                <div className="text-center py-5">
-                  <p className="text-muted mb-3">No holdings yet</p>
-                  <button className="btn btn-sm btn-primary" onClick={() => setShowAddModal(true)}>
-                    + Add Your First Stock
-                  </button>
+                <div className="empty-state-row empty-state-card--compact">
+                  <div className="empty-state-icon" aria-hidden="true">📊</div>
+                  <p className="empty-state-title mb-0">No holdings recorded</p>
+                  <p className="empty-state-subtitle">Use '+ Add to Portfolio' to log your investments.</p>
                 </div>
               )}
             </div>
@@ -709,7 +907,7 @@ export default function Portfolio() {
         <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.7)', zIndex: 9999 }}>
           <div className="bg-glass-card p-4" style={{ width: '420px', maxWidth: '95vw', borderRadius: '16px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h5 className="text-white fw-bold mb-0">Add Stock</h5>
+              <h5 className="text-white fw-bold mb-0">Log a New Investment</h5>
               <button className="btn btn-sm text-muted" onClick={() => setShowAddModal(false)} style={{ fontSize: '1.5rem', lineHeight: 1 }}>×</button>
             </div>
             <form onSubmit={handleAddHolding}>
@@ -730,11 +928,14 @@ export default function Portfolio() {
                     value={addForm.quantity} onChange={e => setAddForm(p => ({ ...p, quantity: e.target.value }))} required />
                 </div>
                 <div className="col-6">
-                  <label className="text-muted small mb-1">Buy Price *</label>
+                  <label className="text-muted small mb-1">Purchase Price *</label>
                   <input type="number" className="form-control bg-dark text-white border-secondary" placeholder="150.00" min="0" step="any"
                     value={addForm.avgBuyPrice} onChange={e => setAddForm(p => ({ ...p, avgBuyPrice: e.target.value }))} required />
                 </div>
               </div>
+              <p className="text-muted small mb-3" style={{ fontSize: '0.75rem', lineHeight: 1.5 }}>
+                Enter the price and quantity as they were when you bought this stock in real life. TradeTrack uses this to calculate your current P&amp;L.
+              </p>
               <div className="mb-4">
                 <label className="text-muted small mb-1">Sector</label>
                 <select className="form-control bg-dark text-white border-secondary"
@@ -751,7 +952,7 @@ export default function Portfolio() {
                 </select>
               </div>
               <button type="submit" className="btn btn-primary w-100" disabled={addLoading}>
-                {addLoading ? 'Adding...' : 'Add to Portfolio'}
+                {addLoading ? 'Saving...' : 'Save Investment'}
               </button>
             </form>
           </div>
@@ -767,30 +968,6 @@ export default function Portfolio() {
         />
       )}
 
-      {/* ─── Toast Notification ───────────────────────────────────────────── */}
-      {toast && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            zIndex: 10000,
-            background: toast.type === 'buy' ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)',
-            color: 'white',
-            padding: '14px 22px',
-            borderRadius: '12px',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}
-          onClick={() => setToast(null)}
-        >
-          {toast.type === 'buy' ? '✅' : '📤'} {toast.message}
-        </div>
-      )}
     </div>
   );
 }

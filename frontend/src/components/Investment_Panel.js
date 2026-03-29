@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import watchlistService from '../services/watchlistService';
 import authService from '../services/authService';
 
@@ -61,16 +62,25 @@ export default function Investment_Panel({ symbol, profile, quote }) {
             return;
         }
 
+        const loadingId = toast.loading('Saving...');
         try {
             setWatchlistLoading(true);
             if (inWatchlist) {
                 await watchlistService.removeFromWatchlist(symbol);
                 setInWatchlist(false);
+                toast.success(`${symbol} removed from watchlist`, { id: loadingId });
             } else {
                 await watchlistService.addToWatchlist(symbol, profile?.name || symbol, 'stock');
                 setInWatchlist(true);
+                toast.success(`${symbol} added to watchlist`, { id: loadingId });
             }
         } catch (error) {
+            const message = error.message || "Failed to update watchlist.";
+            if (message.toLowerCase().includes('already')) {
+                toast.error(`${symbol} is already in your watchlist`, { id: loadingId });
+            } else {
+                toast.error('Something went wrong. Please try again.', { id: loadingId });
+            }
             window.alert(error.message || "Failed to update watchlist.");
         } finally {
             setWatchlistLoading(false);
@@ -91,6 +101,7 @@ export default function Investment_Panel({ symbol, profile, quote }) {
         if (investment.shares && investment.buyPrice) {
             setIsInvested(true);
             setShowInvestForm(false);
+            toast.success('Investment logged successfully');
         }
     };
 

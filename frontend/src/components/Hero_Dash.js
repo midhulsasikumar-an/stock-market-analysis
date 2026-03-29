@@ -7,10 +7,13 @@ export default function Hero_Dash() {
   const displayName = user?.firstName
     ? user.firstName
     : (user?.username || user?.email?.split('@')[0] || 'BACK');
+  const friendlyName = displayName === 'BACK'
+    ? 'there'
+    : displayName.charAt(0).toUpperCase() + displayName.slice(1).toLowerCase();
 
   return (
     <div className="hero-redesign">
-      <h1 className="hero-title-redesign">WELCOME, {displayName.toUpperCase()} 👋</h1>
+      <h1 className="hero-title-redesign">Welcome back, {friendlyName} 👋</h1>
       <p className="hero-subtitle-redesign">Real-time market intelligence and portfolio insights.</p>
     </div>
   );

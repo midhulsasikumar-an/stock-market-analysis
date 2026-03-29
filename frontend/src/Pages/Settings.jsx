@@ -14,6 +14,10 @@ export default function Settings() {
     const [activeTab, setActiveTab] = useState(initialTab);
 
     useEffect(() => {
+        document.title = 'Settings — TradeTrack';
+    }, []);
+
+    useEffect(() => {
         const tab = queryParams.get('tab') || 'profile';
         setActiveTab(tab);
     }, [location.search]);

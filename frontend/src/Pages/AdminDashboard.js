@@ -219,7 +219,6 @@ export default function AdminDashboard() {
             const query = new URLSearchParams({ period, from, to }).toString();
             const r = await fetch(`${API_URL}/api/admin/chart?${query}`, { headers });
             const j = await r.json();
-            console.log('[AdminDashboard] /api/admin/chart raw response:', { period, payload: j });
             if (j.success) setChartData(j.data);
         } catch { /* silent */ } finally { setChartLoading(false); }
     }, []); // eslint-disable-line
@@ -376,7 +375,7 @@ export default function AdminDashboard() {
         return (
             <div className="p-5 text-danger text-center mt-5">
                 <p>{error}</p>
-                <button className="btn btn-sm btn-primary mt-2" onClick={refreshAll}>Retry</button>
+                <button className="admin-primary-button mt-2" onClick={refreshAll}>Retry</button>
             </div>
         );
     }
@@ -398,7 +397,7 @@ export default function AdminDashboard() {
                     </p>
                 </div>
                 <button
-                    className="btn btn-sm btn-outline-primary"
+                    className="admin-secondary-button"
                     onClick={refreshAll}
                     disabled={dashLoading}
                 >
@@ -466,8 +465,7 @@ export default function AdminDashboard() {
                                     <button
                                         key={days}
                                         onClick={() => handleActivityRangeChange(days)}
-                                        className={`btn btn-sm ${days === activityDays ? 'btn-primary' : 'btn-outline-secondary'} rounded-pill px-3 fw-bold`}
-                                        style={{ fontSize: '0.8rem' }}
+                                        className={days === activityDays ? 'admin-primary-button' : 'admin-secondary-button'}
                                     >
                                         {`${days}D`}
                                     </button>
@@ -557,8 +555,7 @@ export default function AdminDashboard() {
                                     <button
                                         key={t}
                                         onClick={() => handlePeriodChange(t)}
-                                        className={`btn btn-sm ${t === chartPeriod ? 'btn-primary' : 'btn-outline-secondary'} rounded-pill px-3 fw-bold`}
-                                        style={{ fontSize: '0.8rem' }}
+                                        className={t === chartPeriod ? 'admin-primary-button' : 'admin-secondary-button'}
                                     >
                                         {t}
                                     </button>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * Footer – 4-column premium fintech layout
@@ -9,16 +9,25 @@ export default function Footer() {
     <footer className="tt-footer" id="footer">
       <div className="container">
         <div className="row g-5">
-
           {/* ── COLUMN 1: Brand ── */}
           <div className="col-lg-4 col-md-6">
             <div className="tt-footer-logo">
-              <i className="bi bi-bar-chart-fill" style={{ color: '#3b82f6' }} />
-              TradeTrack
+              <img
+                src="/tt-logo.png"
+                alt="TradeTrack"
+                style={{
+                  height: "28px",
+                  width: "auto",
+                  objectFit: "contain",
+                  marginBottom: "12px",
+                  filter: "brightness(0) invert(1)",
+                }}
+              />
             </div>
             <p className="tt-footer-desc">
               Real-time stock tracking and advanced market intelligence.
-              Empowering investors with professional-grade analytics, built on the MERN stack.
+              Empowering investors with professional-grade analytics and
+              AI-powered insights.
             </p>
             <div className="tt-footer-socials">
               <a
@@ -39,11 +48,7 @@ export default function Footer() {
               >
                 <i className="bi bi-github" />
               </a>
-              <a
-                href="#"
-                className="tt-footer-social-btn"
-                aria-label="Twitter"
-              >
+              <a href="#" className="tt-footer-social-btn" aria-label="Twitter">
                 <i className="bi bi-twitter-x" />
               </a>
             </div>
@@ -53,11 +58,21 @@ export default function Footer() {
           <div className="col-lg-2 col-md-6 col-sm-6">
             <h6 className="tt-footer-col-title">Navigation</h6>
             <ul className="tt-footer-links">
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/dashboard">Dashboard</Link></li>
-              <li><Link to="/stocks">Stocks Explorer</Link></li>
-              <li><Link to="/dashboard/news">Market News</Link></li>
-              <li><Link to="/dashboard/portfolio">Portfolio</Link></li>
+              <li>
+                <Link to="/">Home</Link>
+              </li>
+              <li>
+                <Link to="/dashboard">Dashboard</Link>
+              </li>
+              <li>
+                <Link to="/stocks">Stocks Explorer</Link>
+              </li>
+              <li>
+                <Link to="/dashboard/news">Market News</Link>
+              </li>
+              <li>
+                <Link to="/dashboard/portfolio">Portfolio</Link>
+              </li>
             </ul>
           </div>
 
@@ -65,11 +80,21 @@ export default function Footer() {
           <div className="col-lg-2 col-md-6 col-sm-6">
             <h6 className="tt-footer-col-title">Resources</h6>
             <ul className="tt-footer-links">
-              <li><a href="#">Help Center</a></li>
-              <li><a href="#">API Docs</a></li>
-              <li><a href="#">System Status</a></li>
-              <li><a href="#">Changelog</a></li>
-              <li><a href="#">Community</a></li>
+              <li>
+                <a href="/#how-it-works">Help Center</a>
+              </li>
+              <li>
+                <a href="/#market-data">API Docs</a>
+              </li>
+              <li>
+                <Link to="/dashboard/news">System Status</Link>
+              </li>
+              <li>
+                <Link to="/stocks">Changelog</Link>
+              </li>
+              <li>
+                <Link to="/register">Community</Link>
+              </li>
             </ul>
           </div>
 
@@ -77,13 +102,20 @@ export default function Footer() {
           <div className="col-lg-2 col-md-6 col-sm-6">
             <h6 className="tt-footer-col-title">Legal</h6>
             <ul className="tt-footer-links">
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Terms of Service</a></li>
-              <li><a href="#">Disclaimer</a></li>
-              <li><a href="#">Cookie Policy</a></li>
+              <li>
+                <a href="/#about-section">Privacy Policy</a>
+              </li>
+              <li>
+                <a href="/#about-section">Terms of Service</a>
+              </li>
+              <li>
+                <a href="/#about-section">Disclaimer</a>
+              </li>
+              <li>
+                <a href="/#about-section">Cookie Policy</a>
+              </li>
             </ul>
           </div>
-
         </div>
 
         {/* ── Bottom Bar ── */}
@@ -93,11 +125,11 @@ export default function Footer() {
             © {new Date().getFullYear()} TradeTrack — All rights reserved
           </span>
           <span className="tt-footer-edu">
-            <i className="bi bi-shield-check" style={{ color: '#3b82f6' }} />
+            <i className="bi bi-shield-check" style={{ color: "#3b82f6" }} />
             For educational & informational purposes only
           </span>
           <span className="tt-footer-copy">
-            Data: <span style={{ color: '#475569' }}>Finnhub API</span>
+            Data: <span style={{ color: "#475569" }}>Finnhub API</span>
           </span>
         </div>
       </div>

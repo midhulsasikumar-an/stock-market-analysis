@@ -27,7 +27,7 @@ const portfolioSchema = new mongoose.Schema({
         default: "My Portfolio"
     },
     description: { type: String, maxlength: 300 },
-    currency: { type: String, default: "INR" },
+    currency: { type: String, default: "USD" },
     holdings: [holdingSchema],
     isDefault: { type: Boolean, default: false }
 }, { timestamps: true });

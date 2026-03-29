@@ -7,13 +7,18 @@ const StockCache = require("../models/StockCache");
 const { authMiddleware } = require("../middleware/auth");
 const { canUserAccessSymbol } = require("../utils/stockVisibility");
 
+const normalizeSymbol = (symbol) => String(symbol || "").trim().toUpperCase();
+
 // ─── Shared: Fetch live price with cache check ─────────────────────────────
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 const QUOTE_TTL = 60 * 1000; // 1 minute for portfolio view
 
 async function fetchLivePrice(symbol) {
+    const normalizedSymbol = normalizeSymbol(symbol);
+    if (!normalizedSymbol) return null;
+
     // Check MongoDB cache first
-    const cacheKey = `quote:${symbol}`;
+    const cacheKey = `quote:${normalizedSymbol}`;
     try {
         const cached = await StockCache.getCached(cacheKey);
         if (cached && cached.c) return { price: cached.c, change: cached.d, changePercent: cached.dp };
@@ -22,7 +27,7 @@ async function fetchLivePrice(symbol) {
     // Fetch from Finnhub
     try {
         const { data } = await axios.get("https://finnhub.io/api/v1/quote", {
-            params: { symbol, token: FINNHUB_KEY },
+            params: { symbol: normalizedSymbol, token: FINNHUB_KEY },
             timeout: 8000
         });
         if (data && data.c) {
@@ -64,7 +69,7 @@ router.get("/summary", authMiddleware, async (req, res) => {
 
         // Fetch live prices for all holdings in parallel
         const holdings = portfolio.holdings || [];
-        const uniqueSymbols = [...new Set(holdings.map(h => h.symbol))];
+        const uniqueSymbols = [...new Set(holdings.map(h => normalizeSymbol(h.symbol)).filter(Boolean))];
 
         const priceMap = {};
         await Promise.allSettled(
@@ -76,16 +81,27 @@ router.get("/summary", authMiddleware, async (req, res) => {
 
         // Enrich each holding with P&L calculations
         const enrichedHoldings = holdings.map(h => {
-            const live = priceMap[h.symbol];
+            const symbol = normalizeSymbol(h.symbol);
+            const live = priceMap[symbol];
             const currentPrice = live?.price ?? h.currentPrice ?? h.avgBuyPrice;
             const invested = h.quantity * h.avgBuyPrice;
             const currentValue = h.quantity * currentPrice;
             const profitLoss = currentValue - invested;
             const profitLossPct = invested > 0 ? (profitLoss / invested) * 100 : 0;
 
+            if (symbol === "GOOGL") {
+                console.log("GOOGL pnl calc:", {
+                    currentPrice,
+                    avgBuyPrice: h.avgBuyPrice,
+                    quantity: h.quantity,
+                    livePrice: live?.price ?? null,
+                    fallbackUsed: live?.price == null && h.currentPrice == null
+                });
+            }
+
             return {
                 _id: h._id,
-                symbol: h.symbol,
+                symbol,
                 name: h.name || h.symbol,
                 quantity: h.quantity,
                 avgBuyPrice: h.avgBuyPrice,
@@ -186,7 +202,7 @@ router.post("/", authMiddleware, async (req, res) => {
             userId: req.userId,
             name: name || "My Portfolio",
             description,
-            currency: currency || "INR",
+            currency: currency || "USD",
             isDefault: !!isDefault
         });
         await portfolio.save();
@@ -203,10 +219,11 @@ router.post("/:id/holding", authMiddleware, async (req, res) => {
         if (!symbol || quantity == null || avgBuyPrice == null) {
             return res.status(400).json({ success: false, message: "symbol, quantity, avgBuyPrice are required" });
         }
+        const normalizedSymbol = normalizeSymbol(symbol);
         if (quantity <= 0) {
             return res.status(400).json({ success: false, message: "Quantity must be positive" });
         }
-        const canAccess = await canUserAccessSymbol(req.userId, symbol);
+        const canAccess = await canUserAccessSymbol(req.userId, normalizedSymbol);
         if (!canAccess) {
             return res.status(403).json({ success: false, message: "This stock is currently disabled for user trading" });
         }
@@ -215,7 +232,7 @@ router.post("/:id/holding", authMiddleware, async (req, res) => {
         if (!portfolio) return res.status(404).json({ success: false, message: "Portfolio not found" });
 
         // Check if symbol already exists — merge (average up/down)
-        const existing = portfolio.holdings.find(h => h.symbol === symbol.toUpperCase());
+        const existing = portfolio.holdings.find(h => normalizeSymbol(h.symbol) === normalizedSymbol);
         if (existing) {
             const totalQty = existing.quantity + quantity;
             const totalCost = (existing.quantity * existing.avgBuyPrice) + (quantity * avgBuyPrice);
@@ -225,7 +242,7 @@ router.post("/:id/holding", authMiddleware, async (req, res) => {
             if (notes) existing.notes = notes;
         } else {
             portfolio.holdings.push({
-                symbol: symbol.toUpperCase(),
+                symbol: normalizedSymbol,
                 name,
                 quantity,
                 avgBuyPrice,
@@ -241,7 +258,7 @@ router.post("/:id/holding", authMiddleware, async (req, res) => {
         await Transaction.create({
             userId: req.userId,
             portfolioId: portfolio._id,
-            symbol: symbol.toUpperCase(),
+            symbol: normalizedSymbol,
             name,
             type: "BUY",
             quantity,
@@ -264,11 +281,12 @@ router.post("/:id/sell", authMiddleware, async (req, res) => {
         if (!symbol || quantity == null || pricePerUnit == null) {
             return res.status(400).json({ success: false, message: "symbol, quantity, pricePerUnit are required" });
         }
+        const normalizedSymbol = normalizeSymbol(symbol);
 
         const portfolio = await Portfolio.findOne({ _id: req.params.id, userId: req.userId });
         if (!portfolio) return res.status(404).json({ success: false, message: "Portfolio not found" });
 
-        const holding = portfolio.holdings.find(h => h.symbol === symbol.toUpperCase());
+        const holding = portfolio.holdings.find(h => normalizeSymbol(h.symbol) === normalizedSymbol);
         if (!holding) return res.status(400).json({ success: false, message: "Stock not found in portfolio" });
         if (holding.quantity < quantity) {
             return res.status(400).json({ success: false, message: `Insufficient quantity. You hold ${holding.quantity} shares.` });
@@ -276,7 +294,7 @@ router.post("/:id/sell", authMiddleware, async (req, res) => {
 
         holding.quantity -= quantity;
         if (holding.quantity === 0) {
-            portfolio.holdings = portfolio.holdings.filter(h => h.symbol !== symbol.toUpperCase());
+            portfolio.holdings = portfolio.holdings.filter(h => normalizeSymbol(h.symbol) !== normalizedSymbol);
         }
 
         await portfolio.save();
@@ -285,7 +303,7 @@ router.post("/:id/sell", authMiddleware, async (req, res) => {
         await Transaction.create({
             userId: req.userId,
             portfolioId: portfolio._id,
-            symbol: symbol.toUpperCase(),
+            symbol: normalizedSymbol,
             type: "SELL",
             quantity,
             pricePerUnit,
