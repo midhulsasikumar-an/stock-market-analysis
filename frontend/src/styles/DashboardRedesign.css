@@ -151,11 +151,11 @@
 }
 
 .hero-title-redesign {
-    font-size: 2.5rem;
-    font-weight: 800;
-    text-transform: uppercase;
+    font-size: 2.25rem;
+    font-weight: 600;
+    text-transform: none;
     margin-bottom: 0.5rem;
-    letter-spacing: 2px;
+    letter-spacing: 0.02em;
 }
 
 .hero-subtitle-redesign {

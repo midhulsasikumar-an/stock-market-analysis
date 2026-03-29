@@ -89,7 +89,7 @@ export default function AdminTransactions() {
             {data.pagination?.pages > 1 && (
                 <div className="d-flex justify-content-center mt-4">
                     <button
-                        className="btn btn-outline-secondary me-2"
+                        className="admin-secondary-button me-2"
                         disabled={data.pagination.page === 1}
                         onClick={() => fetchTransactions(data.pagination.page - 1)}
                     >
@@ -99,7 +99,7 @@ export default function AdminTransactions() {
                         Page {data.pagination.page} of {data.pagination.pages}
                     </span>
                     <button
-                        className="btn btn-outline-secondary ms-2"
+                        className="admin-secondary-button ms-2"
                         disabled={data.pagination.page === data.pagination.pages}
                         onClick={() => fetchTransactions(data.pagination.page + 1)}
                     >

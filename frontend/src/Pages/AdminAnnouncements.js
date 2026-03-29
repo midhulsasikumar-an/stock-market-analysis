@@ -257,7 +257,7 @@ export default function AdminAnnouncements() {
                                             <td>
                                                 <button
                                                     type="button"
-                                                    className="admin-outline-button"
+                                                    className="admin-warning-button"
                                                     disabled={!item.isActive || expiringId === item._id}
                                                     onClick={() => handleExpire(item)}
                                                 >

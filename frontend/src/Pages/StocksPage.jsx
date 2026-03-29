@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import NavbarDash from "../components/Navbar_Dash";
-import StocksFooter from "../components/StocksFooter";
 import { STOCK_SECTORS } from "../data/stocksData";
 import { fetchSymbolVisibility } from "../services/finnhub";
 import "./Stocks.css";
@@ -108,7 +107,6 @@ export default function StocksPage() {
           ))}
         </section>
       </main>
-      <StocksFooter />
     </div>
   );
 }

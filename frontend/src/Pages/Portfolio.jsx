@@ -28,10 +28,10 @@ ChartJS.register(
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const formatMoney = (value) => {
-  if (value == null || isNaN(value)) return '$ 0';
+  if (value == null || isNaN(value)) return '$0';
   const abs = Math.abs(value);
   const sign = value < 0 ? '-' : '';
-  return `${sign}$ ${Math.round(abs).toLocaleString('en-US')}`;
+  return `${sign}$${Math.round(abs).toLocaleString('en-US')}`;
 };
 
 const formatDate = (dateStr) => {

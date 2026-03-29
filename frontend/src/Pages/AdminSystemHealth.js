@@ -179,7 +179,7 @@ export default function AdminSystemHealth() {
                 eyebrow="Runtime diagnostics"
                 title="System Health"
                 description="Monitor MongoDB, Express uptime, Finnhub connectivity, and live latency metrics from the admin tier."
-                actions={<button type="button" className="admin-outline-button" onClick={() => window.location.reload()}>Refresh page</button>}
+                actions={<button type="button" className="admin-secondary-button" onClick={() => window.location.reload()}>Refresh page</button>}
             />
 
             {error ? <p className="text-danger mb-3">{error}</p> : null}

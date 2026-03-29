@@ -13,12 +13,15 @@ export default function Footer() {
           {/* ── COLUMN 1: Brand ── */}
           <div className="col-lg-4 col-md-6">
             <div className="tt-footer-logo">
-              <i className="bi bi-bar-chart-fill" style={{ color: '#3b82f6' }} />
-              TradeTrack
+              <img 
+                src="/tt-logo.png" 
+                alt="TradeTrack" 
+                style={{height:'32px', width:'auto', objectFit:'contain'}}
+              />
             </div>
             <p className="tt-footer-desc">
               Real-time stock tracking and advanced market intelligence.
-              Empowering investors with professional-grade analytics, built on the MERN stack.
+              Empowering investors with professional-grade analytics and AI-powered insights.
             </p>
             <div className="tt-footer-socials">
               <a

@@ -25,6 +25,8 @@ const getSparklinePoints = (prices) => {
   }).join(' ');
 };
 
+const formatUsdPrice = (value) => (value ? `$${value.toFixed(2)}` : '---');
+
 // WatchlistRow Component
 const WatchlistRow = ({ item, isSelected, onClick, onRemove }) => {
   const isPositive = (item.changePercent || 0) >= 0;
@@ -53,7 +55,7 @@ const WatchlistRow = ({ item, isSelected, onClick, onRemove }) => {
           </div>
         </div>
         <div className="text-end me-2">
-          <div className="price-label-redesign">₹{item.price ? item.price.toFixed(2) : '---'}</div>
+          <div className="price-label-redesign">{formatUsdPrice(item.price)}</div>
           <div className={`change-label-redesign ${isPositive ? 'up' : 'down'}`}>
             {isPositive ? '+' : ''}{item.changePercent ? item.changePercent.toFixed(2) : '0.00'}%
           </div>
@@ -96,7 +98,7 @@ const DetailPanel = ({ item, news, onClose }) => {
       </div>
 
       <div className="d-flex align-items-baseline gap-2 mb-3">
-        <span className="fs-4 fw-bold">₹{item.price ? item.price.toFixed(2) : '---'}</span>
+        <span className="fs-4 fw-bold">{formatUsdPrice(item.price)}</span>
         <span className={isPositive ? 'text-success' : 'text-danger'} style={{ fontSize: '0.85rem' }}>
           {isPositive ? '▲' : '▼'} {item.changePercent ? item.changePercent.toFixed(2) : '0.00'}%
         </span>

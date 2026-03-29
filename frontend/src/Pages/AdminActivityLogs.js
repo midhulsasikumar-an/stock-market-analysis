@@ -149,7 +149,7 @@ export default function AdminActivityLogs() {
                     <button type="button" className="admin-primary-button" onClick={handleApplyFilter}>
                         Apply filter
                     </button>
-                    <button type="button" className="admin-outline-button" onClick={handleClearFilter}>
+                    <button type="button" className="admin-secondary-button" onClick={handleClearFilter}>
                         Clear
                     </button>
                 </div>

@@ -110,7 +110,7 @@ export default function AdminTradesExplorer() {
                 </div>
 
                 <div className="admin-panel-actions" style={{ justifyContent: 'flex-start', marginTop: 12 }}>
-                    <button type="button" className="admin-outline-button" onClick={clearFilters}>Clear filters</button>
+                    <button type="button" className="admin-secondary-button" onClick={clearFilters}>Clear filters</button>
                 </div>
 
                 {error ? <p className="text-danger mb-3">{error}</p> : null}
@@ -154,9 +154,9 @@ export default function AdminTradesExplorer() {
                         </div>
 
                         <div className="admin-panel-actions" style={{ justifyContent: 'space-between', marginTop: 16 }}>
-                            <button type="button" className="admin-outline-button" disabled={pagination.page <= 1} onClick={() => setPagination((current) => ({ ...current, page: current.page - 1 }))}>Previous</button>
+                            <button type="button" className="admin-secondary-button" disabled={pagination.page <= 1} onClick={() => setPagination((current) => ({ ...current, page: current.page - 1 }))}>Previous</button>
                             <span className="admin-muted">Page {pagination.page} of {pagination.pages}</span>
-                            <button type="button" className="admin-outline-button" disabled={pagination.page >= pagination.pages} onClick={() => setPagination((current) => ({ ...current, page: current.page + 1 }))}>Next</button>
+                            <button type="button" className="admin-secondary-button" disabled={pagination.page >= pagination.pages} onClick={() => setPagination((current) => ({ ...current, page: current.page + 1 }))}>Next</button>
                         </div>
                     </>
                 )}

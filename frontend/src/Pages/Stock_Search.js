@@ -193,6 +193,10 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
                 </div>
             </div>
 
+            <p style={{ fontSize: '11px', opacity: 0.6, fontStyle: 'italic', color: '#94a3b8', margin: '8px 0 12px' }}>
+                AI predictions are for informational purposes only and do not constitute financial advice. Always do your own research.
+            </p>
+
             <div className="order-section">
                 <div className="order-section-label">Analyst Recommendation</div>
                 <div className="analysis-rec-grid">
@@ -248,6 +252,10 @@ function OrderPanel({ symbol, quote, recommendation, earnings, inWatchlist, watc
                     with <strong>{confidence}%</strong> confidence.
                 </p>
             </div>
+
+            <p style={{ fontSize: '11px', opacity: 0.6, fontStyle: 'italic', color: '#94a3b8', margin: '8px 0 0' }}>
+                AI predictions are for informational purposes only and do not constitute financial advice. Always do your own research.
+            </p>
 
             {/* ── Action Buttons ── */}
             <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
@@ -764,6 +772,10 @@ export default function StockPage() {
                         {/* eslint-disable-next-line react/jsx-pascal-case */}
                         <Technical_Analysis symbol={symbol} quote={quote} candles={candles} />
                     </div>
+
+                    <p style={{ fontSize: '11px', opacity: 0.6, fontStyle: 'italic', color: '#94a3b8', margin: '10px 4px 0' }}>
+                        Technical analysis indicators are educational tools only. Past performance does not guarantee future results.
+                    </p>
                 </div>
 
                 {/* ── RIGHT: Order Panel ── */}

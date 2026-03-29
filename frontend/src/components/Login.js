@@ -4,12 +4,6 @@ import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import "./Login.css";
 
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
-const isGoogleConfigured =
-    GOOGLE_CLIENT_ID &&
-    !GOOGLE_CLIENT_ID.includes("your-google-client-id") &&
-    GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID";
-
 export default function Login() {
     const navigate = useNavigate();
     const auth = useAuth();
@@ -29,34 +23,6 @@ export default function Login() {
         // Always start with blank credentials when landing on login.
         setFormData({ email: "", password: "" });
         setRememberMe(false);
-
-        // Initialize Google Sign-In
-        if (!isGoogleConfigured) return;
-
-        const script = document.createElement("script");
-        script.src = "https://accounts.google.com/gsi/client";
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-
-        script.onload = () => {
-            if (window.google && document.getElementById("google-signin-button")) {
-                window.google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleLogin
-                });
-                window.google.accounts.id.renderButton(
-                    document.getElementById("google-signin-button"),
-                    { theme: "outline", size: "large", width: "100%", text: "continue_with" }
-                );
-            }
-        };
-
-        return () => {
-            if (document.head.contains(script)) {
-                document.head.removeChild(script);
-            }
-        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navigate]);
 
@@ -116,22 +82,6 @@ export default function Login() {
         }
     };
 
-    const handleGoogleLogin = async (response) => {
-        setIsLoading(true);
-        setGlobalError("");
-        try {
-            const result = await authService.googleAuth(response.credential);
-            if (result.success) {
-                auth.login(result.user);
-                navigate("/dashboard", { replace: true });
-            }
-        } catch (error) {
-            setGlobalError(error.message || "Google login failed. Please try again.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     return (
         <div className="login-container">
             <div className="gradient-bg"></div>
@@ -143,16 +93,17 @@ export default function Login() {
 
                 {/* Logo Section */}
                 <div className="logo-section">
-                    <div className="logo-icon">
-                        <i className="fas fa-chart-line"></i>
-                    </div>
-                    <h1 className="app-title">TradeTrack</h1>
+                    <img 
+                        src="/tt-logo.png" 
+                        alt="TradeTrack" 
+                        style={{height:'48px', width:'auto', objectFit:'contain'}}
+                    />
                 </div>
 
                 {/* Header Section */}
                 <div className="header-section">
                     <h2 className="page-title">Welcome Back</h2>
-                    <p className="page-subtitle">Sign in to your trading account</p>
+                    <p className="page-subtitle">Track your investments and monitor the markets</p>
                 </div>
 
                 {/* Alert Messages */}
@@ -254,18 +205,6 @@ export default function Login() {
                         )}
                     </button>
                 </form>
-
-                {/* Divider */}
-                <div className="divider"><span>OR</span></div>
-
-                {/* Google Sign In Button */}
-                {isGoogleConfigured ? (
-                    <div id="google-signin-button" className="google-button-wrapper"></div>
-                ) : (
-                    <div style={{ textAlign: 'center', padding: '10px', color: '#888', fontSize: '13px', border: '1px dashed #444', borderRadius: '8px' }}>
-                        🔒 Google Sign-In is not configured yet.
-                    </div>
-                )}
 
                 {/* Footer Section */}
                 <div className="footer-section">

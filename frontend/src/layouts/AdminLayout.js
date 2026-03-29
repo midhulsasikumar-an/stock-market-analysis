@@ -59,6 +59,17 @@ export default function AdminLayout() {
         return navItems.find((item) => location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path)))?.label || 'Dashboard';
     }, [location.pathname]);
 
+    const adminDisplayName = useMemo(() => {
+        const firstName = String(user?.firstName || '').trim();
+        const lastName = String(user?.lastName || '').trim();
+        const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+        if (fullName) return fullName;
+
+        const username = String(user?.username || '').trim();
+        if (!username || username.toLowerCase() === 'masteradmin') return 'Admin';
+        return username;
+    }, [user]);
+
     const handleLogout = async () => {
         await logout();
         navigate('/login', { replace: true });
@@ -68,11 +79,11 @@ export default function AdminLayout() {
         <div className="admin-console">
             <aside className={`admin-sidebar ${sidebarOpen ? 'is-open' : ''}`}>
                 <div className="admin-branding">
-                    <div className="admin-brand-mark">TT</div>
-                    <div>
-                        <strong>TradeTrack</strong>
-                        <span>Admin tier</span>
-                    </div>
+                    <img 
+                        src="/tt-logo.png" 
+                        alt="TradeTrack" 
+                        style={{height:'36px', width:'auto', objectFit:'contain'}} 
+                    />
                 </div>
 
                 <div className="admin-sidebar-search">
@@ -140,7 +151,7 @@ export default function AdminLayout() {
 
                         <div className="admin-profile-card">
                             <div>
-                                <strong>{user?.username || 'admin'}</strong>
+                                <strong>{adminDisplayName}</strong>
                                 <span>{user?.email || 'Administrator'}</span>
                             </div>
                             <button type="button" className="admin-outline-button" onClick={handleLogout}>

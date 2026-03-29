@@ -317,9 +317,9 @@ export default function Home() {
                     <Sparkline color="#10b981" points={[[0, 30], [10, 25], [20, 35], [30, 22], [40, 38], [50, 28], [60, 42], [70, 32], [80, 48], [90, 38], [100, 52]]} />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.6rem' }}>
-                    <span style={{ fontSize: '0.7rem', color: '#475569' }}>L: 2,410</span>
-                    <span style={{ fontSize: '0.8rem', color: '#f1f5f9', fontWeight: 700 }}>₹2,548.30</span>
-                    <span style={{ fontSize: '0.7rem', color: '#475569' }}>H: 2,562</span>
+                    <span style={{ fontSize: '0.7rem', color: '#475569' }}>L: $2,410</span>
+                    <span style={{ fontSize: '0.8rem', color: '#f1f5f9', fontWeight: 700 }}>$2,548.30</span>
+                    <span style={{ fontSize: '0.7rem', color: '#475569' }}>H: $2,562</span>
                   </div>
                 </div>
               </div>
@@ -370,10 +370,10 @@ export default function Home() {
               <div className="tt-feature-block-visual">
                 <div className="tt-watchlist-mock">
                   {[
-                    { sym: 'RELIANCE', price: '₹2,548', chg: '+1.8%', up: true },
-                    { sym: 'TCS', price: '₹3,812', chg: '+0.6%', up: true },
-                    { sym: 'INFY', price: '₹1,490', chg: '-0.3%', up: false },
-                    { sym: 'HDFCBANK', price: '₹1,634', chg: '+1.1%', up: true },
+                    { sym: 'RELIANCE', price: '$2,548', chg: '+1.8%', up: true },
+                    { sym: 'TCS', price: '$3,812', chg: '+0.6%', up: true },
+                    { sym: 'INFY', price: '$1,490', chg: '-0.3%', up: false },
+                    { sym: 'HDFCBANK', price: '$1,634', chg: '+1.1%', up: true },
                   ].map((s, i) => (
                     <div key={i} className="tt-wl-row">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -502,7 +502,7 @@ export default function Home() {
           <div className="tt-section-label fade-in-up">For Everyone</div>
           <h2 className="tt-section-title fade-in-up delay-1">Who Is TradeTrack For?</h2>
           <p className="tt-section-sub fade-in-up delay-2">
-            Whether you are just starting out or actively trading — TradeTrack is designed for you.
+            Whether you are just starting out or actively tracking — TradeTrack is designed for you.
           </p>
           <div className="tt-for-grid">
             {[

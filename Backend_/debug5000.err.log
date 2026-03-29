@@ -1,0 +1,6 @@
+[candle] Yahoo Finance failed for TCS: Request failed with status code 404
+[candle] Yahoo Finance failed for RELIANCE: Request failed with status code 404
+[candle] Alpha Vantage failed for RELIANCE: Invalid symbol: Invalid API call. Please retry or visit the documentation (https://www.alphavantage.co/documentation/) for TIME_SERIES_DAILY.
+[candle] Yahoo Finance failed for RELIANCE: Request failed with status code 404
+[candle] Alpha Vantage failed for RELIANCE: Invalid symbol: Invalid API call. Please retry or visit the documentation (https://www.alphavantage.co/documentation/) for TIME_SERIES_DAILY.
+[candle] Yahoo Finance failed for RELIANCE: Request failed with status code 404

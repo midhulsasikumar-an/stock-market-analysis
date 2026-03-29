@@ -339,16 +339,9 @@ export default function AdminUsers() {
                                                     {status === 'active' || status === 'suspended' ? (
                                                         <button
                                                             type="button"
-                                                            className="admin-outline-button"
+                                                            className={status === 'active' ? 'admin-warning-button' : 'admin-success-button'}
                                                             disabled={isBusy || user.role === 'admin'}
                                                             onClick={() => handleStatusToggle(user)}
-                                                            style={status === 'suspended'
-                                                                ? {
-                                                                    background: '#0f766e',
-                                                                    borderColor: '#14b8a6',
-                                                                    color: '#ecfeff'
-                                                                }
-                                                                : undefined}
                                                         >
                                                             {isBusy && busyAction === 'suspend' ? 'Suspending...' : null}
                                                             {isBusy && busyAction === 'reactivate' ? 'Reactivating...' : null}
@@ -357,7 +350,7 @@ export default function AdminUsers() {
                                                     ) : null}
                                                     <button
                                                         type="button"
-                                                        className="admin-primary-button"
+                                                        className="admin-secondary-button"
                                                         onClick={() => handleViewPortfolio(user)}
                                                     >
                                                         View Portfolio
@@ -422,7 +415,7 @@ export default function AdminUsers() {
                                 <h3 style={{ margin: 0 }}>Portfolio Inspector</h3>
                                 <p className="admin-muted" style={{ margin: '4px 0 0' }}>{selectedUser ? getUserDisplayName(selectedUser) : 'User'}</p>
                             </div>
-                            <button type="button" className="admin-outline-button" onClick={closePortfolioDrawer}>Close</button>
+                            <button type="button" className="admin-secondary-button" onClick={closePortfolioDrawer}>Close</button>
                         </div>
 
                         {portfolioLoading ? (

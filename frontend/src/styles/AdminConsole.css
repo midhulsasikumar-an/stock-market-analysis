@@ -366,40 +366,93 @@
 }
 
 .admin-primary-button,
-.admin-outline-button,
+.admin-secondary-button,
 .admin-danger-button,
+.admin-warning-button,
+.admin-success-button,
+.admin-outline-button,
 .admin-icon-button {
-    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 8px 18px;
     cursor: pointer;
-    border-radius: 12px;
-    padding: 11px 14px;
-    font-weight: 700;
-    transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+    transition: transform 0.12s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
 }
 
-.admin-primary-button:hover,
-.admin-outline-button:hover,
-.admin-danger-button:hover,
-.admin-icon-button:hover {
-    transform: translateY(-1px);
+.admin-primary-button:active:not(:disabled),
+.admin-secondary-button:active:not(:disabled),
+.admin-danger-button:active:not(:disabled),
+.admin-warning-button:active:not(:disabled),
+.admin-success-button:active:not(:disabled),
+.admin-outline-button:active:not(:disabled),
+.admin-icon-button:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.admin-primary-button:disabled,
+.admin-secondary-button:disabled,
+.admin-danger-button:disabled,
+.admin-warning-button:disabled,
+.admin-success-button:disabled,
+.admin-outline-button:disabled,
+.admin-icon-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .admin-primary-button {
-    background: linear-gradient(135deg, #0ea5e9, #22c55e);
-    color: #03111f;
+    border: none;
+    background: #1D9E75;
+    color: #ffffff;
 }
 
+.admin-primary-button:hover:not(:disabled) {
+    background: #0F6E56;
+}
+
+.admin-secondary-button,
 .admin-outline-button,
 .admin-icon-button {
     background: transparent;
-    color: #e2e8f0;
-    border: 1px solid rgba(148, 163, 184, 0.22);
+    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-secondary-button:hover:not(:disabled),
+.admin-outline-button:hover:not(:disabled),
+.admin-icon-button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .admin-danger-button {
-    background: rgba(127, 29, 29, 0.45);
-    color: #fecaca;
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: transparent;
+    color: #E24B4A;
+    border: 1px solid #E24B4A;
+}
+
+.admin-danger-button:hover:not(:disabled) {
+    background: rgba(226, 75, 74, 0.1);
+}
+
+.admin-warning-button {
+    background: transparent;
+    color: #D97706;
+    border: 1px solid #D97706;
+}
+
+.admin-warning-button:hover:not(:disabled) {
+    background: rgba(217, 119, 6, 0.1);
+}
+
+.admin-success-button {
+    background: transparent;
+    color: #1D9E75;
+    border: 1px solid #1D9E75;
+}
+
+.admin-success-button:hover:not(:disabled) {
+    background: rgba(29, 158, 117, 0.1);
 }
 
 .admin-pill {

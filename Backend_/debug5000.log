@@ -1848,3 +1848,2132 @@
 [PriceCache] Saved to cache: GOOGL = 274.34
 [AdminStats] Prices returned: { AMZN: 199.34, AAPL: 248.8, GOOGL: 274.34 }
 [AdminStats] Calculated P&L: -197.08625199999977
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.34,
+  lastUpdated: 2026-03-28T09:23:15.069Z,
+  updatedAt: 2026-03-28T09:23:15.069Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.34,
+  lastUpdated: 2026-03-28T09:23:15.069Z,
+  updatedAt: 2026-03-28T09:23:15.069Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.8,
+  lastUpdated: 2026-03-28T09:23:14.085Z,
+  updatedAt: 2026-03-28T09:23:14.085Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.8,
+  lastUpdated: 2026-03-28T09:23:14.085Z,
+  updatedAt: 2026-03-28T09:23:14.085Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.34,
+  lastUpdated: 2026-03-28T09:23:16.907Z,
+  updatedAt: 2026-03-28T09:23:16.908Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.34,
+  lastUpdated: 2026-03-28T09:23:16.907Z,
+  updatedAt: 2026-03-28T09:23:16.908Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: GOOGL = 274.36
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:30.873Z,
+  updatedAt: 2026-03-28T13:40:30.873Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: GOOGL = 274.36
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Checking cache for GOOGL
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Checking cache for GOOGL
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Checking cache for GOOGL
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:40:29.909Z,
+  updatedAt: 2026-03-28T13:40:29.910Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:40:30.527Z,
+  updatedAt: 2026-03-28T13:40:30.528Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:40:32.368Z,
+  updatedAt: 2026-03-28T13:40:32.368Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: GOOGL = 274.36
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: GOOGL = 274.36
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:45:46.014Z,
+  updatedAt: 2026-03-28T13:45:46.015Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:45:46.636Z,
+  updatedAt: 2026-03-28T13:45:46.636Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:45:47.407Z,
+  updatedAt: 2026-03-28T13:45:47.407Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: GOOGL = 274.36
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:51:12.051Z,
+  updatedAt: 2026-03-28T13:51:12.052Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:51:10.813Z,
+  updatedAt: 2026-03-28T13:51:10.815Z
+}
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:51:10.813Z,
+  updatedAt: 2026-03-28T13:51:10.815Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:51:12.274Z,
+  updatedAt: 2026-03-28T13:51:12.275Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:51:12.274Z,
+  updatedAt: 2026-03-28T13:51:12.275Z
+}
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:51:12.051Z,
+  updatedAt: 2026-03-28T13:51:12.052Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Checking cache for GOOGL
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:51:12.051Z,
+  updatedAt: 2026-03-28T13:51:12.052Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:51:10.813Z,
+  updatedAt: 2026-03-28T13:51:10.815Z
+}
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:51:10.813Z,
+  updatedAt: 2026-03-28T13:51:10.815Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:51:12.274Z,
+  updatedAt: 2026-03-28T13:51:12.275Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:51:12.274Z,
+  updatedAt: 2026-03-28T13:51:12.275Z
+}
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:51:12.051Z,
+  updatedAt: 2026-03-28T13:51:12.052Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Checking cache for GOOGL
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:51:12.051Z,
+  updatedAt: 2026-03-28T13:51:12.052Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:51:10.813Z,
+  updatedAt: 2026-03-28T13:51:10.815Z
+}
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:51:10.813Z,
+  updatedAt: 2026-03-28T13:51:10.815Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:51:12.274Z,
+  updatedAt: 2026-03-28T13:51:12.275Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:51:12.274Z,
+  updatedAt: 2026-03-28T13:51:12.275Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:51:12.051Z,
+  updatedAt: 2026-03-28T13:51:12.052Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:51:12.051Z,
+  updatedAt: 2026-03-28T13:51:12.052Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:51:10.813Z,
+  updatedAt: 2026-03-28T13:51:10.815Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T13:51:10.813Z,
+  updatedAt: 2026-03-28T13:51:10.815Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:51:12.274Z,
+  updatedAt: 2026-03-28T13:51:12.275Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T13:51:12.274Z,
+  updatedAt: 2026-03-28T13:51:12.275Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:51:12.051Z,
+  updatedAt: 2026-03-28T13:51:12.052Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T13:51:12.051Z,
+  updatedAt: 2026-03-28T13:51:12.052Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: GOOGL = 274.36
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Saved to cache: GOOGL = 274.36
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T14:01:23.457Z,
+  updatedAt: 2026-03-28T14:01:23.457Z
+}
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T14:01:23.457Z,
+  updatedAt: 2026-03-28T14:01:23.457Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T14:01:24.111Z,
+  updatedAt: 2026-03-28T14:01:24.112Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T14:01:24.111Z,
+  updatedAt: 2026-03-28T14:01:24.112Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T14:01:24.646Z,
+  updatedAt: 2026-03-28T14:01:24.646Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T14:01:24.646Z,
+  updatedAt: 2026-03-28T14:01:24.646Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T14:01:23.457Z,
+  updatedAt: 2026-03-28T14:01:23.457Z
+}
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T14:01:23.457Z,
+  updatedAt: 2026-03-28T14:01:23.457Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T14:01:24.111Z,
+  updatedAt: 2026-03-28T14:01:24.112Z
+}
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T14:01:24.111Z,
+  updatedAt: 2026-03-28T14:01:24.112Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T14:01:24.646Z,
+  updatedAt: 2026-03-28T14:01:24.646Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T14:01:24.646Z,
+  updatedAt: 2026-03-28T14:01:24.646Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T14:01:23.457Z,
+  updatedAt: 2026-03-28T14:01:23.457Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T14:01:23.457Z,
+  updatedAt: 2026-03-28T14:01:23.457Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T14:01:24.111Z,
+  updatedAt: 2026-03-28T14:01:24.112Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T14:01:24.111Z,
+  updatedAt: 2026-03-28T14:01:24.112Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T14:01:24.646Z,
+  updatedAt: 2026-03-28T14:01:24.646Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T14:01:24.646Z,
+  updatedAt: 2026-03-28T14:01:24.646Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: GOOGL = 274.36
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T14:49:03.402Z,
+  updatedAt: 2026-03-28T14:49:03.402Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T14:49:04.340Z,
+  updatedAt: 2026-03-28T14:49:04.341Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T14:49:04.726Z,
+  updatedAt: 2026-03-28T14:49:04.727Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: GOOGL = 274.36
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 4
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T14:49:03.402Z,
+  updatedAt: 2026-03-28T14:49:03.402Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T14:49:04.340Z,
+  updatedAt: 2026-03-28T14:49:04.341Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T14:49:05.014Z,
+  updatedAt: 2026-03-28T14:49:05.014Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[candle] AV rate limited, trying Yahoo Finance for DIA…
+[candle] ✅ Alpha Vantage: SPY
+[candle] AV rate limited, trying Yahoo Finance for VXX…
+[candle] ✅ Yahoo Finance: VXX (391 bars)
+[candle] ✅ Yahoo Finance: DIA (391 bars)
+[candle] AV rate limited, trying Yahoo Finance for IWM…
+[candle] ✅ Yahoo Finance: IWM (391 bars)
+[candle] ✅ Alpha Vantage: AAPL
+[candle] AV rate limited, trying Yahoo Finance for RELIANCE…
+[candle] AV rate limited, trying Yahoo Finance for TCS…
+[candle] AV rate limited, trying Yahoo Finance for INFY…
+[candle] ✅ Alpha Vantage: QQQ
+[candle] AV rate limited, trying Yahoo Finance for META…
+[candle] ✅ Yahoo Finance: META (62 bars)
+[candle] ✅ Yahoo Finance: INFY (20 bars)
+[candle] ✅ Alpha Vantage: TSLA
+[candle] ✅ Alpha Vantage: MSFT
+[candle] ✅ Alpha Vantage: TCS
+[candle] AV rate limited, trying Yahoo Finance for MSFT…
+[candle] AV rate limited, trying Yahoo Finance for NVDA…
+[candle] AV rate limited, trying Yahoo Finance for AAPL…
+[candle] ✅ Yahoo Finance: NVDA (20 bars)
+[candle] ✅ Yahoo Finance: MSFT (20 bars)
+[candle] ✅ Yahoo Finance: AAPL (20 bars)
+[candle] AV rate limited, trying Yahoo Finance for META…
+[candle] ✅ Alpha Vantage: TSLA
+[candle] ✅ Yahoo Finance: META (20 bars)
+[candle] AV rate limited, trying Yahoo Finance for TEAM…
+[candle] ✅ Yahoo Finance: TEAM (251 bars)
+[AdminStats] Holdings found: 5
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL', 'TEAM' ]
+[PriceCache] Checking cache for AMZN
+[AdminStats] Holdings found: 5
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL', 'TEAM' ]
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T14:49:03.402Z,
+  updatedAt: 2026-03-28T14:49:03.402Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T14:49:03.402Z,
+  updatedAt: 2026-03-28T14:49:03.402Z
+}
+[PriceCache] Cache miss - calling Finnhub for AMZN
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Finnhub response for AMZN: {
+  c: 199.36,
+  d: -8.18,
+  dp: -3.9414,
+  h: 206.6,
+  l: 199.14,
+  o: 206.465,
+  pc: 207.54,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Saved to cache: AMZN = 199.36
+[PriceCache] Checking cache for AAPL
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T14:49:04.340Z,
+  updatedAt: 2026-03-28T14:49:04.341Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T14:49:04.340Z,
+  updatedAt: 2026-03-28T14:49:04.341Z
+}
+[PriceCache] Cache miss - calling Finnhub for AAPL
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T14:49:05.014Z,
+  updatedAt: 2026-03-28T14:49:05.014Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Finnhub response for AAPL: {
+  c: 248.82,
+  d: -4.07,
+  dp: -1.6094,
+  h: 255.493,
+  l: 248.07,
+  o: 253.91,
+  pc: 252.89,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: AAPL = 248.82
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T14:49:05.014Z,
+  updatedAt: 2026-03-28T14:49:05.014Z
+}
+[PriceCache] Cache miss - calling Finnhub for GOOGL
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: GOOGL = 274.36
+[PriceCache] Checking cache for TEAM
+[PriceCache] Cache result for TEAM: null
+[PriceCache] Cache miss - calling Finnhub for TEAM
+[PriceCache] Finnhub response for GOOGL: {
+  c: 274.36,
+  d: -6.56,
+  dp: -2.3352,
+  h: 279.37,
+  l: 273.95,
+  o: 277.28499999999997,
+  pc: 280.92,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: GOOGL = 274.36
+[PriceCache] Checking cache for TEAM
+[PriceCache] Cache result for TEAM: null
+[PriceCache] Cache miss - calling Finnhub for TEAM
+[PriceCache] Finnhub response for TEAM: {
+  c: 65.14,
+  d: -2.99,
+  dp: -4.3887,
+  h: 67.06,
+  l: 64.3,
+  o: 67.02000000000001,
+  pc: 68.13,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: TEAM = 65.14
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36, TEAM: 65.14 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 5
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL', 'TEAM' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T15:03:34.062Z,
+  updatedAt: 2026-03-28T15:03:34.064Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T15:03:35.469Z,
+  updatedAt: 2026-03-28T15:03:35.470Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T15:03:36.475Z,
+  updatedAt: 2026-03-28T15:03:36.476Z
+}
+[PriceCache] Checking cache for TEAM
+[PriceCache] Cache result for TEAM: {
+  _id: new ObjectId('69c7edc8896dcc311a9f62e2'),
+  symbol: 'TEAM',
+  __v: 0,
+  createdAt: 2026-03-28T15:03:36.923Z,
+  currentPrice: 65.14,
+  lastUpdated: 2026-03-28T15:03:36.923Z,
+  updatedAt: 2026-03-28T15:03:36.923Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36, TEAM: 65.14 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[PriceCache] Finnhub response for TEAM: {
+  c: 65.14,
+  d: -2.99,
+  dp: -4.3887,
+  h: 67.06,
+  l: 64.3,
+  o: 67.02000000000001,
+  pc: 68.13,
+  t: 1774641600
+}
+[PriceCache] Saved to cache: TEAM = 65.14
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36, TEAM: 65.14 }
+[AdminStats] Calculated P&L: -196.70625199999978
+[AdminStats] Holdings found: 5
+[AdminStats] Unique symbols: [ 'AMZN', 'AAPL', 'GOOGL', 'TEAM' ]
+[PriceCache] Checking cache for AMZN
+[PriceCache] Cache result for AMZN: {
+  _id: new ObjectId('69c78f42896dcc311a9f6297'),
+  symbol: 'AMZN',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:18.726Z,
+  currentPrice: 199.36,
+  lastUpdated: 2026-03-28T15:03:34.062Z,
+  updatedAt: 2026-03-28T15:03:34.064Z
+}
+[PriceCache] Checking cache for AAPL
+[PriceCache] Cache result for AAPL: {
+  _id: new ObjectId('69c78f43896dcc311a9f6298'),
+  symbol: 'AAPL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:19.742Z,
+  currentPrice: 248.82,
+  lastUpdated: 2026-03-28T15:03:35.469Z,
+  updatedAt: 2026-03-28T15:03:35.470Z
+}
+[PriceCache] Checking cache for GOOGL
+[PriceCache] Cache result for GOOGL: {
+  _id: new ObjectId('69c78f44896dcc311a9f6299'),
+  symbol: 'GOOGL',
+  __v: 0,
+  createdAt: 2026-03-28T08:20:20.665Z,
+  currentPrice: 274.36,
+  lastUpdated: 2026-03-28T15:03:36.475Z,
+  updatedAt: 2026-03-28T15:03:36.476Z
+}
+[PriceCache] Checking cache for TEAM
+[PriceCache] Cache result for TEAM: {
+  _id: new ObjectId('69c7edc8896dcc311a9f62e2'),
+  symbol: 'TEAM',
+  __v: 0,
+  createdAt: 2026-03-28T15:03:36.923Z,
+  currentPrice: 65.14,
+  lastUpdated: 2026-03-28T15:03:37.130Z,
+  updatedAt: 2026-03-28T15:03:37.130Z
+}
+[AdminStats] Prices returned: { AMZN: 199.36, AAPL: 248.82, GOOGL: 274.36, TEAM: 65.14 }
+[AdminStats] Calculated P&L: -196.70625199999978
