@@ -468,6 +468,10 @@ export default function Portfolio() {
   // Sell Modal
   const [sellHolding, setSellHolding] = useState(null); // holding object
 
+  useEffect(() => {
+    document.title = 'Portfolio — TradeTrack';
+  }, []);
+
   const fetchPortfolio = useCallback(async (updateStamp = true) => {
     try {
       const response = await fetch(`${API_URL}/api/portfolio/summary`, {

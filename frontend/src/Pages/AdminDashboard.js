@@ -219,7 +219,6 @@ export default function AdminDashboard() {
             const query = new URLSearchParams({ period, from, to }).toString();
             const r = await fetch(`${API_URL}/api/admin/chart?${query}`, { headers });
             const j = await r.json();
-            console.log('[AdminDashboard] /api/admin/chart raw response:', { period, payload: j });
             if (j.success) setChartData(j.data);
         } catch { /* silent */ } finally { setChartLoading(false); }
     }, []); // eslint-disable-line

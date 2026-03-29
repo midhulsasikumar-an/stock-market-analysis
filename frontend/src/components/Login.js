@@ -14,6 +14,10 @@ export default function Login() {
     const [globalError, setGlobalError] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
 
+    useEffect(() => {
+        document.title = 'Sign In — TradeTrack';
+    }, []);
+
     // Check if already logged in
     useEffect(() => {
         if (authService.isAuthenticated()) {

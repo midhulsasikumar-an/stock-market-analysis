@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import NavbarDash from "../components/Navbar_Dash";
 import { STOCK_SECTORS } from "../data/stocksData";
@@ -21,6 +21,10 @@ export default function StocksPage() {
   const [enabledSymbols, setEnabledSymbols] = useState(null);
 
   useEffect(() => {
+    document.title = 'Markets — TradeTrack';
+  }, []);
+
+  useEffect(() => {
     const allSymbols = STOCK_SECTORS.flatMap((sector) => sector.stocks.map((stock) => stock.symbol));
     fetchSymbolVisibility(allSymbols).then((visibility) => {
       const enabled = new Set(visibility.filter((item) => item.enabled).map((item) => item.symbol));
@@ -28,15 +32,28 @@ export default function StocksPage() {
     });
   }, []);
 
-  const visibleSectors = useMemo(() => {
-    if (!enabledSymbols) return STOCK_SECTORS;
-    return STOCK_SECTORS
-      .map((sector) => ({
-        ...sector,
-        stocks: sector.stocks.filter((stock) => enabledSymbols.has(stock.symbol))
-      }))
-      .filter((sector) => sector.stocks.length > 0);
-  }, [enabledSymbols]);
+  if (enabledSymbols === null) {
+    return (
+      <div className="stocks-shell">
+        <NavbarDash />
+        <main className="stocks-main container-fluid d-flex align-items-center justify-content-center min-vh-100">
+          <div className="text-center py-5">
+            <div className="spinner-border text-info mb-3" role="status" />
+            <p className="text-muted mb-0">Loading market sectors...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const visibleSectors = enabledSymbols
+    ? STOCK_SECTORS
+        .map((sector) => ({
+          ...sector,
+          stocks: sector.stocks.filter((stock) => enabledSymbols.has(stock.symbol))
+        }))
+        .filter((sector) => sector.stocks.length > 0)
+    : STOCK_SECTORS;
 
   const totalVisibleStocks = visibleSectors.reduce((count, sector) => count + sector.stocks.length, 0);
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
@@ -20,6 +20,10 @@ export default function Register() {
     const [isLoading, setIsLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [globalError, setGlobalError] = useState("");
+
+    useEffect(() => {
+        document.title = 'Create Account — TradeTrack';
+    }, []);
 
     const validateForm = () => {
         const newErrors = {};

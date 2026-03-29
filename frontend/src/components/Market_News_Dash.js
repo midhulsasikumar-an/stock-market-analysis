@@ -119,7 +119,7 @@ export default function Market_News_Dash() {
             ))}
           </div>
           <div className="news-footer" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Link to="/news" className="keep-reading-link">
+            <Link to="/dashboard/news" className="keep-reading-link">
               View all news →
             </Link>
           </div>

@@ -53,6 +53,10 @@ export default function DashboardHome() {
     const [announcements, setAnnouncements] = useState([]);
 
     useEffect(() => {
+        document.title = 'Dashboard — TradeTrack';
+    }, []);
+
+    useEffect(() => {
         let mounted = true;
 
         const loadAnnouncements = async () => {

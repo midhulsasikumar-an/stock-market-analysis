@@ -208,6 +208,10 @@ export default function NewsPage() {
     const [activeTab, setActiveTab] = useState('All');
     const [selectedSymbol, setSelectedSymbol] = useState(null);
 
+    useEffect(() => {
+        document.title = 'Market News — TradeTrack';
+    }, []);
+
     const loadNews = useCallback(async () => {
         setLoading(true);
         try {

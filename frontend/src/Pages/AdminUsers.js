@@ -91,7 +91,6 @@ export default function AdminUsers() {
             setLoading(true);
             try {
                 const response = await adminService.getUsers({ search });
-                console.log('[AdminUsers] getUsers full response:', response);
                 setUsers(response.data || []);
                 setError('');
             } catch (err) {

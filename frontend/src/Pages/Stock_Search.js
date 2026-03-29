@@ -591,6 +591,10 @@ export default function StockPage() {
     const [showBuyModal, setShowBuyModal] = useState(false);
     const [showSellModal, setShowSellModal] = useState(false);
 
+    useEffect(() => {
+        document.title = symbol ? `${symbol.toUpperCase()} — TradeTrack` : 'TradeTrack';
+    }, [symbol]);
+
     const loadHolding = async () => {
         if (!authService.isAuthenticated()) return;
         try {
@@ -785,7 +789,7 @@ export default function StockPage() {
                             {loading ? (
                                 <div className="chart-loading">
                                     <div className="spin-ring" />
-                                    <span>Loading chart data…</span>
+                                    <span>Loading market data…</span>
                                 </div>
                             ) : (
                                 // eslint-disable-next-line react/jsx-pascal-case

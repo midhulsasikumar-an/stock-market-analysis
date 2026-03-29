@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 /**
  * Premium Public Navbar — TradeTrack
@@ -8,99 +7,102 @@ import { useAuth } from '../context/AuthContext';
  * hover underline animations, and auth-aware CTA button.
  */
 export default function Navbar() {
-  const navigate = useNavigate();
-  const { isAuthenticated, isLoading } = useAuth();
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const smoothScrollTo = (e, id) => {
     e.preventDefault();
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+    setMenuOpen(false);
   };
 
   return (
-    <nav className={`tt-navbar navbar navbar-expand-lg${scrolled ? ' scrolled' : ''}`}>
-      <div className="container-fluid">
-
+    <nav
+      className={`tt-navbar navbar navbar-expand-lg${scrolled ? " scrolled" : ""}`}
+    >
+      <div className="container-fluid tt-navbar-shell">
         {/* ── Brand ── */}
         <Link className="tt-nav-brand" to="/">
           <img
             src="/tt-logo.png"
             alt="TradeTrack"
-            style={{ height: '32px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+            style={{
+              height: "32px",
+              width: "auto",
+              objectFit: "contain",
+              filter: "brightness(0) invert(1)",
+            }}
           />
           <span>TradeTrack</span>
         </Link>
 
         {/* ── Mobile toggler ── */}
         <button
-          className="navbar-toggler"
+          className={`navbar-toggler${menuOpen ? " is-open" : ""}`}
           type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#ttNavbar"
           aria-controls="ttNavbar"
-          aria-expanded="false"
+          aria-expanded={menuOpen}
           aria-label="Toggle navigation"
+          onClick={() => setMenuOpen((open) => !open)}
         >
           <span className="navbar-toggler-icon" />
         </button>
 
         {/* ── Nav Links + CTA ── */}
-        <div className="collapse navbar-collapse" id="ttNavbar">
-          <ul className="tt-nav-links ms-auto me-3">
+        <div
+          className={`navbar-collapse tt-nav-panel${menuOpen ? " show" : ""}`}
+          id="ttNavbar"
+        >
+          <ul className="tt-nav-links me-auto">
             <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <a href="#why-tradetrack" onClick={(e) => smoothScrollTo(e, 'why-tradetrack')}>
+              <a
+                href="#features"
+                onClick={(e) => smoothScrollTo(e, "features")}
+              >
                 Features
               </a>
             </li>
             <li>
-              <a href="#market-snapshot" onClick={(e) => smoothScrollTo(e, 'market-snapshot')}>
-                Market Snapshot
+              <a
+                href="#how-it-works"
+                onClick={(e) => smoothScrollTo(e, "how-it-works")}
+              >
+                How It Works
               </a>
             </li>
             <li>
-              <a href="#about-section" onClick={(e) => smoothScrollTo(e, 'about-section')}>
-                About
-              </a>
-            </li>
-            <li>
-              <a href="#footer" onClick={(e) => smoothScrollTo(e, 'footer')}>
-                Contact
+              <a
+                href="#market-data"
+                onClick={(e) => smoothScrollTo(e, "market-data")}
+              >
+                Market Data
               </a>
             </li>
           </ul>
 
-          {/* ── Auth-aware CTA ── */}
-          {!isLoading && (
-            isAuthenticated ? (
-              <button
-                id="navbar-dashboard-btn"
-                className="tt-nav-cta"
-                onClick={() => navigate('/dashboard')}
-              >
-                <i className="bi bi-grid-1x2-fill" />
-                View Dashboard
-              </button>
-            ) : (
-              <button
-                id="navbar-login-btn"
-                className="tt-nav-cta"
-                onClick={() => navigate('/dashboard')}
-              >
-                <i className="bi bi-bar-chart-line-fill" />
-                View Dashboard
-              </button>
-            )
-          )}
+          <div className="tt-nav-actions">
+            <Link
+              to="/login"
+              className="tt-nav-secondary-btn"
+              onClick={() => setMenuOpen(false)}
+            >
+              Sign In
+            </Link>
+            <Link
+              to="/register"
+              className="tt-nav-cta"
+              onClick={() => setMenuOpen(false)}
+            >
+              Get Started Free
+            </Link>
+          </div>
         </div>
       </div>
     </nav>

@@ -33,7 +33,6 @@ export default function TechnicalAnalysis({ symbol, quote, candles }) {
 
     // Reset state on symbol change to ensure fresh start
     useEffect(() => {
-        console.log("TA: Symbol changed to", symbol);
         setStatus("loading");
         setData(null);
         setExtendedCandles(null);
@@ -42,7 +41,6 @@ export default function TechnicalAnalysis({ symbol, quote, candles }) {
 
     // ANALYSIS LOGIC (Synchronous calculation helper)
     const calculateIndicators = (candlesToUse, currentPrice) => {
-        console.log("TA: Calculating indicators...");
         if (!candlesToUse || !candlesToUse.c || candlesToUse.c.length === 0) {
             throw new Error("No historical data available for calculation.");
         }
@@ -170,14 +168,10 @@ export default function TechnicalAnalysis({ symbol, quote, candles }) {
         let isMounted = true;
 
         const runProcess = async () => {
-            console.log("TA start");
-            console.log("Candles:", candles?.length);
-
             // 1. Guard against mount before props
             // NOTE: If parent passes null, we treat it as "no data yet" or "error".
             // Since parent Loading state avoids rendering us until ready, null means ERROR or EMPTY.
             if (!candles) {
-                console.log("TA: No candles provided (null).");
                 if (isMounted) setStatus("insufficient_data");
                 return;
             }
@@ -190,7 +184,6 @@ export default function TechnicalAnalysis({ symbol, quote, candles }) {
                 // Only run if we haven't already extended AND data is short
                 // AND ExtendedCandles is null (meaning we haven't tried fetching history yet)
                 if (candles.c && candles.c.length < 30 && extendedCandles === null) {
-                    console.log("TA: Insufficient data, fetching history...");
                     if (isMounted) setStatus("fetching_history");
 
                     const moreData = await fetchCandles(symbol, 'D', 90);
@@ -198,12 +191,10 @@ export default function TechnicalAnalysis({ symbol, quote, candles }) {
                     if (!isMounted) return;
 
                     if (moreData && moreData.c && moreData.c.length > candles.c.length) {
-                        console.log("TA: History fetched successfully.");
                         setExtendedCandles(moreData);
                         // RETURN here to let effect re-run with new extendedCandles
                         return;
                     } else {
-                        console.log("TA: History fetch yielded no new data.");
                         // Mark as tried so we don't loop
                         setExtendedCandles(candles);
                         // Continue to analysis with original data
@@ -226,10 +217,8 @@ export default function TechnicalAnalysis({ symbol, quote, candles }) {
 
                     setData(results);
                     setStatus("completed");
-                    console.log("TA complete: Success");
                 } else {
                     setStatus("insufficient_data");
-                    console.log("TA complete: Insufficient Data");
                 }
 
             } catch (err) {
@@ -248,7 +237,6 @@ export default function TechnicalAnalysis({ symbol, quote, candles }) {
 
     // Manual Refresh
     const handleRefresh = () => {
-        console.log("TA: Refresh requested");
         setStatus("loading");
         // Start from scratch to re-verify or just re-run?
         // Let's reset extended to force a re-check if needed, or just re-run current.
