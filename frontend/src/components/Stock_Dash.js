@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchQuote, fetchCandles } from '../services/finnhub';
 import { useNavigate } from 'react-router-dom';
-import '../styles/DashboardRedesign.css';
+import '../styles/App.css';
 
 const DASHBOARD_UI_CONFIG = [
   { id: 'gainers', title: "Top Stocks Today", emoji: "📈", stroke: "#2ef08a" },

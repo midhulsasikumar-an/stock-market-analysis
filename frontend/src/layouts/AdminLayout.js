@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import '../styles/AdminConsole.css';
+import tradeTrackLogo from '../assets/images/Trade-Track-Logo.png';
+import '../styles/App.css';
 
 const navGroups = [
     {
@@ -80,7 +81,7 @@ export default function AdminLayout() {
             <aside className={`admin-sidebar ${sidebarOpen ? 'is-open' : ''}`}>
                 <div className="admin-branding">
                     <img 
-                        src="/tt-logo.png" 
+                        src={tradeTrackLogo} 
                         alt="TradeTrack" 
                         style={{height:'32px', width:'auto', objectFit:'contain', filter:'brightness(0) invert(1)'}} 
                     />

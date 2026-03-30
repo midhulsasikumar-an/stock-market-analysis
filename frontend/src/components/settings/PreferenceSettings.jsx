@@ -69,9 +69,10 @@ export default function PreferenceSettings() {
                         <label className="d-flex align-items-center gap-2 text-white">
                             <input type="radio" name="theme" value="dark" checked={theme === 'dark'} onChange={() => setTheme('dark')} /> <span className="small">Dark Mode (Default)</span>
                         </label>
-                        <label className="d-flex align-items-center gap-2 text-muted">
-                            <input type="radio" name="theme" value="light" checked={theme === 'light'} onChange={() => setTheme('light')} disabled /> <span className="small">Light Mode (Coming Soon)</span>
-                        </label>
+                        <div className="d-flex align-items-center justify-content-between gap-2 text-muted opacity-75 py-1">
+                            <span className="small">Light Mode</span>
+                            <span className="badge border border-warning text-warning bg-transparent rounded-pill" style={{ fontSize: '0.65rem' }}>Coming Soon</span>
+                        </div>
                     </div>
                 </div>
 

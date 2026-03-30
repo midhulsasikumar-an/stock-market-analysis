@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
+import { getAvatarImageUrl, getAvatarInitials } from '../../utils/avatar';
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -59,15 +60,8 @@ export default function ProfileAvatar() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const getInitials = () => {
-        if (!user) return 'U';
-        if (user.firstName && user.lastName) return (user.firstName[0] + user.lastName[0]).toUpperCase();
-        if (user.firstName) return user.firstName.substring(0, 2).toUpperCase();
-        const email = user.email || '';
-        return email.split('@')[0].substring(0, 2).toUpperCase() || 'U';
-    };
-
-    const initials = getInitials();
+    const initials = getAvatarInitials(user);
+    const avatarUrl = getAvatarImageUrl(user?.profileImage);
     const displayName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : (user?.email?.split('@')[0] || 'User');
     const isAdmin = user?.role === 'admin';
 
@@ -75,8 +69,8 @@ export default function ProfileAvatar() {
         <div className="profile-avatar-container" ref={dropdownRef} style={{ position: 'relative' }}>
             <button className="profile-avatar-btn" onClick={() => setIsOpen(!isOpen)}>
                 <div className="profile-avatar" style={{ border: isAdmin ? '2px solid #3b82f6' : '1px solid rgba(255,255,255,0.1)' }}>
-                    {user?.profileImage ? (
-                        <img src={user.profileImage} alt="Profile" className="avatar-img" />
+                    {avatarUrl ? (
+                        <img src={avatarUrl} alt="Profile" className="avatar-img" />
                     ) : (
                         <span className="avatar-initials">{initials}</span>
                     )}
@@ -95,8 +89,8 @@ export default function ProfileAvatar() {
                     <div style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <div className="d-flex align-items-center gap-3">
                             <div className="profile-avatar" style={{ width: '50px', height: '50px', fontSize: '1.2rem', flexShrink: 0 }}>
-                                {user?.profileImage ? (
-                                    <img src={user.profileImage} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                {avatarUrl ? (
+                                    <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                                 ) : (
                                     <span className="avatar-initials">{initials}</span>
                                 )}

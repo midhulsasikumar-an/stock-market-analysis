@@ -4,6 +4,7 @@ import ProfileAvatar from './Navbar/ProfileAvatar';
 import NotificationBell from './Navbar/NotificationBell';
 import { useAuth } from '../context/AuthContext';
 import { fetchSearch, fetchSymbolVisibility, fetchQuote } from '../services/finnhub';
+import tradeTrackLogo from '../assets/images/Trade-Track-Logo.png';
 
 const POPULAR_SEARCHES = ['AAPL', 'AMZN', 'TSLA', 'GOOGL', 'MSFT'];
 
@@ -187,7 +188,7 @@ export default function Navbar_Dash() {
       {/* Brand */}
       <Link to={user?.role === "admin" ? "/admin" : "/dashboard"} className="navbar-brand-dash">
         <img
-          src="/tt-logo.png"
+          src={tradeTrackLogo}
           alt="TradeTrack"
           className="brand-logo"
           style={{ height: '32px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}

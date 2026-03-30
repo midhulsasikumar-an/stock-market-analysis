@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import NavbarDash from "../components/Navbar_Dash";
 import { STOCK_SECTORS } from "../data/stocksData";
 import { fetchSymbolVisibility } from "../services/finnhub";
-import "./Stocks.css";
+import "../styles/App.css";
 
 const formatPercent = (value) => {
   const sign = value > 0 ? "+" : "";
@@ -127,3 +127,4 @@ export default function StocksPage() {
     </div>
   );
 }
+

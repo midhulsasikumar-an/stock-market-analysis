@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import tradeTrackLogo from '../assets/images/Trade-Track-Logo.png';
 
 /**
  * Footer – 4-column premium fintech layout
@@ -13,7 +14,7 @@ export default function Footer() {
           <div className="col-lg-4 col-md-6">
             <div className="tt-footer-logo">
               <img
-                src="/tt-logo.png"
+                src={tradeTrackLogo}
                 alt="TradeTrack"
                 style={{
                   height: "28px",
@@ -48,7 +49,7 @@ export default function Footer() {
               >
                 <i className="bi bi-github" />
               </a>
-              <a href="#" className="tt-footer-social-btn" aria-label="Twitter">
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="tt-footer-social-btn" aria-label="Twitter">
                 <i className="bi bi-twitter-x" />
               </a>
             </div>

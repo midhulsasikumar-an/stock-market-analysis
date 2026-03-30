@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/DashboardRedesign.css';
+import '../styles/App.css';
 import { useAuth } from '../context/AuthContext';
 
 export default function Hero_Dash() {

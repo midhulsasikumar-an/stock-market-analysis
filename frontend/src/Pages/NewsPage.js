@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { fetchMarketNews, fetchQuote, fetchCandles } from '../services/finnhub';
 import watchlistService from '../services/watchlistService';
-import './NewsPage.css';
+import '../styles/App.css';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const relativeTime = (ts) => {
