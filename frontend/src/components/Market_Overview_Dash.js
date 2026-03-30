@@ -3,7 +3,7 @@ import React, {
 } from 'react';
 import { createChart, AreaSeries } from 'lightweight-charts';
 import { fetchQuote, fetchCandles } from '../services/finnhub';
-import '../styles/DashboardRedesign.css';
+import '../styles/App.css';
 
 const INDICES = [
   { symbol: 'SPY', label: 'S&P 500', tag: 'SEP 500' },

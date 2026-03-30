@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/DashboardRedesign.css';
+import '../styles/App.css';
 import NavbarDash from '../components/Navbar_Dash';
 import HeroDash from '../components/Hero_Dash';
 import MarketOverviewDash from '../components/Market_Overview_Dash';

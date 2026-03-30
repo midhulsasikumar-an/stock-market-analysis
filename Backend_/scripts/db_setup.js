@@ -28,17 +28,17 @@ async function run() {
     // ── Sync indexes for all models ─────────────────────────────
     console.log("\nSyncing indexes...");
     const models = [
-        require("./models/User"),
-        require("./models/WatchlistUser"),
-        require("./models/Portfolio"),
-        require("./models/Alert"),
-        require("./models/SearchHistory"),
-        require("./models/UserSettings"),
-        require("./models/Transaction"),
-        require("./models/StockCache"),
-        require("./models/PriceCache"),
-        require("./models/AdminAnnouncement"),
-        require("./models/ServerMeta"),
+        require("../models/User"),
+        require("../models/WatchlistUser"),
+        require("../models/Portfolio"),
+        require("../models/Alert"),
+        require("../models/SearchHistory"),
+        require("../models/UserSettings"),
+        require("../models/Transaction"),
+        require("../models/StockCache"),
+        require("../models/PriceCache"),
+        require("../models/AdminAnnouncement"),
+        require("../models/ServerMeta"),
     ];
 
     for (const M of models) {

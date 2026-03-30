@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import tradeTrackLogo from '../assets/images/Trade-Track-Logo.png';
 
 /**
  * Premium Public Navbar — TradeTrack
@@ -31,7 +32,7 @@ export default function Navbar() {
         {/* ── Brand ── */}
         <Link className="tt-nav-brand" to="/">
           <img
-            src="/tt-logo.png"
+            src={tradeTrackLogo}
             alt="TradeTrack"
             style={{
               height: "32px",

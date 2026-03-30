@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Home.css";
+import "../styles/App.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -1074,3 +1074,4 @@ export default function Home() {
     </div>
   );
 }
+

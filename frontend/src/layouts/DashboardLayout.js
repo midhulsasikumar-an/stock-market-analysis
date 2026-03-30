@@ -3,7 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import NavbarDash from '../components/Navbar_Dash';
 import Watchlist from '../components/Watchlist';
 import Footer from '../components/Footer';
-import '../styles/DashboardRedesign.css';
+import '../styles/App.css';
 
 export default function DashboardLayout() {
     const location = useLocation();

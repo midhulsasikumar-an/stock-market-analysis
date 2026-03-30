@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
-import "./Register.css";
+import tradeTrackLogo from '../assets/images/Trade-Track-Logo.png';
+import "../styles/App.css";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -109,7 +110,7 @@ export default function Register() {
                 {/* Logo Section */}
                 <div className="logo-section">
                     <img 
-                        src="/tt-logo.png" 
+                        src={tradeTrackLogo} 
                         alt="TradeTrack" 
                         style={{height:'48px', width:'auto', objectFit:'contain', marginBottom:'8px', filter:'brightness(0) invert(1)'}}
                     />
@@ -288,3 +289,4 @@ export default function Register() {
         </div>
     );
 }
+

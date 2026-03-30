@@ -7,7 +7,7 @@ import { fetchQuote, fetchSymbolVisibility } from "../services/finnhub";
 import watchlistService from "../services/watchlistService";
 import authService from "../services/authService";
 import toast from 'react-hot-toast';
-import "./Stocks.css";
+import "../styles/App.css";
 
 const formatPercent = (value) => {
   if (value == null || isNaN(value)) return "—";
@@ -319,3 +319,4 @@ export default function SectorPage() {
     </div>
   );
 }
+
