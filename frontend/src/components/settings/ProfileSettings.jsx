@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
+import { getAvatarImageUrl, getAvatarInitials } from '../../utils/avatar';
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -21,9 +22,7 @@ export default function ProfileSettings() {
             setFirstName(user.firstName || '');
             setLastName(user.lastName || '');
             setEmail(user.email || '');
-            if (user.profileImage) {
-                setPreviewImage(user.profileImage.startsWith('http') ? user.profileImage : `${API_URL}${user.profileImage}`);
-            }
+            setPreviewImage(getAvatarImageUrl(user.profileImage));
         }
     }, [user]);
 
@@ -38,6 +37,8 @@ export default function ProfileSettings() {
             setPreviewImage(URL.createObjectURL(file));
         }
     };
+
+    const avatarInitials = getAvatarInitials(user);
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -95,10 +96,10 @@ export default function ProfileSettings() {
                 <div className="d-flex align-items-center gap-4">
                     <div className="position-relative" style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.2)' }}>
                         {previewImage ? (
-                            <img src={previewImage} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={previewImage} alt="Profile preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
                             <div className="w-100 h-100 bg-secondary d-flex align-items-center justify-content-center text-white text-uppercase" style={{ fontSize: '1.5rem' }}>
-                                {user?.email ? user.email.substring(0, 2) : 'U'}
+                                {avatarInitials}
                             </div>
                         )}
                         <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/jpeg, image/png" className="d-none" />

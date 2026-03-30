@@ -7,7 +7,7 @@ import "../styles/App.css";
 
 export default function Register() {
     const navigate = useNavigate();
-    const auth = useAuth();
+    useAuth();
     const [formData, setFormData] = useState({
         username: "",
         email: "",

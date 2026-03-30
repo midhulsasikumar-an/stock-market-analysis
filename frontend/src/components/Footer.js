@@ -49,7 +49,7 @@ export default function Footer() {
               >
                 <i className="bi bi-github" />
               </a>
-              <a href="#" className="tt-footer-social-btn" aria-label="Twitter">
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="tt-footer-social-btn" aria-label="Twitter">
                 <i className="bi bi-twitter-x" />
               </a>
             </div>

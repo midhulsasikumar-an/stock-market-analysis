@@ -99,11 +99,12 @@ export default function SecuritySettings() {
                         </span>
                     </div>
                     <button
-                        className="btn btn-outline-light btn-sm px-3 shadow-sm"
-                        onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-                    >
-                        {twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
-                    </button>
+                            type="button"
+                            className="btn btn-outline-warning btn-sm px-3 fw-semibold rounded-pill shadow-sm"
+                            onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
+                        >
+                            {twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
+                        </button>
                 </div>
             </div>
         </div>

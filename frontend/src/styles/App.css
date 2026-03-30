@@ -60,7 +60,6 @@ body::before {
 
 /* Hero Section */
 .hero {
-  background-image: url("/bg.jpg");
   background-size: cover;
   background-position: center;
   position: relative;
@@ -78,7 +77,6 @@ body::before {
 }
 
 .hero>* {
-  position: relative;
   z-index: 2;
 }
 
@@ -7551,6 +7549,7 @@ html {
     }
 }
 
+
 /* Focus visible for accessibility */
 .login-form *:focus-visible {
     outline: 2px solid var(--primary-cyan);
@@ -7727,15 +7726,6 @@ html {
     to {
         opacity: 1;
         transform: translateY(0);
-    }
-}
-
-@keyframes glow {
-    0%, 100% {
-        box-shadow: 0 0 20px rgba(13, 110, 253, 0.3);
-    }
-    50% {
-        box-shadow: 0 0 40px rgba(13, 110, 253, 0.5);
     }
 }
 
@@ -10565,5 +10555,6 @@ html {
         align-items: flex-start;
     }
 }
+
 
 

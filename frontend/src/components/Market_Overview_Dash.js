@@ -1,5 +1,5 @@
 import React, {
-  useEffect, useState, useRef, useCallback, useMemo, memo
+  useEffect, useState, useRef, useCallback, memo
 } from 'react';
 import { createChart, AreaSeries } from 'lightweight-charts';
 import { fetchQuote, fetchCandles } from '../services/finnhub';
@@ -23,7 +23,7 @@ const buildAreaData = (candles) => {
   })).filter(d => d.value != null);
 };
 
-const AreaChart = memo(({ candles, isUp, onCrosshair }) => {
+const AreaChart = memo(({ candles, isUp, onCrosshair = () => {} }) => {
   const containerRef = useRef(null);
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
@@ -114,8 +114,6 @@ export default function Market_Overview_Dash() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [quotes, setQuotes] = useState({});
   const [candlesMap, setCandlesMap] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [crosshair, setCrosshair] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [, forceTick] = useState(0);
 
@@ -128,7 +126,6 @@ export default function Market_Overview_Dash() {
   }, []);
 
   const fetchAll = useCallback(async () => {
-    setLoading(true);
     const results = await Promise.allSettled(
       INDICES.map(async (idx) => {
         const [q, c] = await Promise.all([
@@ -148,7 +145,6 @@ export default function Market_Overview_Dash() {
     setQuotes(newQ);
     setCandlesMap(newC);
     setLastUpdated(new Date());
-    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -256,7 +252,6 @@ export default function Market_Overview_Dash() {
               key={active.symbol}
               candles={cdata}
               isUp={isUp}
-              onCrosshair={setCrosshair}
             />
           )}
 
