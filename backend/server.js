@@ -115,7 +115,7 @@ app.use((err, req, res, next) => {
 // ========================================
 // DATABASE CONNECTION
 // ========================================
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/stock-market-analysis")
+mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://midhulsasikumarin_db_user:atlas_stock_2026@cluster1.z9yxifc.mongodb.net/stockmarket?retryWrites=true&w=majority")
     .then(async () => {
         console.log("✅ Database connected to stock-market-analysis");
 
