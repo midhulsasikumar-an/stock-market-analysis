@@ -446,6 +446,230 @@ body::before {
   }
 }
 
+/* ===============================================
+   GLOBAL MOBILE RESPONSIVE PATCH
+   =============================================== */
+
+.dashboard-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+}
+
+.dashboard-menu-toggle span {
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.dashboard-menu-toggle.is-open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.dashboard-menu-toggle.is-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.dashboard-menu-toggle.is-open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.dashboard-nav-panel {
+  display: contents;
+}
+
+@media (max-width: 992px) {
+  .dashboard-navbar {
+    padding: 0.7rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .dashboard-menu-toggle {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  .dashboard-nav-panel {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+  }
+
+  .dashboard-nav-panel.open {
+    display: flex;
+  }
+
+  .navbar-links-dash {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    padding: 0.35rem;
+  }
+
+  .nav-pill-dash {
+    width: 100%;
+    text-align: left;
+    font-size: 0.92rem;
+    padding: 0.7rem 0.85rem;
+  }
+
+  .navbar-actions-dash {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: flex-start;
+  }
+
+  .nav-search-shell {
+    width: 100%;
+  }
+
+  .nav-search-dash {
+    width: 100%;
+  }
+
+  .nav-search-input,
+  .nav-search-input:focus {
+    width: 100%;
+  }
+
+  .nav-search-dropdown {
+    position: static;
+    margin-top: 0.45rem;
+    max-height: 260px;
+  }
+
+  .dash-content-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .sidebar-redesign {
+    position: static;
+    max-height: none;
+  }
+
+  .bottom-grid-redesign {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 1rem;
+  }
+
+  .market-news-redesign {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-redesign {
+    font-size: 15px;
+  }
+
+  .hero-title-redesign {
+    font-size: 1.6rem;
+  }
+
+  .hero-subtitle-redesign {
+    font-size: 0.92rem;
+  }
+
+  .bottom-grid-redesign,
+  .news-grid-redesign,
+  .portfolio-grid,
+  .portfolio-grid-2,
+  .analysis-grid-2,
+  .analysis-rec-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tv-chart-wrap,
+  .tv-chart-body,
+  .scard-chart-wrap,
+  .ms-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tv-chart-body > div {
+    min-width: 520px;
+  }
+
+  .table-glass {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-spacing: 0;
+  }
+
+  .table-glass thead,
+  .table-glass tbody {
+    display: table;
+    width: 100%;
+    min-width: 620px;
+  }
+
+  .btn,
+  .btn-primary,
+  .btn-pill,
+  .watchlist-add-btn,
+  .nav-pill-dash,
+  .header-watchlist-btn,
+  .order-mode-btn,
+  .form-input,
+  .watchlist-input,
+  .nav-search-input,
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='number'],
+  select,
+  textarea {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 576px) {
+  .brand-name {
+    font-size: 1rem;
+  }
+
+  .dashboard-navbar {
+    padding: 0.65rem 0.8rem;
+  }
+
+  .dash-content-grid,
+  .market-news-redesign,
+  .bottom-grid-redesign {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+  }
+
+  .nav-search-result-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .nav-search-result-meta {
+    min-width: 110px;
+    gap: 0.4rem;
+  }
+}
+
 /* Individual News Item */
 .news-item {
   display: flex;
