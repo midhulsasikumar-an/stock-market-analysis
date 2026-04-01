@@ -7,7 +7,7 @@ import "../styles/App.css";
 
 export default function Register() {
     const navigate = useNavigate();
-    useAuth();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         username: "",
         email: "",
@@ -74,7 +74,6 @@ export default function Register() {
         setGlobalError("");
     };
 
-    // FIXED: Now uses authService.register() instead of a raw fetch call
     const handleRegister = async (e) => {
         e.preventDefault();
         setGlobalError("");
@@ -85,12 +84,21 @@ export default function Register() {
         setIsLoading(true);
 
         try {
-            await authService.register(formData.username, formData.email, formData.password);
+            const data = await authService.register(formData.username, formData.email, formData.password);
 
-            setSuccessMessage("Account created successfully! Redirecting to login...");
-            setFormData({ username: "", email: "", password: "", confirmPassword: "" });
+            // Ensure token/user are persisted before route transition.
+            if (data?.token) {
+                localStorage.setItem("authToken", data.token);
+            }
+            if (data?.user) {
+                localStorage.setItem("user", JSON.stringify(data.user));
+            }
 
-            setTimeout(() => navigate("/login", { replace: true }), 1500);
+            const storedUser = data?.user || authService.getUser();
+            login(storedUser, data?.token || authService.getToken());
+
+            setSuccessMessage("Account created successfully! Redirecting to dashboard...");
+            navigate("/dashboard", { replace: true });
         } catch (error) {
             setGlobalError(error.message || "Registration failed. Please try again.");
         } finally {

@@ -55,7 +55,13 @@ export function AuthProvider({ children }) {
     }, []);
 
     /** Call after a successful login/register to update context state */
-    const login = useCallback((userData) => {
+    const login = useCallback((userData, token) => {
+        if (token) {
+            localStorage.setItem("authToken", token);
+        }
+        if (userData) {
+            localStorage.setItem("user", JSON.stringify(userData));
+        }
         setUser(userData);
         setIsAuthenticated(true);
     }, []);

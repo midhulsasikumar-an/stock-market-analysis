@@ -21,6 +21,7 @@ export default function Navbar_Dash() {
   const [loading, setLoading] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState(-1);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const trimmedTerm = searchTerm.trim();
 
@@ -64,6 +65,21 @@ export default function Navbar_Dash() {
 
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
   useEffect(() => {
@@ -197,6 +213,21 @@ export default function Navbar_Dash() {
         <span className="brand-name">TradeTrack</span>
       </Link>
 
+      <button
+        className={`dashboard-menu-toggle ${mobileMenuOpen ? 'is-open' : ''}`}
+        type="button"
+        aria-label="Toggle dashboard navigation"
+        aria-controls="dashboardNavPanel"
+        aria-expanded={mobileMenuOpen}
+        onClick={() => setMobileMenuOpen((prev) => !prev)}
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div id="dashboardNavPanel" className={`dashboard-nav-panel ${mobileMenuOpen ? 'open' : ''}`}>
+
       {/* Navigation Links */}
       <div className="navbar-links-dash">
         {user?.role === "admin" ? (
@@ -313,6 +344,7 @@ export default function Navbar_Dash() {
         </div>
         <NotificationBell />
         <ProfileAvatar />
+      </div>
       </div>
     </nav>
   );
